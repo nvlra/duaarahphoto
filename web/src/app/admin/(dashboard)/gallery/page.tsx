@@ -38,7 +38,7 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog"
 
-// Mock data
+
 import { supabase } from "@/lib/supabaseClient"
 import { useEffect } from "react"
 import { toast } from "sonner"
@@ -357,4 +357,5 @@ export default function ManageGallery() {
       {/* Hidden Alert Dialog Logic if needed, but we used window.confirm for simplicity */}
     </div>
   )
+}
 

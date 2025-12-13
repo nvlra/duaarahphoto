@@ -73,13 +73,7 @@ const statusConfig: Record<string, { label: string, color: string, icon: Element
   completed: { label: "Selesai", color: "bg-green-100 text-green-700 hover:bg-green-200 dark:bg-green-900/30 dark:text-green-400", icon: CheckCircle2 },
 }
 
-// Mock data
-const initialOrders = [
-  { id: "DA-2401001", client: "Sarah & John", contact: "0812-3456-7890", date: "2025-05-15", package: "Wedding Gold", status: "booked", amount: "Rp 15.000.000", location: "Hotel Mulia Senayan", mapsUrl: "https://maps.app.goo.gl/example", allocations: [{id: "1", name: "Budi", role: "Fotografer Utama", fee: "Rp 2.000.000"}, {id: "2", name: "Siti", role: "Makeup Artist", fee: "Rp 1.500.000"}] },
-  { id: "DA-2401003", client: "Budi Santoso", contact: "budi@gmail.com", date: "2025-03-10", package: "Graduation", status: "completed", amount: "Rp 1.500.000", location: "Studio Duaarah" },
-  { id: "DA-2401004", client: "Lisa & Tom", contact: "0819-8888-9999", date: "2025-06-01", package: "Pre-Wedding", status: "process", amount: "Rp 3.500.000", location: "Kebun Raya Bogor", mapsUrl: "https://maps.app.goo.gl/example" },
-  { id: "DA-2401005", client: "Baby El", contact: "mom@el.com", date: "2025-03-25", package: "Newborn", status: "process", amount: "Rp 2.000.000", location: "Home Service (BSD)" },
-]
+
 
 export default function OrdersPage() {
   const [orders, setOrders] = useState<Order[]>([])
