@@ -5,7 +5,7 @@ export function MobileNavHeader() {
        <span className="text-primary mr-2">
           {/* Logo placeholder if needed */}
        </span>
-       Duaarah Admin
+       Enviel Admin
     </div>
   )
 }

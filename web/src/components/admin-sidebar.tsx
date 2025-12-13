@@ -61,7 +61,7 @@ export function Sidebar({ className }: React.HTMLAttributes<HTMLDivElement>) {
             </Avatar>
             <div>
                <h1 className="text-lg font-bold tracking-tight text-foreground leading-none">
-                  Duaarah Photo
+                  Enviel Admin
                </h1>
                <p className="text-sm text-muted-foreground mt-1 font-medium">Admin Dashboard</p>
             </div>

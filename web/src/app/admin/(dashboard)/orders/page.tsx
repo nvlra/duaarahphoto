@@ -271,23 +271,23 @@ export default function ManageOrders() {
                 <DialogTitle>Buat Booking Baru</DialogTitle>
                 <DialogDescription>Masukkan detail pesanan klien baru.</DialogDescription>
              </DialogHeader>
-             <div className="grid gap-4 py-4 md:grid-cols-2">
-                <div className="space-y-2">
+             <div className="grid gap-3 py-3 md:gap-4 md:py-4 md:grid-cols-2">
+                <div className="space-y-1 md:space-y-2">
                    <Label>Nama Klien</Label>
-                   <Input name="client" placeholder="Contoh: Sarah & John" required />
+                   <Input name="client" placeholder="Contoh: Sarah & John" required className="h-9 md:h-10" />
                 </div>
-                <div className="space-y-2">
+                <div className="space-y-1 md:space-y-2">
                    <Label>Kontak (HP/Email)</Label>
-                   <Input name="contact" placeholder="0812..." required />
+                   <Input name="contact" placeholder="0812..." required className="h-9 md:h-10" />
                 </div>
-                <div className="space-y-2">
+                <div className="space-y-1 md:space-y-2">
                    <Label>Tanggal Acara</Label>
-                   <Input name="date" type="date" required />
+                   <Input name="date" type="date" required className="h-9 md:h-10" />
                 </div>
-                <div className="space-y-2">
+                <div className="space-y-1 md:space-y-2">
                    <Label>Paket</Label>
                    <Select name="package" required>
-                      <SelectTrigger>
+                      <SelectTrigger className="h-9 md:h-10">
                          <SelectValue placeholder="Pilih Paket" />
                       </SelectTrigger>
                       <SelectContent>
@@ -301,17 +301,17 @@ export default function ManageOrders() {
                       </SelectContent>
                    </Select>
                 </div>
-                <div className="space-y-2">
+                <div className="space-y-1 md:space-y-2">
                    <Label>Label Lokasi (Gedung/Rumah)</Label>
-                   <Input name="location" placeholder="Contoh: Hotel Mulia" required />
+                   <Input name="location" placeholder="Contoh: Hotel Mulia" required className="h-9 md:h-10" />
                 </div>
-                <div className="space-y-2">
+                <div className="space-y-1 md:space-y-2">
                    <Label>Link Google Maps</Label>
-                   <Input name="mapsUrl" placeholder="https://maps.app.goo.gl/..." />
+                   <Input name="mapsUrl" placeholder="https://maps.app.goo.gl/..." className="h-9 md:h-10" />
                 </div>
-                <div className="space-y-2 md:col-span-2">
+                <div className="space-y-1 md:space-y-2 md:col-span-2">
                    <Label>Total Harga (Estimasi)</Label>
-                   <Input name="amount" placeholder="Rp 0" required />
+                   <Input name="amount" placeholder="Rp 0" required className="h-9 md:h-10" />
                 </div>
              </div>
              <div className="flex justify-end gap-2">
@@ -759,7 +759,7 @@ function OrderEditForm({
 
                         <div className="space-y-4 py-4">
                              {/* Add New Allocation */}
-                            <div className="flex gap-2 items-end border-b pb-4">
+                            <div className="flex flex-col sm:flex-row gap-3 items-stretch sm:items-end border-b pb-4">
                                 <div className="flex-1 space-y-1">
                                     <Label className="text-xs">Nama Anggota</Label>
                                     <Input id="new-team-name" placeholder="Misal: Ahmad" />
@@ -768,7 +768,7 @@ function OrderEditForm({
                                     <Label className="text-xs">Peran (Role)</Label>
                                     <Input id="new-team-role" placeholder="Fotografer / Editor" />
                                 </div>
-                                <div className="w-[150px] space-y-1">
+                                <div className="w-full sm:w-[150px] space-y-1">
                                     <Label className="text-xs">Fee (Rp)</Label>
                                     <Input id="new-team-fee" placeholder="1.000.000" />
                                 </div>
@@ -857,7 +857,7 @@ function OrderEditForm({
                                 </span>
                              </div>
                              <div className="border-t pt-2 flex justify-between items-center font-bold text-base">
-                                <span>Profit Bersih (Duaarah):</span>
+                                <span>Profit Bersih (Enviel):</span>
                                 <span className="text-green-600">
                                      {new Intl.NumberFormat("id-ID", { style: "currency", currency: "IDR", minimumFractionDigits: 0 }).format(
                                         parseInt(editingOrder.amount.replace(/[^0-9]/g, "") || "0") - 

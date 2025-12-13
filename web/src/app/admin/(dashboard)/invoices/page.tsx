@@ -704,8 +704,8 @@ export default function InvoiceDesigner() {
   const [invoiceData, setInvoiceData] = useState({
     title: "INVOICE",
     number: "#INV-2025-001",
-    companyName: "Duaarah Photography",
-    companyDetails: "capture@duaarah.com\n+62 812 3456 7890",
+    companyName: "Enviel Photography",
+    companyDetails: "admin@enviel.com\n+62 812 3456 7890",
     billToLabel: "Bill To:",
     clientName: "Bapak Budi Santoso",
     clientAddress: "Jl. Sudirman No 45, Jakarta",

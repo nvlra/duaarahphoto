@@ -49,7 +49,7 @@ export default function ManageContent() {
                 <Textarea 
                   id="bio" 
                   className="min-h-[150px]"
-                  defaultValue="Halo, saya fotografer utama di Duaarah..."
+                  defaultValue="Halo, saya fotografer utama di Enviel..."
                 />
               </div>
               <div className="grid gap-2">
@@ -95,7 +95,7 @@ export default function ManageContent() {
                 <Label htmlFor="ig">Username Instagram</Label>
                 <div className="flex items-center gap-2">
                   <span className="text-muted-foreground">@</span>
-                  <Input id="ig" defaultValue="duaarahphoto" />
+                  <Input id="ig" defaultValue="envielphoto" />
                 </div>
               </div>
             </CardContent>
@@ -116,7 +116,7 @@ export default function ManageContent() {
              <CardContent className="space-y-4">
                 <div className="grid gap-2">
                   <Label>Meta Title</Label>
-                  <Input defaultValue="Duaarah Photography - Wedding & Events" />
+                  <Input defaultValue="Enviel Photography - Wedding & Events" />
                 </div>
                 <div className="grid gap-2">
                   <Label>Meta Description</Label>

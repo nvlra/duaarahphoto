@@ -37,8 +37,8 @@ const montserrat = Montserrat({
 });
 
 export const metadata: Metadata = {
-  title: "Duaarah Photography",
-  description: "Capture the moment with Duaarah Photography.",
+  title: "Enviel Admin",
+  description: "Admin dashboard for Enviel.",
 };
 
 export default function RootLayout({
