@@ -457,7 +457,7 @@ export default function OrdersPage() {
                        </SelectTrigger>
                        <SelectContent>
                           {packages.length === 0 ? (
-                            <SelectItem value="" disabled>Belum ada paket tersedia</SelectItem>
+                            <SelectItem value="no-package" disabled>Belum ada paket tersedia</SelectItem>
                           ) : (
                             packages.map(pkg => (
                               <SelectItem key={pkg.id} value={pkg.name}>
