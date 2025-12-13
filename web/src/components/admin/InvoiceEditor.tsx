@@ -505,17 +505,6 @@ const AppearanceControls = ({
     <div className="space-y-4">
         <div className="space-y-3">
             <div className="space-y-1">
-                <Label className="text-xs">Template</Label>
-                <Select value={template} onValueChange={setTemplate}>
-                    <SelectTrigger className="h-9 text-xs w-full"><SelectValue /></SelectTrigger>
-                    <SelectContent className="z-[300]">
-                        <SelectItem value="modern">Modern Minimalis</SelectItem>
-                        <SelectItem value="bold">Bold Header</SelectItem>
-                    </SelectContent>
-                </Select>
-            </div>
-            
-            <div className="space-y-1">
                 <Label className="text-xs">Font</Label>
                 <Select value={font} onValueChange={setFont}>
                     <SelectTrigger className="h-9 text-xs w-full"><SelectValue /></SelectTrigger>
@@ -940,38 +929,6 @@ export function InvoiceEditor({ onBack, orderData }: {
             }}>
                <RotateCcw className="mr-2 h-3 w-3 md:h-4 md:w-4" /> Reset
             </Button>
-             
-             <Dialog open={isSaveDialogOpen} onOpenChange={setIsSaveDialogOpen}>
-                <DialogTrigger asChild>
-                   <Button size="sm" className="h-8 md:h-10">
-                      <Save className="mr-2 h-3 w-3 md:h-4 md:w-4" /> Simpan
-                   </Button>
-                </DialogTrigger>
-                <DialogContent>
-                   <DialogHeader>
-                      <DialogTitle>Simpan Template</DialogTitle>
-                      <DialogDescription>
-                         Beri nama untuk template invoice ini agar mudah dicari nanti.
-                      </DialogDescription>
-                   </DialogHeader>
-                   <div className="py-4">
-                      <Label className="mb-2 block">Nama Template</Label>
-                      <Input 
-                         value={templateName} 
-                         onChange={(e) => setTemplateName(e.target.value)} 
-                         placeholder="Contoh: Invoice Corporate Modern..."
-                      />
-                   </div>
-                   <DialogFooter>
-                      <Button onClick={() => {
-                         setIsSaveDialogOpen(false)
-                         toast.success("Template Berhasil Disimpan", {
-                            description: `Template "${templateName}" telah disimpan ke koleksi anda.`,
-                         })
-                      }}>Simpan</Button>
-                   </DialogFooter>
-                </DialogContent>
-             </Dialog>
         </div>
       </div>
 

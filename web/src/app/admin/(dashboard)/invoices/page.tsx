@@ -105,11 +105,8 @@ function InvoicesPageContent() {
        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div>
              <h2 className="text-3xl font-bold tracking-tight">Invoice</h2>
-             <p className="text-muted-foreground">Kelola tagihan dan pembayaran klien.</p>
+             <p className="text-muted-foreground">Kelola tagihan dan pembayaran klien. Buat invoice dari halaman Orders.</p>
           </div>
-          <Button onClick={handleCreate}>
-             <Plus className="mr-2 h-4 w-4" /> Buat Invoice Baru
-          </Button>
        </div>
        
        <Card>
