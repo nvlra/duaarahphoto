@@ -15,11 +15,13 @@ import {
   ChevronDown,
   Save,
   Printer,
-  Plus
+  Plus,
+  FileText
 } from "lucide-react"
 
 import { format } from "date-fns"
 import { cn } from "@/lib/utils"
+import { useRouter } from "next/navigation"
 // Import shared team data
 import { supabase } from "@/lib/supabaseClient"
 import { useEffect } from "react"
@@ -78,6 +80,7 @@ const statusConfig: Record<string, { label: string, color: string, icon: Element
 export default function OrdersPage() {
   const [orders, setOrders] = useState<Order[]>([])
   const [teamMembers, setTeamMembers] = useState<TeamMemberSimple[]>([])
+  const [packages, setPackages] = useState<{id: string, name: string, price: number}[]>([])
   const [searchQuery, setSearchQuery] = useState("")
   const [statusFilter, setStatusFilter] = useState("all")
   const [dateFilter, setDateFilter] = useState<Date | undefined>(undefined)
@@ -128,6 +131,12 @@ export default function OrdersPage() {
     setIsLoading(false)
   }
 
+  // Fetch Packages for Dropdown
+  const fetchPackages = async () => {
+      const { data } = await supabase.from('packages').select('id, name, price').order('name')
+      if (data) setPackages(data)
+  }
+
   // Fetch Team for Dropdown
   const fetchTeam = async () => {
       const { data } = await supabase.from('team_members').select('id, name, role').eq('status', 'active')
@@ -176,6 +185,7 @@ export default function OrdersPage() {
   }
 
   useEffect(() => {
+      fetchPackages()
       fetchTeam()
       fetchOrders()
   }, [])
@@ -421,23 +431,25 @@ export default function OrdersPage() {
                    <Label>Tanggal Acara</Label>
                    <Input name="date" type="date" required className="h-9 md:h-10" />
                 </div>
-                <div className="space-y-1 md:space-y-2">
-                   <Label>Paket</Label>
-                   <Select name="package" required>
-                      <SelectTrigger className="h-9 md:h-10">
-                         <SelectValue placeholder="Pilih Paket" />
-                      </SelectTrigger>
-                      <SelectContent>
-                         <SelectItem value="Wedding Silver">Wedding Silver</SelectItem>
-                         <SelectItem value="Wedding Gold">Wedding Gold</SelectItem>
-                         <SelectItem value="Wedding Platinum">Wedding Platinum</SelectItem>
-                         <SelectItem value="Pre-Wedding">Pre-Wedding</SelectItem>
-                         <SelectItem value="Graduation">Graduation</SelectItem>
-                         <SelectItem value="Newborn">Newborn</SelectItem>
-                         <SelectItem value="Family">Family</SelectItem>
-                      </SelectContent>
-                   </Select>
-                </div>
+                 <div className="space-y-1 md:space-y-2">
+                    <Label>Paket</Label>
+                    <Select name="package" required>
+                       <SelectTrigger className="h-9 md:h-10">
+                          <SelectValue placeholder="Pilih Paket" />
+                       </SelectTrigger>
+                       <SelectContent>
+                          {packages.length === 0 ? (
+                            <SelectItem value="" disabled>Belum ada paket tersedia</SelectItem>
+                          ) : (
+                            packages.map(pkg => (
+                              <SelectItem key={pkg.id} value={pkg.name}>
+                                {pkg.name} - Rp {pkg.price.toLocaleString('id-ID')}
+                              </SelectItem>
+                            ))
+                          )}
+                       </SelectContent>
+                    </Select>
+                 </div>
                 <div className="space-y-1 md:space-y-2">
                    <Label>Label Lokasi (Gedung/Rumah)</Label>
                    <Input name="location" placeholder="Contoh: Hotel Mulia" required className="h-9 md:h-10" />
