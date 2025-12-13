@@ -188,6 +188,8 @@ export default function PackagesPage() {
     if (!error) {
         toast.success("Paket dihapus")
         fetchData()
+    } else {
+        toast.error("Gagal menghapus paket: " + error.message)
     }
   }
 

@@ -64,7 +64,8 @@ export default function ManageContent() {
       if (!error) {
           toast.success("Konten berhasil disimpan")
       } else {
-          toast.error("Gagal menyimpan konten")
+          console.error("Save error:", error)
+          toast.error(`Gagal menyimpan konten: ${error.message}`)
       }
   }
 

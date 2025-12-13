@@ -110,6 +110,8 @@ export default function ManageGallery() {
     if (!error) {
         toast.success("Berhasil dihapus")
         fetchData()
+    } else {
+        toast.error("Gagal menghapus: " + error.message)
     }
   }
 
@@ -122,7 +124,7 @@ export default function ManageGallery() {
         setIsCatDialogOpen(false)
         fetchData()
     } else {
-        toast.error("Gagal membuat kategori")
+        toast.error("Gagal membuat kategori: " + error.message)
     }
   }
 
@@ -144,7 +146,7 @@ export default function ManageGallery() {
           setUrl("")
           fetchData()
       } else {
-          toast.error("Gagal menambahkan")
+          toast.error("Gagal menambahkan: " + error.message)
       }
   }
   
