@@ -28,7 +28,7 @@ const clientData = [
 
 export default function AdminDashboard() {
   const [date, setDate] = useState<Date | undefined>(new Date())
-  const isDesktop = useMediaQuery("(min-width: 1600px)") // Only show 2 months on very large screens to prevent tablet issues
+  const isDesktop = useMediaQuery("(min-width: 1800px)") // Strictly show 2 months only on Full HD Desktop monitors (1920px), preventing tablet issues
 
   const bookedDays = [
     new Date(2025, 11, 15),
