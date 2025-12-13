@@ -19,7 +19,8 @@ const InteractiveMenu: React.FC<InteractiveMenuProps> = ({ items, accentColor })
 
   const finalItems = useMemo(() => {
      if (items && Array.isArray(items) && items.length > 0) return items;
-     return ADMIN_MENU_ITEMS;
+     // Filter items for mobile: only show items with showOnMobile !== false
+     return ADMIN_MENU_ITEMS.filter(item => item.showOnMobile !== false);
   }, [items]);
 
   // Derive active index directly from pathname
