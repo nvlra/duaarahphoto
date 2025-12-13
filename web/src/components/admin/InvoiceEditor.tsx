@@ -695,7 +695,7 @@ const SettingsControls = ({
   </div>
 )
 
-export default function InvoiceDesigner() {
+export function InvoiceEditor() {
   // State
   const [font, setFont] = useState("font-sans")
   const [template, setTemplate] = useState("modern")
