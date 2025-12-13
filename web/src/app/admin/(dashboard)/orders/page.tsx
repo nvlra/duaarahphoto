@@ -95,6 +95,7 @@ export default function OrdersPage() {
   // Dialog States
   const [isNewBookingOpen, setIsNewBookingOpen] = useState(false)
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false)
+  const [newBookingDate, setNewBookingDate] = useState<Date | undefined>(undefined)
   
   // Editing State
   const [editingOrder, setEditingOrder] = useState<Order | null>(null)
@@ -125,7 +126,7 @@ export default function OrdersPage() {
         id: newId,
         client_name: formData.get("client") as string,
         contact_info: formData.get("contact") as string,
-        event_date: formData.get("date") as string,
+        event_date: newBookingDate ? format(newBookingDate, 'yyyy-MM-dd') : '',
         package_name: formData.get("package") as string,
         location: formData.get("location") as string,
         maps_url: formData.get("mapsUrl") as string,
@@ -447,7 +448,28 @@ export default function OrdersPage() {
                 </div>
                 <div className="space-y-1 md:space-y-2">
                    <Label>Tanggal Acara</Label>
-                   <Input name="date" type="date" required className="h-9 md:h-10" />
+                   <Popover>
+                     <PopoverTrigger asChild>
+                       <Button
+                         variant="outline"
+                         className={cn(
+                           "w-full h-9 md:h-10 justify-start text-left font-normal",
+                           !newBookingDate && "text-muted-foreground"
+                         )}
+                       >
+                         <CalendarIcon className="mr-2 h-4 w-4" />
+                         {newBookingDate ? format(newBookingDate, "dd MMMM yyyy") : "Pilih tanggal"}
+                       </Button>
+                     </PopoverTrigger>
+                     <PopoverContent className="w-auto p-0" align="start">
+                       <Calendar
+                         mode="single"
+                         selected={newBookingDate}
+                         onSelect={setNewBookingDate}
+                         initialFocus
+                       />
+                     </PopoverContent>
+                   </Popover>
                 </div>
                  <div className="space-y-1 md:space-y-2">
                     <Label>Paket</Label>
