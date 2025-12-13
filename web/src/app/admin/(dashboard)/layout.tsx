@@ -20,10 +20,10 @@ export default function AdminLayout({
         {/* Main Content Area */}
         <div className="relative flex-1 flex flex-col overflow-hidden">
           {/* Header (absolute top) */}
-          <header className="absolute top-0 left-0 right-0 h-14 flex items-center justify-between gap-4 border-b bg-background/80 backdrop-blur-md px-4 md:px-6 z-50 transition-all">
+          <header className="absolute top-0 left-0 right-0 h-14 flex items-center justify-between gap-2 md:gap-4 border-b bg-background/80 backdrop-blur-md px-3 md:px-6 z-50 transition-all">
             
             {/* Left Section */}
-            <div className="flex items-center gap-4 z-10">
+            <div className="flex items-center gap-2 md:gap-4 z-10">
                {/* Mobile: Theme Toggler on Left */}
                <div className="md:hidden">
                   <AnimatedThemeToggler />
@@ -59,7 +59,7 @@ export default function AdminLayout({
 
           {/* Scrollable Content */}
           <main className="flex-1 overflow-y-auto w-full">
-            <div className="px-6 md:px-8 pb-32 md:pb-8 pt-20 md:pt-24">
+            <div className="px-4 md:px-8 pb-24 md:pb-8 pt-20 md:pt-24">
               {children}
             </div>
           </main>

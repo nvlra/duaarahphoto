@@ -265,7 +265,7 @@ export default function ManageOrders() {
 
       {/* New Booking Dialog */}
       <Dialog open={isNewBookingOpen} onOpenChange={setIsNewBookingOpen}>
-        <DialogContent className="sm:max-w-[600px]">
+        <DialogContent className="max-w-[95vw] sm:max-w-[600px]">
           <form onSubmit={handleCreateOrder}>
              <DialogHeader>
                 <DialogTitle>Buat Booking Baru</DialogTitle>
@@ -749,7 +749,7 @@ function OrderEditForm({
                             <Plus className={isMobile ? "h-3 w-3" : "h-4 w-4"} /> {isMobile ? "Tim" : "Kelola Tim"}
                         </Button>
                     </DialogTrigger>
-                    <DialogContent className="sm:max-w-[600px]">
+                    <DialogContent className="max-w-[95vw] sm:max-w-[600px]">
                         <DialogHeader>
                             <DialogTitle>Kelola Tim & Pembagian</DialogTitle>
                             <DialogDescription>
