@@ -773,7 +773,7 @@ function OrderEditForm({
                                     <Input id="new-team-fee" placeholder="1.000.000" />
                                 </div>
                                 <Button 
-                                    size="icon" 
+                                    className="w-full sm:w-10 sm:p-0"
                                     onClick={() => {
                                         const nameEl = document.getElementById("new-team-name") as HTMLInputElement
                                         const roleEl = document.getElementById("new-team-role") as HTMLInputElement
@@ -798,6 +798,7 @@ function OrderEditForm({
                                     }}
                                 >
                                     <Plus className="h-4 w-4" />
+                                    <span className="ml-2 sm:hidden">Tambahkan</span>
                                 </Button>
                             </div>
 
