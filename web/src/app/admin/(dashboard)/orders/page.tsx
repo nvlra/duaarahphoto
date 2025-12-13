@@ -78,6 +78,7 @@ const statusConfig: Record<string, { label: string, color: string, icon: Element
 
 
 export default function OrdersPage() {
+  const router = useRouter()
   const [orders, setOrders] = useState<Order[]>([])
   const [teamMembers, setTeamMembers] = useState<TeamMemberSimple[]>([])
   const [packages, setPackages] = useState<{id: string, name: string, price: number}[]>([])
@@ -97,6 +98,20 @@ export default function OrdersPage() {
   
   // Editing State
   const [editingOrder, setEditingOrder] = useState<Order | null>(null)
+
+  const handleGenerateInvoice = (order: Order) => {
+    const params = new URLSearchParams({
+      orderId: order.id,
+      clientName: order.client,
+      contact: order.contact || '',
+      package: order.package,
+      amount: order.amount,
+      date: order.date,
+      status: order.status
+    })
+    router.push(`/admin/invoices?${params.toString()}`)
+    toast.success("Membuka Invoice Designer...")
+  }
 
   const handleCreateOrder = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
