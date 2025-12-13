@@ -52,56 +52,10 @@ import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { toast } from "sonner"
 
-// Interface for Team Member
-interface TeamMember {
-  id: string
-  name: string
-  role: string
-  email: string
-  phone: string
-  status: "active" | "inactive"
-  joinedDate: string
-}
+import { TEAM_DATA, TeamMember } from "@/config/team-data"
 
-// Mock Data
-const initialTeam: TeamMember[] = [
-  {
-    id: "TM-001",
-    name: "Budi Santoso",
-    role: "Fotografer Utama",
-    email: "budi.s@duaarah.com",
-    phone: "0812-3456-7890",
-    status: "active",
-    joinedDate: "2023-01-15"
-  },
-  {
-    id: "TM-002",
-    name: "Siti Rahma",
-    role: "Makeup Artist",
-    email: "siti.mua@gmail.com",
-    phone: "0819-8765-4321",
-    status: "active",
-    joinedDate: "2023-03-10"
-  },
-  {
-    id: "TM-003",
-    name: "Ahmad Rizky",
-    role: "Videographer",
-    email: "rizky.vid@duaarah.com",
-    phone: "0856-7890-1234",
-    status: "active",
-    joinedDate: "2023-06-20"
-  },
-  {
-    id: "TM-004",
-    name: "Dina Wijaya",
-    role: "Editor",
-    email: "dina.edit@duaarah.com",
-    phone: "0813-4567-8901",
-    status: "inactive",
-    joinedDate: "2023-02-01"
-  }
-]
+// Mock Data (using shared source)
+const initialTeam: TeamMember[] = TEAM_DATA
 
 const initialRoles = [
   "Fotografer Utama", "Fotografer 2nd", "Videographer", "Editor", "Makeup Artist", "Assistant", "Admin"

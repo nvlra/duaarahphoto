@@ -19,8 +19,7 @@ const InteractiveMenu: React.FC<InteractiveMenuProps> = ({ items, accentColor })
 
   const finalItems = useMemo(() => {
      if (items && Array.isArray(items) && items.length > 0) return items;
-     // Filter items for mobile: only show items with showOnMobile !== false
-     return ADMIN_MENU_ITEMS.filter(item => item.showOnMobile !== false);
+     return ADMIN_MENU_ITEMS;
   }, [items]);
 
   // Derive active index directly from pathname
@@ -65,7 +64,7 @@ const InteractiveMenu: React.FC<InteractiveMenuProps> = ({ items, accentColor })
   return (
     <nav
       ref={navRef}
-      className="menu flex items-center p-2 rounded-2xl bg-background/80 backdrop-blur-md border shadow-lg gap-2 overflow-x-auto max-w-[95vw] scrollbar-hide mx-auto"
+      className="flex items-center p-2 rounded-2xl bg-background/80 backdrop-blur-md border shadow-lg gap-2 overflow-x-auto w-full no-scrollbar justify-start px-2 h-full mx-auto"
       role="navigation"
       style={navStyle}
     >

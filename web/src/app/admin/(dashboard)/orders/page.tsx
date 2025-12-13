@@ -20,6 +20,8 @@ import {
 
 import { format } from "date-fns"
 import { cn } from "@/lib/utils"
+// Import shared team data
+import { TEAM_DATA } from "@/config/team-data"
 import { Calendar } from "@/components/ui/calendar"
 import { AnimatePresence, motion } from "framer-motion"
 
@@ -638,6 +640,10 @@ function OrderEditForm({
     // Determine sizing classes based on isMobile prop
     // Use grid-cols-2 for mobile to save vertical space
     const containerClass = isMobile ? "p-3 grid gap-3 grid-cols-2" : "p-4 grid gap-4 md:grid-cols-2 lg:grid-cols-3";
+    
+    // State for new allocation (controlled inputs)
+    const [newItem, setNewItem] = useState({ name: "", role: "", fee: "" });
+
     const spaceClass = isMobile ? "space-y-0.5" : "space-y-2";
     // Mobile spans 2 columns by default unless specified otherwise
     const fullWidthClass = isMobile ? "col-span-2" : "";
@@ -762,38 +768,65 @@ function OrderEditForm({
                             <div className="flex flex-col sm:flex-row gap-3 items-stretch sm:items-end border-b pb-4">
                                 <div className="flex-1 space-y-1">
                                     <Label className="text-xs">Nama Anggota</Label>
-                                    <Input id="new-team-name" placeholder="Misal: Ahmad" />
+                                    <Select 
+                                        value={newItem.name} 
+                                        onValueChange={(val) => {
+                                            const member = TEAM_DATA.find(t => t.name === val);
+                                            setNewItem({
+                                                ...newItem,
+                                                name: val,
+                                                role: member ? member.role : newItem.role
+                                            })
+                                        }}
+                                    >
+                                        <SelectTrigger className="h-9">
+                                             <SelectValue placeholder="Pilih Anggota" />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                             {TEAM_DATA.map((member) => (
+                                                  <SelectItem key={member.id} value={member.name}>
+                                                      {member.name}
+                                                  </SelectItem>
+                                             ))}
+                                        </SelectContent>
+                                    </Select>
                                 </div>
                                 <div className="flex-1 space-y-1">
                                     <Label className="text-xs">Peran (Role)</Label>
-                                    <Input id="new-team-role" placeholder="Fotografer / Editor" />
+                                    <Input 
+                                        id="new-team-role" 
+                                        placeholder="Fotografer / Editor" 
+                                        className="h-9"
+                                        value={newItem.role}
+                                        onChange={(e) => setNewItem({...newItem, role: e.target.value})}
+                                    />
                                 </div>
                                 <div className="w-full sm:w-[150px] space-y-1">
                                     <Label className="text-xs">Fee (Rp)</Label>
-                                    <Input id="new-team-fee" placeholder="1.000.000" />
+                                    <Input 
+                                        id="new-team-fee" 
+                                        placeholder="1.000.000" 
+                                        className="h-9"
+                                        value={newItem.fee}
+                                        onChange={(e) => setNewItem({...newItem, fee: e.target.value})}
+                                    />
                                 </div>
                                 <Button 
                                     className="w-full sm:w-10 sm:p-0"
                                     onClick={() => {
-                                        const nameEl = document.getElementById("new-team-name") as HTMLInputElement
-                                        const roleEl = document.getElementById("new-team-role") as HTMLInputElement
-                                        const feeEl = document.getElementById("new-team-fee") as HTMLInputElement
-                                        
-                                        if (nameEl.value && roleEl.value && feeEl.value) {
+                                        if (newItem.name && newItem.role && newItem.fee) {
                                             const newAlloc: Allocation = {
                                                 id: Math.random().toString(36).substr(2, 9),
-                                                name: nameEl.value,
-                                                role: roleEl.value,
-                                                fee: feeEl.value.startsWith("Rp") ? feeEl.value : `Rp ${feeEl.value}`
+                                                name: newItem.name,
+                                                role: newItem.role,
+                                                fee: newItem.fee.startsWith("Rp") ? newItem.fee : `Rp ${newItem.fee}`
                                             }
                                             setEditingOrder({
                                                 ...editingOrder,
                                                 allocations: [...(editingOrder.allocations || []), newAlloc]
                                             })
                                             // Reset inputs
-                                            nameEl.value = ""
-                                            roleEl.value = ""
-                                            feeEl.value = ""
+                                            setNewItem({ name: "", role: "", fee: "" })
                                         }
                                     }}
                                 >
