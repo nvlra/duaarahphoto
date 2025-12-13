@@ -6,7 +6,7 @@ import {
   Plus, Trash2, GripVertical, Type, Image as ImageIcon, 
   RotateCcw, Save, Download, LayoutTemplate, 
   ChevronDown, ChevronUp, Palette, Grid3X3, Bold, Italic, Underline,
-  Move, ZoomIn, ZoomOut, Settings, Upload 
+  Move, ZoomIn, ZoomOut, Settings, Upload, ArrowLeft 
 } from "lucide-react"
 import * as LucideIcons from "lucide-react"
 
@@ -695,7 +695,7 @@ const SettingsControls = ({
   </div>
 )
 
-export function InvoiceEditor() {
+export function InvoiceEditor({ onBack }: { onBack?: () => void }) {
   // State
   const [font, setFont] = useState("font-sans")
   const [template, setTemplate] = useState("modern")

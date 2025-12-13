@@ -214,7 +214,7 @@ export default function OrdersPage() {
       }
   }
 
-  const handleSaveOrder = async () => {
+  const handleSaveEdit = async () => {
       if (!editingOrder) return
 
       const rawAmount = editingOrder.amount.replace(/[^0-9]/g, "")
@@ -230,7 +230,7 @@ export default function OrdersPage() {
           total_amount: parseInt(rawAmount) || 0,
       }
 
-      if (isAddDialogOpen) {
+      if (isNewBookingOpen) {
          // Create New
          // ID is manual in frontend or auto? 
          // DB `id` is text primary key. Let's auto-generate formatting 'ORD-YYYY-XXX' or just use UUID if permissible, but Schema said text.
@@ -265,7 +265,7 @@ export default function OrdersPage() {
          }
 
          toast.success("Order berhasil dibuat")
-         setIsAddDialogOpen(false)
+         setIsNewBookingOpen(false)
          fetchOrders()
          
       } else {
@@ -371,6 +371,7 @@ export default function OrdersPage() {
              setEditingOrder={setEditingOrder as (order: Order) => void}
              onSave={handleSaveEdit}
              onDelete={handleDelete}
+             teamMembers={teamMembers}
           />
         </TabsContent>
         <TabsContent value="active" className="mt-4 data-[state=active]:animate-in data-[state=active]:fade-in-0 data-[state=active]:slide-in-from-left-4 data-[state=active]:duration-500 ease-in-out">
@@ -382,6 +383,7 @@ export default function OrdersPage() {
              setEditingOrder={setEditingOrder as (order: Order) => void}
              onSave={handleSaveEdit}
              onDelete={handleDelete}
+             teamMembers={teamMembers}
           />
         </TabsContent>
         <TabsContent value="completed" className="mt-4 data-[state=active]:animate-in data-[state=active]:fade-in-0 data-[state=active]:slide-in-from-left-4 data-[state=active]:duration-500 ease-in-out">
@@ -393,6 +395,7 @@ export default function OrdersPage() {
              setEditingOrder={setEditingOrder as (order: Order) => void}
              onSave={handleSaveEdit}
              onDelete={handleDelete}
+             teamMembers={teamMembers}
           />
         </TabsContent>
       </Tabs>
@@ -467,10 +470,11 @@ interface CardTableProps {
     setEditingOrder: (order: Order) => void
     onSave: () => void
     onDelete: (id: string) => void
+    teamMembers: TeamMemberSimple[]
 }
 
 
-function CardTable({ orders, expandedId, editingOrder, onRowClick, setEditingOrder, onSave, onDelete }: CardTableProps) {
+function CardTable({ orders, expandedId, editingOrder, onRowClick, setEditingOrder, onSave, onDelete, teamMembers }: CardTableProps) {
   const [currentPage, setCurrentPage] = useState(1)
   const ITEMS_PER_PAGE = 5
   
@@ -602,6 +606,7 @@ function CardTable({ orders, expandedId, editingOrder, onRowClick, setEditingOrd
                                         setEditingOrder={setEditingOrder}
                                         onSave={onSave}
                                         onDelete={onDelete}
+                                        teamMembers={teamMembers}
                                     />
                                 </motion.div>
                             </TableCell>
@@ -685,6 +690,7 @@ function CardTable({ orders, expandedId, editingOrder, onRowClick, setEditingOrd
                                         setEditingOrder={setEditingOrder}
                                         onSave={onSave}
                                         onDelete={onDelete}
+                                        teamMembers={teamMembers}
                                         isMobile={true}
                                     />
                                 </motion.div>
@@ -761,12 +767,14 @@ function OrderEditForm({
     setEditingOrder, 
     onSave, 
     onDelete,
+    teamMembers,
     isMobile = false
 }: { 
     editingOrder: Order, 
     setEditingOrder: (order: Order) => void, 
     onSave: () => void, 
     onDelete: (id: string) => void,
+    teamMembers: TeamMemberSimple[],
     isMobile?: boolean
 }) {
     // Determine sizing classes based on isMobile prop
