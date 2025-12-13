@@ -369,15 +369,21 @@ export default function OrdersPage() {
           <DropdownMenuTrigger asChild>
             <Button variant="outline" className="gap-2">
               <Filter className="h-4 w-4" />
-              Filter
+              Filter {statusFilter !== 'all' && `(${statusFilter})`}
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
             <DropdownMenuLabel>Filter Status</DropdownMenuLabel>
             <DropdownMenuSeparator />
-            <DropdownMenuItem>Semua Status</DropdownMenuItem>
-            <DropdownMenuItem>Hanya Booked</DropdownMenuItem>
-            <DropdownMenuItem>Hanya Selesai</DropdownMenuItem>
+            <DropdownMenuItem onClick={() => setStatusFilter('all')}>
+              Semua Status {statusFilter === 'all' && '✓'}
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={() => setStatusFilter('booked')}>
+              Hanya Booked {statusFilter === 'booked' && '✓'}
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={() => setStatusFilter('completed')}>
+              Hanya Selesai {statusFilter === 'completed' && '✓'}
+            </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
       </div>
