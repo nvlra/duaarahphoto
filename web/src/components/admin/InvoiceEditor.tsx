@@ -695,7 +695,18 @@ const SettingsControls = ({
   </div>
 )
 
-export function InvoiceEditor({ onBack }: { onBack?: () => void }) {
+export function InvoiceEditor({ onBack, orderData }: { 
+  onBack?: () => void,
+  orderData?: {
+    orderId: string
+    clientName: string
+    contact: string
+    package: string
+    amount: string
+    date: string
+    status: string
+  } | null
+}) {
   // State
   const [font, setFont] = useState("font-sans")
   const [template, setTemplate] = useState("modern")
@@ -754,6 +765,42 @@ export function InvoiceEditor({ onBack }: { onBack?: () => void }) {
   const [selectedId, setSelectedId] = useState<string | null>(null)
   const [orientation, setOrientation] = useState<'portrait' | 'landscape'>('portrait')
   const [bgColor, setBgColor] = useState('#ffffff')
+  
+  // Auto-populate from order data
+  useEffect(() => {
+    if (orderData) {
+      // Update invoice data
+      setInvoiceData(prev => ({
+        ...prev,
+        clientName: orderData.clientName,
+        clientAddress: orderData.contact,
+        dateValue: new Date(orderData.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
+        dueValue: new Date(new Date(orderData.date).getTime() + 7*24*60*60*1000).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
+      }))
+      
+      // Set items from order
+      setItems([{
+        id: 1,
+        desc: orderData.package,
+        amount: orderData.amount
+      }])
+      
+      // AUTO-STAMP based on status
+      if (orderData.status === 'completed') {
+        setShowStamp(true)
+        setStampText('LUNAS')
+        setStampColor('#22c55e') // Green
+      } else if (orderData.status === 'confirmed' || orderData.status === 'pending') {
+        setShowStamp(true)
+        setStampText('BELUM LUNAS')
+        setStampColor('#ef4444') // Red
+      } else {
+        setShowStamp(false)
+      }
+      
+      toast.success("Data order berhasil dimuat!")
+    }
+  }, [orderData])
   
   // Scaling State
   const [scale, setScale] = useState(1)

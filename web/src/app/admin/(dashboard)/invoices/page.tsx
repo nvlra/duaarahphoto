@@ -1,6 +1,7 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, Suspense } from "react"
+import { useSearchParams } from "next/navigation"
 import { supabase } from "@/lib/supabaseClient"
 import { InvoiceEditor } from "@/components/admin/InvoiceEditor"
 import { Button } from "@/components/ui/button"
@@ -19,11 +20,31 @@ import { toast } from "sonner"
 import { format } from "date-fns"
 import { Badge } from "@/components/ui/badge"
 
-export default function InvoicesPage() {
+function InvoicesPageContent() {
+  const searchParams = useSearchParams()
   const [view, setView] = useState<'list' | 'editor'>('list')
   const [invoices, setInvoices] = useState<any[]>([])
   const [editingInvoice, setEditingInvoice] = useState<any>(null)
   const [searchTerm, setSearchTerm] = useState("")
+
+  // Check if we have order data from query params
+  const orderId = searchParams.get('orderId')
+  const orderData = orderId ? {
+    orderId,
+    clientName: searchParams.get('clientName') || '',
+    contact: searchParams.get('contact') || '',
+    package: searchParams.get('package') || '',
+    amount: searchParams.get('amount') || '',
+    date: searchParams.get('date') || '',
+    status: searchParams.get('status') || ''
+  } : null
+
+  // Auto-open editor if order data present
+  useEffect(() => {
+    if (orderData) {
+      setView('editor')
+    }
+  }, [orderData])
 
   const fetchInvoices = async () => {
     const { data, error } = await supabase
@@ -65,10 +86,13 @@ export default function InvoicesPage() {
   }
 
   if (view === 'editor') {
-      return <InvoiceEditor onBack={() => {
+      return <InvoiceEditor 
+        onBack={() => {
           setView('list')
           fetchInvoices()
-      }} />
+        }} 
+        orderData={orderData}
+      />
   }
 
   const filteredInvoices = invoices.filter(inv => 
@@ -156,5 +180,13 @@ export default function InvoicesPage() {
           </CardContent>
        </Card>
     </div>
+  )
+}
+
+export default function InvoicesPage() {
+  return (
+    <Suspense fallback={<div className="flex items-center justify-center h-96">Loading...</div>}>
+      <InvoicesPageContent />
+    </Suspense>
   )
 }
