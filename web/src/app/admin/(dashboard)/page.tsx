@@ -2,20 +2,30 @@
 
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { Calendar } from "@/components/ui/calendar"
-import { DollarSign, ShoppingBag, Users, TrendingUp, MapPin } from "lucide-react"
+import { DollarSign, ShoppingBag, Users, TrendingUp } from "lucide-react"
 import { useState, useEffect } from "react"
 import { Badge } from "@/components/ui/badge"
-import { Button } from "@/components/ui/button"
-import { useMediaQuery } from "@/hooks/use-media-query"
 import { Area, AreaChart, ResponsiveContainer, XAxis, YAxis, Tooltip, CartesianGrid } from "recharts"
 import { supabase } from "@/lib/supabaseClient"
-import { startOfMonth, endOfMonth, subMonths, format, parseISO, isSameMonth, subWeeks } from "date-fns"
+import { startOfMonth, subMonths, format, parseISO, isSameMonth } from "date-fns"
 import { id as idLocale } from "date-fns/locale"
 
 
 export default function AdminDashboard() {
   const [date, setDate] = useState<Date | undefined>(new Date())
-  const isDesktop = useMediaQuery("(min-width: 1800px)") 
+  
+  interface ChartData {
+     month: string;
+     clients: number;
+  }
+
+  interface Booking {
+      id: string; // or number, depends on usage. We generate random one in old code, but should use real ID.
+      client_name: string;
+      package_name: string;
+      event_date: string;
+      status: string;
+  }
 
   const [stats, setStats] = useState({
       revenue: 0,
@@ -25,9 +35,9 @@ export default function AdminDashboard() {
       newClients: 0,
       clientGrowth: 0
   })
-  const [chartData, setChartData] = useState<any[]>([])
+  const [chartData, setChartData] = useState<ChartData[]>([])
   const [bookedDays, setBookedDays] = useState<Date[]>([])
-  const [recentBookings, setRecentBookings] = useState<any[]>([])
+  const [recentBookings, setRecentBookings] = useState<Booking[]>([])
 
   // Refactored Fetch
   useEffect(() => {
@@ -37,7 +47,12 @@ export default function AdminDashboard() {
           const lastMonthStart = startOfMonth(subMonths(today, 1))
           
           // FETCH ORDERS
-          const { data: orders } = await supabase.from('orders').select('total_amount, created_at, status, due_date, location, event_name').neq('status', 'cancelled')
+          // Fixed: Added client_name, package_name, event_date to select
+          const { data: orders } = await supabase
+            .from('orders')
+            .select('id, total_amount, created_at, status, event_date, client_name, package_name')
+            .neq('status', 'cancelled')
+          
           const ordersSafe = orders || []
 
           const currentMonthRevenue = ordersSafe
@@ -66,13 +81,13 @@ export default function AdminDashboard() {
               revenue: currentMonthRevenue,
               revenueGrowth: revGrowth,
               activeProjects: activeCount,
-              activeGrowth: 0, // Need historical active count? skip for now
+              activeGrowth: 0, 
               newClients: newClientsCount,
-              clientGrowth: 0 // skip
+              clientGrowth: 0
           })
 
           // Chart
-          const months = []
+          const months: ChartData[] = []
           for (let i = 11; i >= 0; i--) {
              const d = subMonths(today, i)
              const mName = format(d, 'MMM', { locale: idLocale })
@@ -81,22 +96,21 @@ export default function AdminDashboard() {
           }
           setChartData(months)
 
-          // Calendar
-          const bookings = ordersSafe.filter(o => o.due_date).map(o => new Date(o.due_date))
+          // Calendar using event_date
+          const bookings = ordersSafe.filter(o => o.event_date).map(o => new Date(o.event_date))
           setBookedDays(bookings)
           
            // Recent Bookings (Upcoming)
-          const upcoming = ordersSafe
-            .filter(o => o.due_date && new Date(o.due_date) >= today)
-            .sort((a, b) => new Date(a.due_date).getTime() - new Date(b.due_date).getTime())
+          const upcoming: Booking[] = ordersSafe
+            .filter(o => o.event_date && new Date(o.event_date) >= today)
+            .sort((a, b) => new Date(a.event_date).getTime() - new Date(b.event_date).getTime())
             .slice(0, 3)
             .map(o => ({
-                id: Math.random(), // id not selected
-                name: o.event_name || "Sesi Foto",
-                client: "Klien", 
-                date: format(new Date(o.due_date), "dd MMM"),
-                time: "09:00",
-                location: o.location || "Studio"
+                id: o.id || Math.random().toString(),
+                client_name: o.client_name || "Klien",
+                package_name: o.package_name || "-", 
+                event_date: o.event_date,
+                status: o.status
             }))
           setRecentBookings(upcoming)
       }
