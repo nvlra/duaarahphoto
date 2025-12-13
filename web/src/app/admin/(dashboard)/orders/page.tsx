@@ -396,6 +396,7 @@ export default function OrdersPage() {
              setEditingOrder={setEditingOrder as (order: Order) => void}
              onSave={handleSaveEdit}
              onDelete={handleDelete}
+             onGenerateInvoice={handleGenerateInvoice}
              teamMembers={teamMembers}
           />
         </TabsContent>
@@ -408,6 +409,7 @@ export default function OrdersPage() {
              setEditingOrder={setEditingOrder as (order: Order) => void}
              onSave={handleSaveEdit}
              onDelete={handleDelete}
+             onGenerateInvoice={handleGenerateInvoice}
              teamMembers={teamMembers}
           />
         </TabsContent>
@@ -420,6 +422,7 @@ export default function OrdersPage() {
              setEditingOrder={setEditingOrder as (order: Order) => void}
              onSave={handleSaveEdit}
              onDelete={handleDelete}
+             onGenerateInvoice={handleGenerateInvoice}
              teamMembers={teamMembers}
           />
         </TabsContent>
@@ -497,11 +500,12 @@ interface CardTableProps {
     setEditingOrder: (order: Order) => void
     onSave: () => void
     onDelete: (id: string) => void
+    onGenerateInvoice: (order: Order) => void
     teamMembers: TeamMemberSimple[]
 }
 
 
-function CardTable({ orders, expandedId, editingOrder, onRowClick, setEditingOrder, onSave, onDelete, teamMembers }: CardTableProps) {
+function CardTable({ orders, expandedId, editingOrder, onRowClick, setEditingOrder, onSave, onDelete, onGenerateInvoice, teamMembers }: CardTableProps) {
   const [currentPage, setCurrentPage] = useState(1)
   const ITEMS_PER_PAGE = 5
   
@@ -633,6 +637,7 @@ function CardTable({ orders, expandedId, editingOrder, onRowClick, setEditingOrd
                                         setEditingOrder={setEditingOrder}
                                         onSave={onSave}
                                         onDelete={onDelete}
+                                        onGenerateInvoice={onGenerateInvoice}
                                         teamMembers={teamMembers}
                                     />
                                 </motion.div>
@@ -717,6 +722,7 @@ function CardTable({ orders, expandedId, editingOrder, onRowClick, setEditingOrd
                                         setEditingOrder={setEditingOrder}
                                         onSave={onSave}
                                         onDelete={onDelete}
+                                        onGenerateInvoice={onGenerateInvoice}
                                         teamMembers={teamMembers}
                                         isMobile={true}
                                     />
@@ -794,6 +800,7 @@ function OrderEditForm({
     setEditingOrder, 
     onSave, 
     onDelete,
+    onGenerateInvoice,
     teamMembers,
     isMobile = false
 }: { 
@@ -801,6 +808,7 @@ function OrderEditForm({
     setEditingOrder: (order: Order) => void, 
     onSave: () => void, 
     onDelete: (id: string) => void,
+    onGenerateInvoice: (order: Order) => void,
     teamMembers: TeamMemberSimple[],
     isMobile?: boolean
 }) {
@@ -1096,10 +1104,10 @@ function OrderEditForm({
                 <Button variant="ghost" size="sm" onClick={() => onDelete(editingOrder.id)} className={`text-red-500 hover:text-red-600 hover:bg-red-50 ${isMobile ? 'col-span-1 px-0' : 'mr-auto'}`}>
                     <Trash2 className={`mr-2 h-4 w-4 ${isMobile ? 'mr-0 h-4 w-4' : ''}`} /> {isMobile ? "" : "Hapus"}
                 </Button>
-                <Button variant="outline" size="sm" onClick={() => window.open(`/admin/invoices?orderId=${editingOrder.id}`, '_blank')} className={isMobile ? 'col-span-1 px-0' : ''}>
-                    <Printer className={`mr-2 h-4 w-4 ${isMobile ? 'mr-0 h-4 w-4' : ''}`} /> {isMobile ? "" : "Invoice"}
+                <Button variant="outline" size="sm" onClick={() => onGenerateInvoice(editingOrder)} className={isMobile ? 'col-span-1 px-0' : ''}>
+                    <FileText className={`mr-2 h-4 w-4 ${isMobile ? 'mr-0 h-4 w-4' : ''}`} /> {isMobile ? "" : "Invoice"}
                 </Button>
-                <Button size="sm" onClick={onSave} className={`bg-primary ${isMobile ? 'col-span-1 text-xs' : ''}`}>
+                <Button size="sm" onClick={onSave} className={isMobile ? 'col-span-1 px-0' : ''}>
                     <Save className={`mr-2 h-4 w-4 ${isMobile ? 'h-3 w-3' : ''}`} /> {isMobile ? "Simpan" : "Simpan Perubahan"}
                 </Button>
             </div>
