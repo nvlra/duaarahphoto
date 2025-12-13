@@ -19,7 +19,7 @@ import { Loader2 } from "lucide-react"
 
 export default function AdminLogin() {
   const router = useRouter()
-  const [email, setEmail] = useState("")
+  const [identifier, setIdentifier] = useState("")
   const [password, setPassword] = useState("")
   const [loading, setLoading] = useState(false)
 
@@ -27,9 +27,13 @@ export default function AdminLogin() {
     e.preventDefault()
     setLoading(true)
 
+    // Helper: If no '@', assume it's a username and append dummy domain
+    // This connects their "enviel" username to "enviel@admin.com" Supabase Auth User
+    const emailToUse = identifier.includes("@") ? identifier : `${identifier}@admin.com`
+
     try {
       const { data, error } = await supabase.auth.signInWithPassword({
-        email,
+        email: emailToUse,
         password,
       })
 
@@ -47,17 +51,7 @@ export default function AdminLogin() {
     }
   }
 
-  const handleGoogleLogin = async () => {
-    setLoading(true)
-    const { error } = await supabase.auth.signInWithOAuth({
-      provider: 'google',
-      options: {
-        redirectTo: `${window.location.origin}/admin`
-      }
-    })
-    if (error) toast.error(error.message)
-      // Loading state persists because of redirect
-  }
+  // ... (Google login handler if needed)
 
   return (
     <div className="flex h-screen w-full items-center justify-center px-4 bg-muted/20">
@@ -65,20 +59,20 @@ export default function AdminLogin() {
         <CardHeader>
           <CardTitle className="text-2xl">Login Admin</CardTitle>
           <CardDescription>
-            Masukkan email dan password untuk akses dashboard.
+            Masukkan username/email dan password.
           </CardDescription>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleLogin} className="grid gap-4">
             <div className="grid gap-2">
-              <Label htmlFor="email">Email</Label>
+              <Label htmlFor="email">Username / Email</Label>
               <Input
                 id="email"
-                type="email"
-                placeholder="m@contoh.com"
+                type="text"
+                placeholder="enviel atau admin@contoh.com"
                 required
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
+                value={identifier}
+                onChange={(e) => setIdentifier(e.target.value)}
               />
             </div>
             <div className="grid gap-2">
