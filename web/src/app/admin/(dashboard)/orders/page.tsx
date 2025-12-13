@@ -89,11 +89,44 @@ export default function OrdersPage() {
   const [expandedId, setExpandedId] = useState<string | null>(null)
   
   // Dialog States
-  const [isAddDialogOpen, setIsAddDialogOpen] = useState(false)
+  const [isNewBookingOpen, setIsNewBookingOpen] = useState(false)
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false)
   
   // Editing State
   const [editingOrder, setEditingOrder] = useState<Order | null>(null)
+
+  const handleCreateOrder = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault()
+    setIsLoading(true)
+    const formData = new FormData(e.currentTarget)
+    
+    // Generate simple ID
+    const newId = `DA-${new Date().getFullYear()}${Math.floor(Math.random() * 10000).toString().padStart(4, '0')}`
+
+    const payload = {
+        id: newId,
+        client_name: formData.get("client") as string,
+        contact_info: formData.get("contact") as string,
+        event_date: formData.get("date") as string,
+        package_name: formData.get("package") as string,
+        location: formData.get("location") as string,
+        maps_url: formData.get("mapsUrl") as string,
+        total_amount: parseInt((formData.get("amount") as string).replace(/[^0-9]/g, "")) || 0,
+        status: "booked",
+        created_at: new Date().toISOString()
+    }
+
+    const { error } = await supabase.from('orders').insert(payload)
+    if (!error) {
+        toast.success("Booking berhasil dibuat")
+        setIsNewBookingOpen(false)
+        fetchOrders()
+    } else {
+        toast.error("Gagal membuat booking: " + error.message)
+        console.error(error)
+    }
+    setIsLoading(false)
+  }
 
   // Fetch Team for Dropdown
   const fetchTeam = async () => {
