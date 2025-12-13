@@ -13,27 +13,23 @@ import {
   ChevronUp
 } from "lucide-react"
 
-import { cn } from "@/lib/utils"
+import { supabase } from "@/lib/supabaseClient"
+import { useEffect } from "react"
+import { toast } from "sonner"
 
 import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card"
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import {
   Dialog,
   DialogContent,
   DialogDescription,
-  DialogFooter,
   DialogHeader,
   DialogTitle,
   DialogTrigger,
+  DialogFooter
 } from "@/components/ui/dialog"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -44,12 +40,15 @@ import { Badge } from "@/components/ui/badge"
 import { Textarea } from "@/components/ui/textarea"
 import { ScrollArea } from "@/components/ui/scroll-area"
 
+import { cn } from "@/lib/utils"
+// ... imports ...
+
 // Types
 interface Category {
   id: string
   name: string
   description?: string
-  totalPackages: number
+  totalPackages?: number // Computed on frontend
 }
 
 interface ProductPackage {
@@ -61,54 +60,11 @@ interface ProductPackage {
   features: string[]
 }
 
-// Initial Data
-const initialCategories: Category[] = [
-  { id: "cat-1", name: "Wedding", description: "Paket pernikahan lengkap", totalPackages: 3 },
-  { id: "cat-2", name: "Pre-Wedding", description: "Sesi foto sebelum nikah", totalPackages: 2 },
-  { id: "cat-3", name: "Graduation", description: "Wisuda & Kelulusan", totalPackages: 2 },
-  { id: "cat-4", name: "Family", description: "Foto keluarga studio/outdoor", totalPackages: 1 },
-]
-
-const initialPackages: ProductPackage[] = [
-  { 
-    id: "pkg-1", 
-    categoryId: "cat-1", 
-    name: "Wedding Silver", 
-    price: "Rp 5.000.000", 
-    description: "Paket hemat untuk acara intimate.",
-    features: ["4 Jam Dokumentasi", "1 Fotografer", "50 Edited Photos", "Flashdisk"]
-  },
-  { 
-    id: "pkg-2", 
-    categoryId: "cat-1", 
-    name: "Wedding Gold", 
-    price: "Rp 8.000.000", 
-    description: "Pilihan favorit untuk resepsi gedung.",
-    features: ["8 Jam Dokumentasi", "2 Fotografer", "100 Edited Photos", "Cetak Album Magazine", "Flashdisk"]
-  },
-  { 
-    id: "pkg-3", 
-    categoryId: "cat-1", 
-    name: "Wedding Platinum", 
-    price: "Rp 15.000.000", 
-    description: "Paket lengkap dokumentasi cinematic.",
-    features: ["Full Day Coverage", "2 Fotografer & 1 Videografer", "Same Day Edit Video", "Album Premium Box", "Canvas Print 60x40"]
-  },
-  { 
-    id: "pkg-4", 
-    categoryId: "cat-3", 
-    name: "Graduation Single", 
-    price: "Rp 350.000", 
-    description: "Foto wisuda personal di studio.",
-    features: ["1 Jam Sesi", "3 Background", "5 Edited Photos", "Cetak 10R"]
-  },
-]
-
 export default function PackagesPage() {
   // State
-  const [categories, setCategories] = useState<Category[]>(initialCategories)
-  const [packages, setPackages] = useState<ProductPackage[]>(initialPackages)
-  const [selectedCategoryId, setSelectedCategoryId] = useState<string>(initialCategories[0].id)
+  const [categories, setCategories] = useState<Category[]>([])
+  const [packages, setPackages] = useState<ProductPackage[]>([])
+  const [selectedCategoryId, setSelectedCategoryId] = useState<string>("")
   
   // Mobile Collapsible State
   const [isCategoryOpen, setIsCategoryOpen] = useState(false)
@@ -119,55 +75,120 @@ export default function PackagesPage() {
   
   // Form States
   const [catForm, setCatForm] = useState({ name: "", description: "" })
-  const [pkgForm, setPkgForm] = useState({ name: "", price: "", description: "", featuresString: "" }) // Features as comma separated string for simple input
+  const [pkgForm, setPkgForm] = useState({ name: "", price: "", description: "", featuresString: "" })
+
+  const fetchData = async () => {
+     const { data: cats } = await supabase.from('package_categories').select('*').order('created_at', { ascending: true })
+     const { data: pkgs } = await supabase.from('packages').select('*').order('created_at', { ascending: true })
+
+     if (cats) {
+        // Calculate totalPackages count
+        const calculatedCats = cats.map((c: any) => ({
+             id: c.id,
+             name: c.name,
+             description: c.description,
+             totalPackages: pkgs ? pkgs.filter((p: any) => p.category_id === c.id).length : 0
+        }))
+        setCategories(calculatedCats)
+        
+        // Set default selected category if none or invalid
+        if (calculatedCats.length > 0 && (!selectedCategoryId || !calculatedCats.find((c: any) => c.id === selectedCategoryId))) {
+             setSelectedCategoryId(calculatedCats[0].id)
+        }
+     }
+
+     if (pkgs) {
+        setPackages(pkgs.map((p: any) => ({
+             id: p.id,
+             categoryId: p.category_id, // Map DB snake_case
+             name: p.name,
+             price: `Rp ${parseInt(p.price).toLocaleString('id-ID')}`, // Formatting might be tricky if stored as number, let's assume raw number
+             description: p.description,
+             features: Array.isArray(p.features) ? p.features : [] 
+        })))
+     }
+  }
+
+  useEffect(() => {
+     fetchData()
+  }, [])
 
   // Derived State
   const selectedCategory = categories.find(c => c.id === selectedCategoryId)
   const categoryPackages = packages.filter(p => p.categoryId === selectedCategoryId)
 
   // Handlers - Category
-  const handleAddCategory = () => {
-    const newId = `cat-${Date.now()}`
-    setCategories([...categories, { ...catForm, id: newId, totalPackages: 0 }])
-    setCatForm({ name: "", description: "" })
-    setIsCatDialogOpen(false)
-    setSelectedCategoryId(newId) // Select the new category
+  const handleAddCategory = async () => {
+    if (!catForm.name) return
+    const { error } = await supabase.from('package_categories').insert({
+        name: catForm.name,
+        description: catForm.description
+    })
+
+    if (!error) {
+        toast.success("Kategori berhasil dibuat")
+        setCatForm({ name: "", description: "" })
+        setIsCatDialogOpen(false)
+        fetchData()
+    } else {
+        toast.error("Gagal membuat kategori")
+    }
   }
 
-  const handleDeleteCategory = (id: string) => {
-    // Prevent delete if only 1 category exists
-    if (categories.length <= 1) return alert("Minimal harus ada 1 kategori.")
+  const handleDeleteCategory = async (id: string) => {
+    if (!confirm("Hapus kategori ini? Semua paket di dalamnya akan ikut terhapus.")) return
     
-    setCategories(categories.filter(c => c.id !== id))
-    setPackages(packages.filter(p => p.categoryId !== id)) // Cascade delete packages
-    if (selectedCategoryId === id) {
-      setSelectedCategoryId(categories.find(c => c.id !== id)?.id || "")
+    // First delete packages (optional if ON DELETE SET NULL, but we want clean up)
+    // Actually if we want to delete packages, we must do it manually if logic dictates.
+    // Let's rely on manual deletion for now or just delete category.
+    // Wait, schema says SET NULL suitable for preserving history, but for this admin panel, user expects clean delete.
+    // I will delete packages first.
+    
+    await supabase.from('packages').delete().eq('category_id', id)
+    const { error } = await supabase.from('package_categories').delete().eq('id', id)
+
+    if (!error) {
+        toast.success("Kategori dihapus")
+        if (selectedCategoryId === id) setSelectedCategoryId("")
+        fetchData()
+    } else {
+        toast.error("Gagal menghapus kategori")
     }
   }
 
   // Handlers - Package
-  const handleAddPackage = () => {
-    const newId = `pkg-${Date.now()}`
-    const features = pkgForm.featuresString.split(",").map(f => f.trim()).filter(f => f !== "")
-    setPackages([...packages, { 
-      id: newId, 
-      categoryId: selectedCategoryId, 
-      name: pkgForm.name, 
-      price: pkgForm.price, 
-      description: pkgForm.description, 
-      features 
-    }])
-    setPkgForm({ name: "", price: "", description: "", featuresString: "" })
-    setIsPkgDialogOpen(false)
-    
-    // Update count
-    setCategories(categories.map(c => c.id === selectedCategoryId ? { ...c, totalPackages: c.totalPackages + 1 } : c))
+  const handleAddPackage = async () => {
+     if (!pkgForm.name || !selectedCategoryId) return
+     
+     const features = pkgForm.featuresString.split(",").map(f => f.trim()).filter(f => f !== "")
+     // Parse price: remove non-numeric
+     const cleanPrice = parseInt(pkgForm.price.replace(/\D/g, '')) || 0
+
+     const { error } = await supabase.from('packages').insert({
+         category_id: selectedCategoryId,
+         name: pkgForm.name,
+         price: cleanPrice,
+         description: pkgForm.description,
+         features: features // JSONB array
+     })
+
+     if (!error) {
+         toast.success("Paket ditambahkan")
+         setPkgForm({ name: "", price: "", description: "", featuresString: "" })
+         setIsPkgDialogOpen(false)
+         fetchData()
+     } else {
+         toast.error("Gagal menambah paket")
+     }
   }
 
-  const handleDeletePackage = (id: string) => {
-    setPackages(packages.filter(p => p.id !== id))
-    // Update count
-    setCategories(categories.map(c => c.id === selectedCategoryId ? { ...c, totalPackages: Math.max(0, c.totalPackages - 1) } : c))
+  const handleDeletePackage = async (id: string) => {
+    if (!confirm("Hapus paket ini?")) return
+    const { error } = await supabase.from('packages').delete().eq('id', id)
+    if (!error) {
+        toast.success("Paket dihapus")
+        fetchData()
+    }
   }
 
   return (

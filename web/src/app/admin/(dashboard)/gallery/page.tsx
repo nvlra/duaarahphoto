@@ -39,49 +39,121 @@ import {
 } from "@/components/ui/alert-dialog"
 
 // Mock data
-const initialPhotos = [
-  { id: 1, type: 'image', url: "https://images.unsplash.com/photo-1511285560982-1356c11d4606?q=80&w=2076&auto=format&fit=crop", category: "Wedding", section: "category", date: "2025-01-15" },
-  { id: 2, type: 'image', url: "https://images.unsplash.com/photo-1519741497674-611481863552?q=80&w=2070&auto=format&fit=crop", category: "Wedding", section: "category", date: "2025-02-01" },
-  { id: 3, type: 'image', url: "https://images.unsplash.com/photo-1515934751635-c81c6bc9a2d8?q=80&w=2070&auto=format&fit=crop", category: "Portrait", section: "category", date: "2025-03-10" },
-  { id: 4, type: 'image', url: "https://images.unsplash.com/photo-1542038784456-1ea8e935640e?q=80&w=2070&auto=format&fit=crop", category: "General", section: "landing", date: "2025-03-12" }, // Landing Page photo
-  { id: 5, type: 'video', url: "https://www.youtube.com/embed/dQw4w9WgXcQ", category: "Wedding", section: "category", date: "2025-03-15" },
-]
+import { supabase } from "@/lib/supabaseClient"
+import { useEffect } from "react"
+import { toast } from "sonner"
 
-const initialCategories = ["Wedding", "Portrait", "Event", "Family"]
+// ... imports ...
 
-type Photo = {
-  id: number;
-  type: string;
-  url: string;
-  category: string;
-  section: string;
-  date: string;
+// Types
+interface Category {
+  id: string
+  name: string
+}
+
+interface Photo {
+  id: string
+  type: 'image' | 'video'
+  url: string
+  categoryId?: string
+  categoryName?: string // For display
+  section: 'landing' | 'category'
+  displayDate: string
 }
 
 export default function ManageGallery() {
-  const [photos, setPhotos] = useState<Photo[]>(initialPhotos)
-  const [categories] = useState(initialCategories) 
+  const [photos, setPhotos] = useState<Photo[]>([])
+  const [categories, setCategories] = useState<Category[]>([])
+  
   const [activeTab, setActiveTab] = useState("landing")
-  const [selectedCategory, setSelectedCategory] = useState("Wedding")
+  const [selectedCategoryId, setSelectedCategoryId] = useState<string>("")
+  
   const [isAddOpen, setIsAddOpen] = useState(false)
-  const [newItemType, setNewItemType] = useState("image")
+  const [itemType, setItemType] = useState<"image" | "video">("image")
+  const [url, setUrl] = useState("")
+  const [newCatName, setNewCatName] = useState("")
 
-  // Mock upload handlers
-  const handleDelete = (id: number) => {
-    setPhotos(photos.filter(p => p.id !== id))
+  const [isCatDialogOpen, setIsCatDialogOpen] = useState(false) // For adding category
+
+  const fetchData = async () => {
+    const { data: cats } = await supabase.from('gallery_categories').select('*').order('name', { ascending: true })
+    const { data: items } = await supabase.from('gallery_items').select('*, gallery_categories(name)').order('created_at', { ascending: false })
+
+    if (cats) {
+        setCategories(cats)
+        if (cats.length > 0 && !selectedCategoryId) {
+            setSelectedCategoryId(cats[0].id)
+        }
+    }
+
+    if (items) {
+        setPhotos(items.map((i: any) => ({
+            id: i.id,
+            type: i.type,
+            url: i.url,
+            categoryId: i.category_id,
+            categoryName: i.gallery_categories?.name,
+            section: i.section,
+            displayDate: i.display_date 
+        })))
+    }
   }
 
-  const handleAddCategory = () => {
-    // Logic to add category
-    alert("Fitur tambah kategori akan diimplementasikan dengan backend.")
+  useEffect(() => {
+    fetchData()
+  }, [])
+
+  // Handlers
+  const handleDelete = async (id: string) => {
+    if (!confirm("Hapus item ini?")) return
+    const { error } = await supabase.from('gallery_items').delete().eq('id', id)
+    if (!error) {
+        toast.success("Berhasil dihapus")
+        fetchData()
+    }
   }
 
+  const handleAddCategory = async () => {
+    if (!newCatName) return
+    const { error } = await supabase.from('gallery_categories').insert({ name: newCatName })
+    if (!error) {
+        toast.success("Kategori dibuat")
+        setNewCatName("")
+        setIsCatDialogOpen(false)
+        fetchData()
+    } else {
+        toast.error("Gagal membuat kategori")
+    }
+  }
+
+  const handleAddItem = async () => {
+      if (!url) return
+      
+      const payload = {
+          type: itemType,
+          url: url,
+          section: activeTab === 'landing' ? 'landing' : 'category',
+          category_id: activeTab === 'categories' ? selectedCategoryId : null
+      }
+
+      const { error } = await supabase.from('gallery_items').insert(payload)
+      
+      if (!error) {
+          toast.success("Foto/Video ditambahkan")
+          setIsAddOpen(false)
+          setUrl("")
+          fetchData()
+      } else {
+          toast.error("Gagal menambahkan")
+      }
+  }
+  
   // Filter logic
   const displayedPhotos = activeTab === "landing"
     ? photos.filter(p => p.section === "landing")
-    : photos.filter(p => p.section === "category" && p.category === selectedCategory)
+    : photos.filter(p => p.section === "category" && p.categoryId === selectedCategoryId)
 
-  const limitReached = displayedPhotos.length >= 10
+  const limitReached = displayedPhotos.length >= 20 // Increased limit
 
   return (
     <div className="space-y-4 md:space-y-6">
@@ -94,7 +166,7 @@ export default function ManageGallery() {
 
       <Tabs defaultValue="landing" onValueChange={setActiveTab} className="w-full">
         {/* Mobile: Stack controls */}
-        <div className="flex flex-col gap-3 mb-4 sticky top-14 z-40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 pt-2 pb-4 -mx-4 px-4 md:mx-0 md:px-0 md:static md:bg-transparent md:z-auto md:p-0"> sticky top-14 z-40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 pt-2 pb-4 -mx-4 px-4 md:mx-0 md:px-0 md:static md:bg-transparent md:z-auto md:p-0">
+        <div className="flex flex-col gap-3 mb-4 sticky top-14 z-40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 pt-2 pb-4 -mx-4 px-4 md:mx-0 md:px-0 md:static md:bg-transparent md:z-auto md:p-0">
            <TabsList className="w-full grid grid-cols-2 h-auto p-1">
             <TabsTrigger value="landing" className="text-xs md:text-sm py-2">Landing Page</TabsTrigger>
             <TabsTrigger value="categories" className="text-xs md:text-sm py-2">Kategori</TabsTrigger>
@@ -103,19 +175,35 @@ export default function ManageGallery() {
           <div className="flex gap-2 items-center">
             {activeTab === "categories" && (
                 <div className="flex-1 flex gap-2">
-                    <Select value={selectedCategory} onValueChange={setSelectedCategory}>
+                    <Select value={selectedCategoryId} onValueChange={setSelectedCategoryId}>
                     <SelectTrigger className="flex-1 h-9 text-xs md:text-sm">
                         <SelectValue placeholder="Pilih Kategori" />
                     </SelectTrigger>
                     <SelectContent>
                         {categories.map(cat => (
-                        <SelectItem key={cat} value={cat}>{cat}</SelectItem>
+                        <SelectItem key={cat.id} value={cat.id}>{cat.name}</SelectItem>
                         ))}
                     </SelectContent>
                     </Select>
-                    <Button variant="outline" size="icon" className="h-9 w-9 shrink-0" onClick={handleAddCategory} title="Kelola Kategori">
-                        <FolderPlus className="h-4 w-4" />
-                    </Button>
+                    <Dialog open={isCatDialogOpen} onOpenChange={setIsCatDialogOpen}>
+                        <DialogTrigger asChild>
+                            <Button variant="outline" size="icon" className="h-9 w-9 shrink-0" title="Tambah Kategori">
+                                <FolderPlus className="h-4 w-4" />
+                            </Button>
+                        </DialogTrigger>
+                        <DialogContent>
+                            <DialogHeader>
+                                <DialogTitle>Buat Kategori Baru</DialogTitle>
+                            </DialogHeader>
+                            <div className="py-4">
+                                <Label>Nama Kategori</Label>
+                                <Input value={newCatName} onChange={e => setNewCatName(e.target.value)} placeholder="Misal: Wedding" />
+                            </div>
+                            <DialogFooter>
+                                <Button onClick={handleAddCategory}>Simpan</Button>
+                            </DialogFooter>
+                        </DialogContent>
+                    </Dialog>
                 </div>
             )}
              {/* If not in categories, we need a spacer or nothing, 
@@ -131,37 +219,37 @@ export default function ManageGallery() {
                 <DialogHeader>
                   <DialogTitle>Tambah Konten Baru</DialogTitle>
                   <DialogDescription>
-                    Upload foto atau masukkan link video embed.
+                    Masukkan URL foto atau video embed.
                   </DialogDescription>
                 </DialogHeader>
                 <div className="grid gap-4 py-4">
                   <div className="flex items-center gap-4">
                      <Button 
-                        variant={newItemType === "image" ? "default" : "outline"} 
-                        onClick={() => setNewItemType("image")}
+                        variant={itemType === "image" ? "default" : "outline"} 
+                        onClick={() => setItemType("image")}
                         className="flex-1"
                      >
-                        Upload Foto
+                        URL Foto
                      </Button>
                      <Button 
-                        variant={newItemType === "video" ? "default" : "outline"} 
-                        onClick={() => setNewItemType("video")}
+                        variant={itemType === "video" ? "default" : "outline"} 
+                        onClick={() => setItemType("video")}
                         className="flex-1"
                      >
                         Embed Video
                      </Button>
                   </div>
                   
-                  {newItemType === "image" ? (
+                  {itemType === "image" ? (
                     <div className="grid w-full items-center gap-1.5">
-                      <Label htmlFor="picture">File Foto</Label>
-                      <Input id="picture" type="file" />
-                      <p className="text-xs text-muted-foreground">Maksimal 5MB. Format JPG/PNG.</p>
+                      <Label htmlFor="picture">URL Foto</Label>
+                      <Input id="picture" value={url} onChange={e => setUrl(e.target.value)} placeholder="https://..." />
+                      <p className="text-xs text-muted-foreground">Masukkan URL gambar langsung.</p>
                     </div>
                   ) : (
                     <div className="grid w-full items-center gap-1.5">
                        <Label htmlFor="videoLink">Link Embed Video</Label>
-                       <Input id="videoLink" placeholder="https://drive.google.com/..." />
+                       <Input id="videoLink" value={url} onChange={e => setUrl(e.target.value)} placeholder="https://www.youtube.com/embed/..." />
                        <p className="text-xs text-muted-foreground">Support link Google Drive atau YouTube Embed.</p>
                     </div>
                   )}
@@ -169,12 +257,12 @@ export default function ManageGallery() {
                   {activeTab === "categories" && (
                      <div className="grid w-full items-center gap-1.5">
                         <Label>Kategori Target</Label>
-                        <Input value={selectedCategory} disabled />
+                        <Input value={categories.find(c => c.id === selectedCategoryId)?.name || ""} disabled />
                      </div>
                   )}
                 </div>
                 <DialogFooter>
-                  <Button onClick={() => setIsAddOpen(false)}>Simpan</Button>
+                  <Button onClick={handleAddItem}>Simpan</Button>
                 </DialogFooter>
               </DialogContent>
             </Dialog>
@@ -189,7 +277,7 @@ export default function ManageGallery() {
                  </div>
                  <div className="ml-3">
                     <p className="text-xs md:text-sm text-yellow-700">
-                       <span className="font-medium">Perhatian:</span> Kategori ini sudah mencapai batas 10 item.
+                       <span className="font-medium">Perhatian:</span> Kategori ini sudah mencapai batas 20 item.
                     </p>
                  </div>
               </div>
@@ -199,74 +287,74 @@ export default function ManageGallery() {
         <TabsContent value="landing" className="mt-0">
            <div className="grid grid-cols-2 gap-3 md:gap-4 md:grid-cols-3 lg:grid-cols-4">
               {displayedPhotos.map((photo) => (
-                 <GalleryItem key={photo.id} photo={photo} onDelete={handleDelete} />
+                <Card key={photo.id} className="overflow-hidden group relative aspect-[4/5] bg-muted">
+                    {photo.type === 'image' ? (
+                       <img src={photo.url} alt="Gallery" className="w-full h-full object-cover transition-transform group-hover:scale-105" />
+                    ) : (
+                       <div className="w-full h-full flex items-center justify-center bg-black/10">
+                           <Video className="h-8 w-8 text-white drop-shadow-md" />
+                           <iframe src={photo.url} className="absolute inset-0 w-full h-full opacity-60 pointer-events-none" />
+                       </div>
+                    )}
+                    
+                    <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
+                        <Button variant="destructive" size="icon" className="h-8 w-8" onClick={() => handleDelete(photo.id)}>
+                            <Trash2 className="h-4 w-4" />
+                        </Button>
+                    </div>
+                    {activeTab === 'landing' && photo.categoryName && (
+                        <div className="absolute bottom-2 left-2 right-2">
+                            <span className="bg-black/60 text-white text-[10px] px-2 py-1 rounded-full truncate block w-max max-w-full">
+                                {photo.categoryName}
+                            </span>
+                        </div>
+                    )}
+                </Card>
               ))}
+               
+               {/* Add New Placeholder Card */}
+               <Card 
+                  className="aspect-[4/5] border-2 border-dashed flex flex-col items-center justify-center cursor-pointer hover:bg-muted/50 transition-colors"
+                  onClick={() => setIsAddOpen(true)}
+               >
+                   <Plus className="h-8 w-8 text-muted-foreground mb-2" />
+                   <span className="text-xs text-muted-foreground font-medium">Tambah Item</span>
+               </Card>
            </div>
         </TabsContent>
 
         <TabsContent value="categories" className="mt-0">
-           <div className="grid grid-cols-2 gap-3 md:gap-4 md:grid-cols-3 lg:grid-cols-4">
+            <div className="grid grid-cols-2 gap-3 md:gap-4 md:grid-cols-3 lg:grid-cols-4">
               {displayedPhotos.map((photo) => (
-                 <GalleryItem key={photo.id} photo={photo} onDelete={handleDelete} />
+                <Card key={photo.id} className="overflow-hidden group relative aspect-[4/5] bg-muted">
+                    {photo.type === 'image' ? (
+                       <img src={photo.url} alt="Gallery" className="w-full h-full object-cover transition-transform group-hover:scale-105" />
+                    ) : (
+                       <div className="w-full h-full flex items-center justify-center bg-black/10">
+                           <Video className="h-8 w-8 text-white drop-shadow-md" />
+                           <iframe src={photo.url} className="absolute inset-0 w-full h-full opacity-60 pointer-events-none" />
+                       </div>
+                    )}
+                    
+                    <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
+                         <Button variant="destructive" size="icon" className="h-8 w-8" onClick={() => handleDelete(photo.id)}>
+                            <Trash2 className="h-4 w-4" />
+                        </Button>
+                    </div>
+                </Card>
               ))}
-           </div>
-           {displayedPhotos.length === 0 && (
-              <div className="text-center py-12 border-2 border-dashed rounded-lg bg-muted/20">
-                 <p className="text-muted-foreground text-sm">Belum ada foto di kategori ini.</p>
-              </div>
-           )}
+               <Card 
+                  className="aspect-[4/5] border-2 border-dashed flex flex-col items-center justify-center cursor-pointer hover:bg-muted/50 transition-colors"
+                  onClick={() => setIsAddOpen(true)}
+               >
+                   <Plus className="h-8 w-8 text-muted-foreground mb-2" />
+                   <span className="text-xs text-muted-foreground font-medium">Tambah ke Kategori</span>
+               </Card>
+            </div>
         </TabsContent>
       </Tabs>
+      
+      {/* Hidden Alert Dialog Logic if needed, but we used window.confirm for simplicity */}
     </div>
   )
-}
 
-function GalleryItem({ photo, onDelete }: { photo: Photo, onDelete: (id: number) => void }) {
-   return (
-      <Card className="overflow-hidden group relative border shadow-sm">
-         <div className="aspect-square md:aspect-auto md:min-h-[200px] bg-muted relative overflow-hidden">
-            {photo.type === 'video' ? (
-               <div className="w-full h-full flex items-center justify-center bg-zinc-900 border-0">
-                  <Video className="h-8 w-8 text-zinc-500" />
-                  <span className="absolute bottom-2 right-2 bg-black/60 text-white text-[10px] px-2 py-0.5 rounded">VIDEO</span>
-               </div>
-            ) : (
-               // eslint-disable-next-line @next/next/no-img-element
-               <img 
-               src={photo.url} 
-               alt="Gallery Item" 
-               className="absolute inset-0 h-full w-full object-cover object-top transition-transform duration-300 group-hover:scale-105"
-               />
-            )}
-            
-            <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
-               <AlertDialog>
-                  <AlertDialogTrigger asChild>
-                     <Button variant="destructive" size="icon" className="h-8 w-8">
-                        <Trash2 className="h-4 w-4" />
-                     </Button>
-                  </AlertDialogTrigger>
-                  <AlertDialogContent>
-                     <AlertDialogHeader>
-                        <AlertDialogTitle>Hapus item ini?</AlertDialogTitle>
-                        <AlertDialogDescription>
-                           File akan dihapus permanen.
-                        </AlertDialogDescription>
-                     </AlertDialogHeader>
-                     <AlertDialogFooter>
-                        <AlertDialogCancel>Batal</AlertDialogCancel>
-                        <AlertDialogAction onClick={() => onDelete(photo.id)} className="bg-red-600 hover:bg-red-700">
-                           Hapus
-                        </AlertDialogAction>
-                     </AlertDialogFooter>
-                  </AlertDialogContent>
-               </AlertDialog>
-            </div>
-         </div>
-         <CardFooter className="p-2 text-[10px] md:text-xs text-muted-foreground justify-between bg-white dark:bg-zinc-950">
-            <span className="font-medium truncate max-w-[80px] md:max-w-[100px]">{photo.category}</span>
-            <span>{photo.date}</span>
-         </CardFooter>
-      </Card>
-   )
-}

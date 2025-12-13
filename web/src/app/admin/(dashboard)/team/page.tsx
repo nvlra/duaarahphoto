@@ -52,25 +52,61 @@ import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { toast } from "sonner"
 
-import { TEAM_DATA, TeamMember } from "@/config/team-data"
+import { supabase } from "@/lib/supabaseClient"
+import { useEffect } from "react"
+// TEAM_DATA removed, use DB
 
-// Mock Data (using shared source)
-const initialTeam: TeamMember[] = TEAM_DATA
+interface TeamMember {
+  id: string
+  name: string
+  role: string
+  email: string
+  phone: string
+  status: "active" | "inactive"
+  joinedDate: string
+}
 
 const initialRoles = [
   "Fotografer Utama", "Fotografer 2nd", "Videographer", "Editor", "Makeup Artist", "Assistant", "Admin"
 ]
 
 export default function TeamPage() {
-  const [team, setTeam] = useState<TeamMember[]>(initialTeam)
+  const [team, setTeam] = useState<TeamMember[]>([]) // Init empty
   const [roles, setRoles] = useState<string[]>(initialRoles)
   const [searchQuery, setSearchQuery] = useState("")
   const [currentPage, setCurrentPage] = useState(1)
   const itemsPerPage = 5
+  
+  const [isLoading, setIsLoading] = useState(true)
 
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false)
   const [isRoleManagerOpen, setIsRoleManagerOpen] = useState(false)
   const [editingMember, setEditingMember] = useState<TeamMember | null>(null)
+
+  // Fetch Team Data
+  const fetchTeam = async () => {
+    setIsLoading(true)
+    const { data, error } = await supabase.from('team_members').select('*').order('created_at', { ascending: false })
+    if (error) {
+      toast.error("Gagal mengambil data tim")
+      console.error(error)
+    } else if (data) {
+      setTeam(data.map(d => ({
+        id: d.id,
+        name: d.name,
+        role: d.role,
+        email: d.email || "", // Handle nulls
+        phone: d.phone || "",
+        status: d.status,
+        joinedDate: d.joined_date
+      })))
+    }
+    setIsLoading(false)
+  }
+
+  useEffect(() => {
+    fetchTeam()
+  }, [])
 
   // Filter team based on search query
   const filteredTeam = team.filter(member => 
@@ -94,44 +130,65 @@ export default function TeamPage() {
     if (currentPage > 1) setCurrentPage(currentPage - 1)
   }
 
-  const handleSaveMember = (e: React.FormEvent<HTMLFormElement>) => {
+  const handleSaveMember = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
     const formData = new FormData(e.currentTarget)
     
+    const newName = formData.get("name") as string
+    const newRole = formData.get("role") as string
+    const newEmail = formData.get("email") as string
+    const newPhone = formData.get("phone") as string
+    const newStatus = formData.get("status") as "active" | "inactive"
+
     if (editingMember) {
-      // Edit Mode
-      setTeam(team.map(t => t.id === editingMember.id ? {
-        ...t,
-        name: formData.get("name") as string,
-        role: formData.get("role") as string,
-        email: formData.get("email") as string,
-        phone: formData.get("phone") as string,
-        status: formData.get("status") as "active" | "inactive",
-      } : t))
-      toast.success("Data anggota berhasil diperbarui")
-    } else {
-      // Add Mode
-      const newMember: TeamMember = {
-        id: `TM-${Math.floor(Math.random() * 1000)}`,
-        name: formData.get("name") as string,
-        role: formData.get("role") as string,
-        email: formData.get("email") as string,
-        phone: formData.get("phone") as string,
-        status: formData.get("status") as "active" | "inactive",
-        joinedDate: new Date().toISOString().split("T")[0]
+      // Edit Mode (Update DB)
+      const { error } = await supabase.from('team_members').update({
+        name: newName,
+        role: newRole,
+        email: newEmail,
+        phone: newPhone,
+        status: newStatus
+      }).eq('id', editingMember.id)
+
+      if (error) {
+         toast.error("Gagal update member")
+      } else {
+         toast.success("Data anggota berhasil diperbarui")
+         fetchTeam()
       }
-      setTeam([...team, newMember])
-      toast.success("Anggota baru berhasil ditambahkan")
+    } else {
+      // Add Mode (Insert DB)
+      const { error } = await supabase.from('team_members').insert({
+        name: newName,
+        role: newRole,
+        email: newEmail,
+        phone: newPhone,
+        status: newStatus,
+        joined_date: new Date().toISOString().split("T")[0]
+      })
+
+      if (error) {
+        toast.error("Gagal menambah member")
+        console.error(error)
+      } else {
+        toast.success("Anggota baru berhasil ditambahkan")
+        fetchTeam()
+      }
     }
     
     setIsAddDialogOpen(false)
     setEditingMember(null)
   }
 
-  const handleDeleteMember = (id: string) => {
+  const handleDeleteMember = async (id: string) => {
     if (confirm("Apakah Anda yakin ingin menghapus anggota ini?")) {
-      setTeam(team.filter(t => t.id !== id))
-      toast.success("Anggota berhasil dihapus")
+      const { error } = await supabase.from('team_members').delete().eq('id', id)
+      if (error) {
+         toast.error("Gagal menghapus")
+      } else {
+         setTeam(team.filter(t => t.id !== id))
+         toast.success("Anggota berhasil dihapus")
+      }
     }
   }
 

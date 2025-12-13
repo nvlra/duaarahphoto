@@ -21,62 +21,22 @@ import {
 import { format } from "date-fns"
 import { cn } from "@/lib/utils"
 // Import shared team data
-import { TEAM_DATA } from "@/config/team-data"
-import { Calendar } from "@/components/ui/calendar"
-import { AnimatePresence, motion } from "framer-motion"
-
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover"
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog"
-
+import { supabase } from "@/lib/supabaseClient"
+import { useEffect } from "react"
 
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-  TableFooter
-} from "@/components/ui/table"
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select"
-import { Badge } from "@/components/ui/badge"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow, TableFooter } from "@/components/ui/table"
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
+import { Calendar } from "@/components/ui/calendar"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import {
-  Pagination,
-  PaginationContent,
-  PaginationItem,
-  PaginationLink,
-  PaginationNext,
-  PaginationPrevious,
-} from "@/components/ui/pagination"
+import { Badge } from "@/components/ui/badge"
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
+import { Pagination, PaginationContent, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious } from "@/components/ui/pagination"
+import { AnimatePresence, motion } from "framer-motion"
 
 // Order interface definition
 interface Order {
@@ -97,6 +57,13 @@ interface Allocation {
   name: string
   role: string
   fee: string
+  member_id?: string // For DB reference
+}
+
+interface TeamMemberSimple {
+    id: string
+    name: string
+    role: string
 }
 
 // Status definitions mapping to colors and labels
@@ -114,65 +81,203 @@ const initialOrders = [
   { id: "DA-2401005", client: "Baby El", contact: "mom@el.com", date: "2025-03-25", package: "Newborn", status: "process", amount: "Rp 2.000.000", location: "Home Service (BSD)" },
 ]
 
-export default function ManageOrders() {
-  const [orders, setOrders] = useState<Order[]>(initialOrders)
+export default function OrdersPage() {
+  const [orders, setOrders] = useState<Order[]>([])
+  const [teamMembers, setTeamMembers] = useState<TeamMemberSimple[]>([])
   const [searchQuery, setSearchQuery] = useState("")
-
-  // State for Edit
-  const [editingOrder, setEditingOrder] = useState<Order | null>(null)
-  const [expandedId, setExpandedId] = useState<string | null>(null)
-
-  // State for New Booking
-  const [isNewBookingOpen, setIsNewBookingOpen] = useState(false)
+  const [statusFilter, setStatusFilter] = useState("all")
+  const [dateFilter, setDateFilter] = useState<Date | undefined>(undefined)
+  const [currentPage, setCurrentPage] = useState(1)
+  const ITEMS_PER_PAGE = 5
   
-  // Handlers
-  const handleCreateOrder = (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault()
-    const formData = new FormData(e.currentTarget)
-    
-    // Generate simple ID
-    const newId = `DA-${new Date().getFullYear().toString().substr(2)}0${Math.floor(Math.random() * 9000) + 1000}`
-    
-    const newOrder: Order = {
-        id: newId,
-        client: formData.get("client") as string,
-        contact: formData.get("contact") as string,
-        date: formData.get("date") as string,
-        package: formData.get("package") as string,
-        amount: formData.get("amount") as string,
-        location: formData.get("location") as string,
-        mapsUrl: formData.get("mapsUrl") as string || undefined,
-        status: "booked", // Default status
-        allocations: []
-    }
-    
-    setOrders([newOrder, ...orders])
-    setIsNewBookingOpen(false)
-    toast.success(`Booking baru berhasil dibuat! ID: ${newId}`)
+  const [isLoading, setIsLoading] = useState(true)
+
+  const [expandedId, setExpandedId] = useState<string | null>(null)
+  
+  // Dialog States
+  const [isAddDialogOpen, setIsAddDialogOpen] = useState(false)
+  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false)
+  
+  // Editing State
+  const [editingOrder, setEditingOrder] = useState<Order | null>(null)
+
+  // Fetch Team for Dropdown
+  const fetchTeam = async () => {
+      const { data } = await supabase.from('team_members').select('id, name, role').eq('status', 'active')
+      if (data) setTeamMembers(data)
   }
 
-  const filteredOrders = orders.filter(order => 
-    order.client.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    order.id.toLowerCase().includes(searchQuery.toLowerCase())
-  )
+  // Fetch Orders
+  const fetchOrders = async () => {
+      setIsLoading(true)
+      const { data, error } = await supabase
+        .from('orders')
+        .select(`
+            *,
+            order_allocations (
+                id, role, fee, member_id,
+                team_members (name)
+            )
+        `)
+        .order('created_at', { ascending: false })
+
+      if (error) {
+          console.error(error)
+          toast.error("Gagal mengambil data order")
+      } else if (data) {
+          const mappedOrders: Order[] = data.map((d: any) => ({
+              id: d.id,
+              client: d.client_name,
+              date: d.event_date,
+              package: d.package_name || "-",
+              status: d.status,
+              amount: d.total_amount ? `Rp ${parseInt(d.total_amount).toLocaleString('id-ID')}` : "Rp 0",
+              location: d.location || "-",
+              mapsUrl: d.maps_url,
+              contact: d.contact_info,
+              allocations: d.order_allocations.map((alloc: any) => ({
+                  id: alloc.id,
+                  member_id: alloc.member_id,
+                  role: alloc.role,
+                  fee: alloc.fee ? `Rp ${parseInt(alloc.fee).toLocaleString('id-ID')}` : "Rp 0",
+                  name: alloc.team_members?.name || "Unknown"
+              }))
+          }))
+          setOrders(mappedOrders)
+      }
+      setIsLoading(false)
+  }
+
+  useEffect(() => {
+      fetchTeam()
+      fetchOrders()
+  }, [])
+
+  // Filter Logic
+  const filteredOrders = orders.filter((order) => {
+    const matchesSearch = 
+      order.id.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      order.client.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      (order.location && order.location.toLowerCase().includes(searchQuery.toLowerCase()));
+      
+    const matchesStatus = statusFilter === 'all' || order.status === statusFilter;
+    
+    // Date filter
+    let matchesDate = true;
+    if (dateFilter) {
+       matchesDate = order.date === format(dateFilter, "yyyy-MM-dd")
+    }
+
+    return matchesSearch && matchesStatus && matchesDate;
+  });
 
   const handleRowClick = (order: Order) => {
-    if (expandedId === order.id) {
-       // Collapse
-       setExpandedId(null)
-       setEditingOrder(null)
-    } else {
-       // Expand
-       setExpandedId(order.id)
-       setEditingOrder({ ...order })
-    }
+    setExpandedId(expandedId === order.id ? null : order.id)
   }
 
-  const handleSaveEdit = () => {
-    if (!editingOrder) return
-    setOrders(orders.map(o => o.id === editingOrder.id ? editingOrder : o))
-    setExpandedId(null)
-    setEditingOrder(null)
+  const handleDeleteOrder = async (orderId: string) => {
+      if (confirm("Hapus order ini?")) {
+          const { error } = await supabase.from('orders').delete().eq('id', orderId)
+          if (!error) {
+              toast.success("Order dihapus")
+              setOrders(orders.filter(o => o.id !== orderId))
+          } else {
+              toast.error("Gagal menghapus")
+          }
+      }
+  }
+
+  const handleSaveOrder = async () => {
+      if (!editingOrder) return
+
+      const rawAmount = editingOrder.amount.replace(/[^0-9]/g, "")
+      
+      const orderPayload = {
+          client_name: editingOrder.client,
+          contact_info: editingOrder.contact,
+          event_date: editingOrder.date,
+          location: editingOrder.location,
+          maps_url: editingOrder.mapsUrl,
+          package_name: editingOrder.package,
+          status: editingOrder.status,
+          total_amount: parseInt(rawAmount) || 0,
+      }
+
+      if (isAddDialogOpen) {
+         // Create New
+         // ID is manual in frontend or auto? 
+         // DB `id` is text primary key. Let's auto-generate formatting 'ORD-YYYY-XXX' or just use UUID if permissible, but Schema said text.
+         // Schema: id text primary key.
+         // I'll generate a random ID for now or timestamp.
+         const newId = `ORD-${new Date().getFullYear()}-${Math.floor(Math.random() * 10000)}`
+         
+         const { error } = await supabase.from('orders').insert({
+             id: newId,
+             ...orderPayload
+         })
+         
+         if (error) {
+             toast.error("Gagal membuat order")
+             console.error(error)
+             return
+         }
+         
+         // Insert Allocations
+         if (editingOrder.allocations && editingOrder.allocations.length > 0) {
+             const allocs = editingOrder.allocations.map(a => ({
+                 order_id: newId,
+                 member_id: a.member_id, // We need member ID! frontend must store it
+                 role: a.role,
+                 fee: parseInt(a.fee.replace(/[^0-9]/g, "")) || 0
+             }))
+             // Filter out those without member_id if any (manual input not supported fully yet)
+             // But my UI uses Select from TEAM_DATA (now teamMembers).
+             // I need to update UI to store member_id in `newItem` state!
+             
+             await supabase.from('order_allocations').insert(allocs)
+         }
+
+         toast.success("Order berhasil dibuat")
+         setIsAddDialogOpen(false)
+         fetchOrders()
+         
+      } else {
+          // Update
+          const { error } = await supabase.from('orders').update(orderPayload).eq('id', editingOrder.id)
+          
+          if (error) {
+              toast.error("Gagal update order")
+               return
+          }
+          
+          // Sync Allocations (Delete all and re-insert is easiest for now)
+          await supabase.from('order_allocations').delete().eq('order_id', editingOrder.id)
+          
+          if (editingOrder.allocations && editingOrder.allocations.length > 0) {
+              const allocs = editingOrder.allocations.map(a => {
+                  // If member_id missing (legacy data), try finding by name?
+                  // For now assume member_id exists or skip
+                  const member = teamMembers.find(t => t.name === a.name)
+                  const mId = a.member_id || member?.id
+                  
+                  if (!mId) return null 
+                  
+                  return {
+                     order_id: editingOrder.id,
+                     member_id: mId,
+                     role: a.role,
+                     fee: parseInt(a.fee.replace(/[^0-9]/g, "")) || 0
+                  }
+              }).filter(Boolean)
+              
+              if (allocs.length > 0) await supabase.from('order_allocations').insert(allocs)
+          }
+
+          toast.success("Order diupdate")
+          setIsEditDialogOpen(false)
+          fetchOrders()
+      }
+      setEditingOrder(null)
   }
 
   const handleDelete = (id: string) => {
@@ -642,11 +747,30 @@ function OrderEditForm({
     const containerClass = isMobile ? "p-3 grid gap-3 grid-cols-2" : "p-4 grid gap-4 md:grid-cols-2 lg:grid-cols-3";
     
     // State for new allocation (controlled inputs)
-    const [newItem, setNewItem] = useState({ name: "", role: "", fee: "" });
+    const [newItem, setNewItem] = useState<{name: string, role: string, fee: string, member_id?: string}>({ name: "", role: "", fee: "", member_id: "" });
 
     const spaceClass = isMobile ? "space-y-0.5" : "space-y-2";
     // Mobile spans 2 columns by default unless specified otherwise
     const fullWidthClass = isMobile ? "col-span-2" : "";
+
+    // Helper to add allocation
+    const handleAddAllocation = () => {
+         if (newItem.name && newItem.role && newItem.fee) {
+            const newAlloc: Allocation = {
+                id: Math.random().toString(36).substr(2, 9),
+                name: newItem.name,
+                role: newItem.role,
+                fee: newItem.fee.startsWith("Rp") ? newItem.fee : `Rp ${newItem.fee}`,
+                member_id: newItem.member_id
+            }
+            setEditingOrder({
+                ...editingOrder,
+                allocations: [...(editingOrder.allocations || []), newAlloc]
+            })
+            // Reset inputs
+            setNewItem({ name: "", role: "", fee: "", member_id: "" })
+        }
+    }
     const labelClass = isMobile ? "text-[10px] uppercase tracking-wider text-muted-foreground/70" : "";
     const inputClass = isMobile ? "h-8 text-sm px-2" : "";
     const btnClass = isMobile ? "h-8 text-xs px-2" : "h-9";
@@ -755,7 +879,7 @@ function OrderEditForm({
                             <Plus className={isMobile ? "h-3 w-3" : "h-4 w-4"} /> {isMobile ? "Tim" : "Kelola Tim"}
                         </Button>
                     </DialogTrigger>
-                    <DialogContent className="w-[90%] max-w-[400px] sm:max-w-[600px] rounded-xl max-h-[85vh] overflow-y-auto">
+                    <DialogContent className="w-[90%] max-w-[400px] sm:max-w-[600px] rounded-xl max-h-[85vh] overflow-y-auto overflow-x-hidden">
                         <DialogHeader>
                             <DialogTitle>Kelola Tim & Pembagian</DialogTitle>
                             <DialogDescription>
@@ -771,11 +895,12 @@ function OrderEditForm({
                                     <Select 
                                         value={newItem.name} 
                                         onValueChange={(val) => {
-                                            const member = TEAM_DATA.find(t => t.name === val);
+                                            const member = teamMembers.find(t => t.name === val);
                                             setNewItem({
                                                 ...newItem,
                                                 name: val,
-                                                role: member ? member.role : newItem.role
+                                                role: member ? member.role : newItem.role,
+                                                member_id: member?.id // Store ID
                                             })
                                         }}
                                     >
@@ -783,7 +908,7 @@ function OrderEditForm({
                                              <SelectValue placeholder="Pilih Anggota" />
                                         </SelectTrigger>
                                         <SelectContent>
-                                             {TEAM_DATA.map((member) => (
+                                             {teamMembers.map((member) => (
                                                   <SelectItem key={member.id} value={member.name}>
                                                       {member.name}
                                                   </SelectItem>
@@ -844,16 +969,16 @@ function OrderEditForm({
                                 ) : (
                                     (editingOrder.allocations || []).map((alloc) => (
                                         <div key={alloc.id} className="flex items-center justify-between text-sm bg-muted/40 p-2 rounded-md group">
-                                            <div className="flex items-center gap-3">
-                                                <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center text-xs font-bold text-primary">
+                                            <div className="flex items-center gap-3 min-w-0">
+                                                <div className="h-8 w-8 shrink-0 rounded-full bg-primary/10 flex items-center justify-center text-xs font-bold text-primary">
                                                     {alloc.name.charAt(0)}
                                                 </div>
-                                                <div>
-                                                    <div className="font-medium">{alloc.name}</div>
-                                                    <Badge variant="outline" className="text-[10px] h-5 px-1.5 border-none bg-transparent pl-0 text-muted-foreground font-normal">{alloc.role}</Badge>
+                                                <div className="min-w-0">
+                                                    <div className="font-medium truncate max-w-[100px] sm:max-w-none">{alloc.name}</div>
+                                                    <Badge variant="outline" className="text-[10px] h-5 px-1.5 border-none bg-transparent pl-0 text-muted-foreground font-normal truncate max-w-[100px]">{alloc.role}</Badge>
                                                 </div>
                                             </div>
-                                            <div className="flex items-center gap-3">
+                                            <div className="flex items-center gap-3 shrink-0">
                                                 <div className="font-mono font-medium">{alloc.fee}</div>
                                                 <Button
                                                     variant="ghost" 
