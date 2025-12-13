@@ -1,36 +1,101 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Duaarah Photography
 
-## Getting Started
+Platform fotografi modern "All-in-One" yang berfungsi sebagai portofolio publik yang estetis sekaligus sistem manajemen bisnis (Mini-ERP) yang powerful.
 
-First, run the development server:
+## 🚀 Overview
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+Project ini dibangun dengan **Next.js 15** (App Router) untuk performa maksimal dan SEO yang baik. Frontend publik difokuskan pada estetika dan konversi klien, sementara Admin Dashboard difokuskan pada produktivitas, manajemen order, dan kesehatan finansial.
+
+## 🛠️ Tech Stack
+
+- **Framework:** [Next.js 15](https://nextjs.org/) (App Router)
+- **Language:** TypeScript
+- **Styling:** [Tailwind CSS](https://tailwindcss.com/)
+- **UI Components:** [Shadcn UI](https://ui.shadcn.com/)
+- **Animations:** [Framer Motion](https://www.framer.com/motion/) & Magic UI
+- **Database:** Supabase (PostgreSQL) - _Planned_
+- **Icons:** [Lucide React](https://lucide.dev/)
+- **Charts:** Recharts (untuk Dashboard Analytics)
+- **Date Handling:** date-fns
+
+## ✨ Fitur Utama
+
+### 1. Landing Page (Public)
+
+Halaman depan yang ditujukan untuk calon klien.
+
+- **Gallery Showcase:** Layout Masonry Grid untuk portofolio (Wedding, Engagement, dll).
+- **Pricing:** Kartu paket harga yang informatif.
+- **Contact:** Form inquiry terintegrasi.
+- **Responsive Design:** Tampilan optimal di Mobile & Desktop.
+
+### 2. Admin Dashboard
+
+Pusat kontrol untuk fotografer/admin.
+
+- **CRM (Customer Relationship Management):**
+  - **Orders Management:** Melacak status pesanan dari _Inquiry_ hingga _Completed_.
+  - **Schedule:** Kalender visual untuk jadwal pemotretan.
+- **Finance (Mini-ERP):**
+  - **Invoice Designer:** Tools Drag & Drop untuk membuat invoice custom.
+  - **Income & Expense:** Pencatatan arus kas dan chart profitabilitas.
+- **Content Management:**
+  - **Gallery Manager:** Upload dan kelola foto portofolio.
+  - **Packages:** Update harga dan detail paket layanan.
+
+## 📂 Struktur Project
+
+```
+src/
+├── app/
+│   ├── (dashboard)/       # Route Group untuk Admin Dashboard
+│   │   ├── admin/         # Main Admin Entry
+│   │   ├── orders/        # Manajemen Pesanan
+│   │   ├── invoices/      # Invoice Designer & List
+│   │   ├── finance/       # Laporan Keuangan
+│   │   └── gallery/       # Manajemen Galeri
+│   ├── login/             # Halaman Login Admin
+│   └── page.tsx           # Landing Page Utama
+├── components/
+│   ├── ui/                # Komponen Low-level (Button, Input, dll - Shadcn)
+│   └── ...                # Komponen Spesifik Fitur
+├── lib/
+│   └── utils.ts           # Utility helper (cn, formatters)
+└── ...
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## 🚀 Getting Started
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+1.  **Clone Repository**
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+    ```bash
+    git clone https://github.com/username/duaarah-photo.git
+    cd duaarah-photo/web
+    ```
 
-## Learn More
+2.  **Install Dependencies**
 
-To learn more about Next.js, take a look at the following resources:
+    ```bash
+    npm install
+    ```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+3.  **Run Development Server**
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+    ```bash
+    npm run dev
+    ```
 
-## Deploy on Vercel
+4.  **Open Browser**
+    Buka [http://localhost:3000](http://localhost:3000) untuk melihat Landing Page.
+    Buka [http://localhost:3000/admin](http://localhost:3000/admin) untuk mengakses Dashboard (Login required).
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## 📝 Script Penting
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+- `npm run dev`: Menjalankan server development.
+- `npm run build`: Build aplikasi untuk produksi.
+- `npm run start`: Menjalankan server produksi.
+- `npm run lint`: Cek isu linting/kode.
+
+---
+
+© 2025 Duaarah Photography. Made by pal.

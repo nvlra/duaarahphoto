@@ -1,0 +1,97 @@
+"use client"
+
+import React, { useEffect, useMemo, useRef } from 'react';
+import { useRouter, usePathname } from 'next/navigation';
+import { ADMIN_MENU_ITEMS, AdminMenuItem } from '@/config/admin-menu';
+
+export interface InteractiveMenuProps {
+  items?: AdminMenuItem[];
+  accentColor?: string;
+}
+
+const defaultAccentColor = 'var(--component-active-color-default)';
+
+const InteractiveMenu: React.FC<InteractiveMenuProps> = ({ items, accentColor }) => {
+  const router = useRouter();
+  const pathname = usePathname();
+  const navRef = useRef<HTMLElement>(null);
+  const itemsRef = useRef<(HTMLButtonElement | null)[]>([]);
+
+  const finalItems = useMemo(() => {
+     if (items && Array.isArray(items) && items.length > 0) return items;
+     return ADMIN_MENU_ITEMS;
+  }, [items]);
+
+  // Derive active index directly from pathname
+  const activeIndex = useMemo(() => {
+    const index = finalItems.findIndex(item => 
+       item.href === '/admin' 
+          ? pathname === '/admin' 
+          : pathname.startsWith(item.href)
+    );
+    return index !== -1 ? index : 0;
+  }, [pathname, finalItems]);
+
+  // Auto-scroll to center active item
+  useEffect(() => {
+    const nav = navRef.current;
+    const activeItem = itemsRef.current[activeIndex];
+
+    if (nav && activeItem) {
+      const navWidth = nav.offsetWidth;
+      const itemLeft = activeItem.offsetLeft;
+      const itemWidth = activeItem.offsetWidth;
+
+      // Calculate center position
+      const scrollLeft = itemLeft - (navWidth / 2) + (itemWidth / 2);
+
+      nav.scrollTo({
+        left: scrollLeft,
+        behavior: 'smooth'
+      });
+    }
+  }, [activeIndex]);
+
+  const handleItemClick = (href: string) => {
+    router.push(href);
+  };
+
+  const navStyle = useMemo(() => {
+      const activeColor = accentColor || defaultAccentColor;
+      return { '--component-active-color': activeColor } as React.CSSProperties;
+  }, [accentColor]); 
+
+  return (
+    <nav
+      ref={navRef}
+      className="menu flex items-center p-2 rounded-2xl bg-background/80 backdrop-blur-md border shadow-lg gap-2 overflow-x-auto max-w-[95vw] scrollbar-hide mx-auto"
+      role="navigation"
+      style={navStyle}
+    >
+      {finalItems.map((item, index) => {
+        const isActive = index === activeIndex;
+        const IconComponent = item.icon;
+
+        return (
+          <button
+            key={item.label}
+            ref={el => { itemsRef.current[index] = el }}
+            className={`
+              relative flex-shrink-0 flex items-center justify-center w-10 h-10 rounded-xl transition-all duration-300
+              ${isActive ? 'bg-primary text-primary-foreground scale-110 shadow-sm' : 'text-muted-foreground hover:bg-muted hover:scale-105'}
+            `}
+            onClick={() => handleItemClick(item.href)}
+            aria-label={item.label}
+          >
+            <IconComponent className="w-5 h-5" />
+            {isActive && (
+               <span className="absolute -bottom-1 w-1 h-1 bg-primary-foreground rounded-full opacity-0 animate-in fade-in zoom-in duration-300"></span>
+            )}
+          </button>
+        );
+      })}
+    </nav>
+  );
+};
+
+export { InteractiveMenu };
