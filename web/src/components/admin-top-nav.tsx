@@ -4,6 +4,8 @@ import Link from "next/link"
 import { User, LogOut, Settings } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { AnimatedThemeToggler } from "@/components/ui/animated-theme-toggler"
+import { useRouter } from "next/navigation"
+import { supabase } from "@/lib/supabaseClient"
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -14,6 +16,17 @@ import {
 } from "@/components/ui/dropdown-menu"
 
 export function AdminProfileDropdown({ showLabel = false }: { showLabel?: boolean }) {
+  const router = useRouter()
+  
+  const handleLogout = async () => {
+      const { error } = await supabase.auth.signOut()
+      if (error) {
+          console.error("Logout error", error)
+      }
+      router.push("/admin/login")
+      router.refresh()
+  }
+
   return (
     <DropdownMenu>
         <DropdownMenuTrigger asChild>
@@ -40,7 +53,7 @@ export function AdminProfileDropdown({ showLabel = false }: { showLabel?: boolea
               </Link>
            </DropdownMenuItem>
            <DropdownMenuSeparator />
-           <DropdownMenuItem className="text-red-600 cursor-pointer" onClick={() => console.log("Logout clicked")}>
+           <DropdownMenuItem className="text-red-600 cursor-pointer" onClick={handleLogout}>
               <LogOut className="mr-2 h-4 w-4" /> Keluar
            </DropdownMenuItem>
         </DropdownMenuContent>
