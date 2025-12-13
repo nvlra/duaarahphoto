@@ -229,54 +229,57 @@ export default function AdminDashboard() {
           </CardContent>
         </Card>
 
-        {/* Calendar & Upcoming - Keep mostly static but bind 'bookedDays' if Calendar supports it */}
-        <Card className="col-span-1 lg:col-span-3 border shadow-sm dark:bg-zinc-950/50 flex flex-col">
-          <CardHeader>
-            <CardTitle>Jadwal Studio</CardTitle>
-            <CardDescription>Kalender booking dan sesi foto mendatang.</CardDescription>
-          </CardHeader>
-          <CardContent className="flex-1 flex flex-col">
-            <div className="flex-1 flex justify-center mb-6">
-               <Calendar
-                  mode="single"
-                  selected={date}
-                  onSelect={setDate}
-                  className="rounded-md border shadow-sm bg-background w-full max-w-[350px] sm:max-w-none"
-                  modifiers={{ booked: bookedDays }}
-                  modifiersStyles={{ booked: { fontWeight: 'bold', textDecoration: 'underline', color: 'var(--primary)' } }} 
-               />
-            </div>
-            
-            {/* Recent Bookings List */}
-            <div className="space-y-4">
-               <h4 className="text-sm font-semibold">Booking Mendatang</h4>
-               <div className="space-y-3">
-                  {recentBookings.length === 0 ? (
-                      <div className="text-sm text-muted-foreground text-center">Tidak ada booking mendatang dekat.</div>
-                  ) : (
-                      recentBookings.map((booking, i) => (
-                        <div key={i} className="flex items-center justify-between p-3 bg-muted/40 rounded-lg border">
-                            <div className="flex items-center gap-3">
-                                <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold text-xs ring-2 ring-background">
-                                    {booking.date.split(' ')[0]}
+        {/* Calendar & Upcoming */}
+         <div className="col-span-1 lg:col-span-3 flex flex-col gap-6">
+            <Card className="border shadow-sm dark:bg-zinc-950/50">
+               <CardHeader className="pb-3">
+                  <CardTitle>Jadwal Studio</CardTitle>
+                  <CardDescription>Kalender booking dan sesi foto mendatang.</CardDescription>
+               </CardHeader>
+               <CardContent className="flex justify-center p-4">
+                  <Calendar
+                     mode="single"
+                     selected={date}
+                     onSelect={setDate}
+                     className="rounded-md border bg-background"
+                     modifiers={{ booked: bookedDays }}
+                     modifiersClassNames={{ 
+                        booked: "bg-primary/20 text-primary font-bold hover:bg-primary/30 rounded-md" 
+                     }}
+                  />
+               </CardContent>
+            </Card>
+
+            <Card className="border shadow-sm dark:bg-zinc-950/50 flex-1">
+                <CardHeader className="pb-3">
+                   <CardTitle>Booking Mendatang</CardTitle>
+                   <CardDescription>Sesi foto yang akan datang minggu ini.</CardDescription>
+                </CardHeader>
+                <CardContent>
+                   <div className="space-y-4">
+                      {recentBookings.length === 0 ? (
+                          <div className="text-sm text-muted-foreground text-center py-4">Tidak ada booking mendatang.</div>
+                      ) : (
+                          recentBookings.map((booking) => (
+                             <div key={booking.id} className="flex items-center justify-between border-b pb-4 last:border-0 last:pb-0">
+                                <div className="space-y-1">
+                                   <p className="font-medium text-sm leading-none">{booking.client_name}</p>
+                                   <p className="text-xs text-muted-foreground">{booking.package_name}</p>
                                 </div>
-                                <div>
-                                    <div className="font-medium text-sm">{booking.name}</div>
-                                    <div className="text-xs text-muted-foreground flex items-center gap-1">
-                                        <MapPin className="h-3 w-3" /> {booking.location}
-                                    </div>
+                                <div className="text-right">
+                                   <p className="text-sm font-medium">{format(new Date(booking.event_date), "dd MMM")}</p>
+                                   <Badge variant={booking.status === 'completed' ? 'default' : 'secondary'} className="text-[10px] h-5 px-1.5">
+                                      {booking.status}
+                                   </Badge>
                                 </div>
-                            </div>
-                            <Badge variant="secondary" className="text-[10px]">{booking.time}</Badge>
-                        </div>
-                      ))
-                  )}
-               </div>
-            </div>
-          </CardContent>
-        </Card>
+                             </div>
+                          ))
+                      )}
+                   </div>
+                </CardContent>
+            </Card>
+         </div>
       </div>
     </div>
   )
 }
-
