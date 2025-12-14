@@ -385,7 +385,7 @@ export default function OrdersPage() {
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
           <h2 className="text-2xl md:text-3xl font-bold tracking-tight">Daftar Pesanan</h2>
-          <p className="text-sm md:text-base text-muted-foreground">Kelola booking, edit data & invoice.</p>
+          <p className="text-sm md:text-base text-muted-foreground">Kelola booking & edit data.</p>
         </div>
         <Button onClick={() => setIsNewBookingOpen(true)} className="w-full md:w-auto">
           <CalendarIcon className="mr-2 h-4 w-4" /> Booking Baru
@@ -1189,48 +1189,6 @@ function OrderEditForm({
                         </SelectItem>
                     </SelectContent>
                 </Select>
-                <Button 
-                    variant="outline" 
-                    size="sm" 
-                    onClick={() => {
-                        // Direct print using hidden iframe - no navigation!
-                        toast.info("Mempersiapkan invoice untuk dicetak...")
-                        
-                        // Create hidden iframe
-                        const printFrame = document.createElement('iframe')
-                        printFrame.style.position = 'fixed'
-                        printFrame.style.right = '0'
-                        printFrame.style.bottom = '0'
-                        printFrame.style.width = '0'
-                        printFrame.style.height = '0'
-                        printFrame.style.border = 'none'
-                        
-                        // Build invoice URL
-                        const invoiceUrl = `/admin/invoices?orderId=${editingOrder.id}&clientName=${encodeURIComponent(editingOrder.client)}&contact=${encodeURIComponent(editingOrder.contact || '')}&package=${encodeURIComponent(editingOrder.package)}&amount=${encodeURIComponent(editingOrder.amount)}&date=${editingOrder.date}&status=${editingOrder.paymentStatus || 'unpaid'}`
-                        
-                        printFrame.src = invoiceUrl
-                        document.body.appendChild(printFrame)
-                        
-                        // Wait for invoice to fully render, then print
-                        printFrame.onload = () => {
-                            setTimeout(() => {
-                                try {
-                                    printFrame.contentWindow?.print()
-                                } catch (_e) {
-                                    // Fallback: open in new tab if iframe print fails
-                                    window.open(invoiceUrl + '&print=true', '_blank')
-                                }
-                                // Clean up iframe after print dialog closes
-                                setTimeout(() => {
-                                    document.body.removeChild(printFrame)
-                                }, 1000)
-                            }, 2000) // Wait 2 seconds for full render
-                        }
-                    }}
-                    className={`${isMobile ? 'h-8 px-2' : ''}`}
-                >
-                    <Printer className={`${isMobile ? 'h-3 w-3' : 'mr-2 h-4 w-4'}`} /> {isMobile ? '' : 'Print Invoice'}
-                </Button>
             </div>
 
             {/* Action Buttons */}

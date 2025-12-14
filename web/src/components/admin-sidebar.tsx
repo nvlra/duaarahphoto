@@ -2,7 +2,7 @@
 
 import Link from "next/link"
 import { usePathname } from "next/navigation"
-import { LayoutDashboard, Images, ShoppingBag, Banknote, FileText, Settings, Menu, Package, Users } from "lucide-react"
+import { LayoutDashboard, Images, ShoppingBag, Banknote, Settings, Menu, Package, Users } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
@@ -34,11 +34,6 @@ const sidebarItems = [
     title: "Kategori & Paket",
     href: "/admin/packages",
     icon: Package,
-  },
-  {
-    title: "Invoice",
-    href: "/admin/invoices",
-    icon: FileText,
   },
   {
     title: "Konten (CMS)",
