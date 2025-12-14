@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, ElementType, Fragment } from "react"
+import { useState, ElementType, Fragment, useCallback, useEffect } from "react"
 import { useToast } from "@/components/ui/ios-toast"
 import { ConfirmModal } from "@/components/ui/confirm-modal"
 import { 
@@ -25,7 +25,7 @@ import { format } from "date-fns"
 import { cn } from "@/lib/utils"
 // Import shared team data
 import { supabase } from "@/lib/supabaseClient"
-import { useEffect } from "react"
+
 
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -202,23 +202,21 @@ export default function OrdersPage() {
     setIsLoading(false)
   }
 
-  // Fetch Packages & Categories
-  const fetchPackages = async () => {
+  // Fetch Packages & Team (Stable Dependencies)
+  const fetchInitData = useCallback(async () => {
       const { data: catData } = await supabase.from('package_categories').select('id, name').order('name')
       if (catData) setCategories(catData)
 
       const { data: pkgData } = await supabase.from('packages').select('id, name, price, category_id').order('name')
       if (pkgData) setPackages(pkgData)
-  }
+      
+      const { data: teamData } = await supabase.from('team_members').select('id, name, role').eq('status', 'active')
+      if (teamData) setTeamMembers(teamData)
+  }, [])
 
-  // Fetch Team for Dropdown
-  const fetchTeam = async () => {
-      const { data } = await supabase.from('team_members').select('id, name, role').eq('status', 'active')
-      if (data) setTeamMembers(data)
-  }
-
-  // Fetch Orders
-  const fetchOrders = async () => {
+  // Fetch Orders (Depends on packages/categories but fetching logic is independent of local state for network request, 
+  // however mapping requires current packages state. We accept re-fetching when packages update.)
+  const fetchOrders = useCallback(async () => {
       setIsLoading(true)
       const { data, error } = await supabase
         .from('orders')
@@ -267,15 +265,18 @@ export default function OrdersPage() {
           setOrders(mappedOrders)
       }
       setIsLoading(false)
-  }
+  }, [packages, categories, toast])
 
+  // Initial Data Load
   useEffect(() => {
-      void (async () => {
-          await fetchPackages()
-          await fetchTeam()
-          await fetchOrders()
-      })()
-  }, [])
+    // eslint-disable-next-line
+    fetchInitData()
+  }, [fetchInitData])
+
+  // Orders Load
+  useEffect(() => {
+    fetchOrders()
+  }, [fetchOrders])
 
   // Filter Logic
   const filteredOrders = orders.filter((order) => {
@@ -852,7 +853,7 @@ function CardTable({ orders, expandedId, editingOrder, onRowClick, setEditingOrd
                                 </a>
                             ) : (
                                     <span className="flex items-center text-muted-foreground truncate" title={order.location}>
-                                    <MapPin className="mr-1 h-3 w-3 opacity-50 flex-shrink-0" />
+                                    <MapPin className="mr-1 h-3 w-3 opacity-50 shrink-0" />
                                     <span className="truncate">{order.location}</span>
                                     </span>
                             )
@@ -963,7 +964,7 @@ function CardTable({ orders, expandedId, editingOrder, onRowClick, setEditingOrd
                                         <div className="text-[10px] font-medium text-muted-foreground leading-none mb-0.5">{order.id}</div>
                                         <div className="font-bold text-sm leading-tight">{order.client}</div>
                                     </div>
-                                    <Badge variant="secondary" className={`${statusConfig[order.status]?.color || "bg-gray-100 text-gray-800"} rounded-full px-1.5 py-0 text-[10px] font-semibold border-0 h-5 min-w-[max-content]`}>
+                                    <Badge variant="secondary" className={`${statusConfig[order.status]?.color || "bg-gray-100 text-gray-800"} rounded-full px-1.5 py-0 text-[10px] font-semibold border-0 h-5 min-w-max`}>
                                         <StatusIcon className="mr-1 h-3 w-3" />
                                         {statusConfig[order.status]?.label || order.status}
                                     </Badge>

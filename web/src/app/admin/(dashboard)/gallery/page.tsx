@@ -1,11 +1,12 @@
+
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect, useCallback } from "react"
 import { Plus, Trash2, Video, FolderPlus, AlertTriangle } from "lucide-react"
 import { Button } from "@/components/ui/button"
+import Image from "next/image"
 import {
   Card,
-  // CardFooter removed
 } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -26,23 +27,12 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog"
-// AlertDialog imports removed
-
 
 import { supabase } from "@/lib/supabaseClient"
-import { useEffect } from "react"
-// import { toast } from "sonner" removed
 import { ConfirmModal } from "@/components/ui/confirm-modal"
 import { useToast } from "@/components/ui/ios-toast"
 
-// ... imports ...
-
 // Types
-interface Category {
-  id: string
-  name: string
-}
-
 interface Photo {
   id: string
   type: 'image' | 'video'
@@ -51,6 +41,22 @@ interface Photo {
   categoryName?: string // For display
   section: 'landing' | 'category'
   displayDate: string
+}
+
+interface Category {
+  id: string
+  name: string
+}
+
+interface GalleryItemDB {
+  id: string
+  created_at: string
+  url: string
+  type: "image" | "video"
+  category_id: string
+  gallery_categories: { name: string } | null
+  section: "landing" | "category"
+  display_date: string
 }
 
 export default function ManageGallery() {
@@ -74,33 +80,48 @@ export default function ManageGallery() {
   const [confirmTitle, setConfirmTitle] = useState("")
   const [confirmDescription, setConfirmDescription] = useState("")
 
-  const fetchData = async () => {
-    const { data: cats } = await supabase.from('gallery_categories').select('*').order('name', { ascending: true })
-    const { data: items } = await supabase.from('gallery_items').select('*, gallery_categories(name)').order('created_at', { ascending: false })
+  const fetchData = useCallback(async () => {
+    try {
+        const { data: cats } = await supabase.from('gallery_categories').select('*').order('name', { ascending: true })
+        const { data: items } = await supabase.from('gallery_items').select('*, gallery_categories(name)').order('created_at', { ascending: false })
 
-    if (cats) {
-        setCategories(cats)
-        if (cats.length > 0 && !selectedCategoryId) {
-            setSelectedCategoryId(cats[0].id)
+        if (cats) {
+            setCategories(cats)
+            // moved selection logic to separate effect
         }
-    }
 
-    if (items) {
-        setPhotos(items.map((i: any) => ({
-            id: i.id,
-            type: i.type,
-            url: i.url,
-            categoryId: i.category_id,
-            categoryName: i.gallery_categories?.name,
-            section: i.section,
-            displayDate: i.display_date 
-        })))
+        if (items) {
+            // Cast strictly
+            const dbItems = items as unknown as GalleryItemDB[]
+            setPhotos(dbItems.map((i) => ({
+                id: i.id,
+                type: i.type,
+                url: i.url,
+                categoryId: i.category_id,
+                categoryName: i.gallery_categories?.name,
+                section: i.section,
+                displayDate: i.display_date 
+            })))
+        }
+    } catch (error) {
+        console.error("Error fetching gallery:", error)
+        toast.error("Gagal memuat galeri")
     }
-  }
+  }, [toast])
 
+  // Initial Fetch
   useEffect(() => {
+    // eslint-disable-next-line
     fetchData()
-  }, [])
+  }, [fetchData])
+
+  // Select default category
+  useEffect(() => {
+      if (categories.length > 0 && !selectedCategoryId) {
+          // eslint-disable-next-line
+          setSelectedCategoryId(categories[0].id)
+      }
+  }, [categories, selectedCategoryId])
 
   // Handlers
   const handleDelete = (id: string) => {
@@ -292,9 +313,9 @@ export default function ManageGallery() {
         <TabsContent value="landing" className="mt-0">
            <div className="grid grid-cols-2 gap-3 md:gap-4 md:grid-cols-3 lg:grid-cols-4">
               {displayedPhotos.map((photo) => (
-                <Card key={photo.id} className="overflow-hidden group relative aspect-[4/5] bg-muted">
+                <Card key={photo.id} className="overflow-hidden group relative aspect-4/5 bg-muted">
                     {photo.type === 'image' ? (
-                       <img src={photo.url} alt="Gallery" className="w-full h-full object-cover transition-transform group-hover:scale-105" />
+                       <Image src={photo.url} alt="Gallery" fill className="object-cover transition-transform group-hover:scale-105" />
                     ) : (
                        <div className="w-full h-full flex items-center justify-center bg-black/10">
                            <Video className="h-8 w-8 text-white drop-shadow-md" />
@@ -319,7 +340,7 @@ export default function ManageGallery() {
                
                {/* Add New Placeholder Card */}
                <Card 
-                  className="aspect-[4/5] border-2 border-dashed flex flex-col items-center justify-center cursor-pointer hover:bg-muted/50 transition-colors"
+                  className="aspect-4/5 border-2 border-dashed flex flex-col items-center justify-center cursor-pointer hover:bg-muted/50 transition-colors"
                   onClick={() => setIsAddOpen(true)}
                >
                    <Plus className="h-8 w-8 text-muted-foreground mb-2" />
@@ -331,9 +352,9 @@ export default function ManageGallery() {
         <TabsContent value="categories" className="mt-0">
             <div className="grid grid-cols-2 gap-3 md:gap-4 md:grid-cols-3 lg:grid-cols-4">
               {displayedPhotos.map((photo) => (
-                <Card key={photo.id} className="overflow-hidden group relative aspect-[4/5] bg-muted">
+                <Card key={photo.id} className="overflow-hidden group relative aspect-4/5 bg-muted">
                     {photo.type === 'image' ? (
-                       <img src={photo.url} alt="Gallery" className="w-full h-full object-cover transition-transform group-hover:scale-105" />
+                       <Image src={photo.url} alt="Gallery" fill className="object-cover transition-transform group-hover:scale-105" />
                     ) : (
                        <div className="w-full h-full flex items-center justify-center bg-black/10">
                            <Video className="h-8 w-8 text-white drop-shadow-md" />
@@ -349,7 +370,7 @@ export default function ManageGallery() {
                 </Card>
               ))}
                <Card 
-                  className="aspect-[4/5] border-2 border-dashed flex flex-col items-center justify-center cursor-pointer hover:bg-muted/50 transition-colors"
+                  className="aspect-4/5 border-2 border-dashed flex flex-col items-center justify-center cursor-pointer hover:bg-muted/50 transition-colors"
                   onClick={() => setIsAddOpen(true)}
                >
                    <Plus className="h-8 w-8 text-muted-foreground mb-2" />

@@ -1,28 +1,16 @@
 // src/components/admin/orders/InvoicePrintButton.tsx
 "use client"
 
-import { useRef, useState } from "react";
+import { useRef, useState, useEffect } from "react";
 import { useReactToPrint } from "react-to-print";
-import { Printer, ZoomIn, ZoomOut } from "lucide-react"; 
+import { Printer, ZoomIn, ZoomOut, Loader2 } from "lucide-react"; 
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogTrigger, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { InvoiceTemplate } from "@/components/admin/invoice/InvoiceTemplate";
 import { Order as InvoiceOrder, BusinessSettings } from "@/types/invoice";
-
-// === SETTINGS CONFIG (Temporary, later move to DB) ===
-const appSettings: BusinessSettings = {
-  brand_name: "Enviel Admin",
-  brand_color: "#1e293b", // Slate 800 - Classy Dark
-  // brand_logo_url: "/logo.png", // Add logo in public folder if available
-  bank_name: "BCA (Bank Central Asia)",
-  bank_number: "4210000000",
-  bank_holder: "Noval RIzki",
-  address: "Jakarta Timur, DKI Jakarta",
-  footer_note: "1. Booking Fee (DP) tidak dapat dikembalikan (Non-refundable).\n2. Pelunasan wajib dilakukan H-7 sebelum hari H.\n3. Reschedule diperbolehkan maksimal 1x (S&K Berlaku).",
-};
+import { supabase } from "@/lib/supabaseClient";
 
 // Interface for the 'Raw' order coming from the page
-// We only need a subset to map it
 interface RawOrder {
     id: string;
     client: string;
@@ -41,6 +29,45 @@ export default function InvoicePrintButton({ orderData }: { orderData: RawOrder 
   const componentRef = useRef<HTMLDivElement>(null);
   const [isOpen, setIsOpen] = useState(false);
   const [zoom, setZoom] = useState(0.65); // Default start scale
+  
+  const [loading, setLoading] = useState(true);
+  const [settings, setSettings] = useState<BusinessSettings | null>(null);
+
+  const fetchSettings = async () => {
+      setLoading(true);
+      const { data } = await supabase.from('invoice_settings').select('*').single();
+      if (data) {
+          setSettings({
+            brand_name: data.brand_name || "Enviel Admin",
+            brand_color: data.brand_color || "#1e293b",
+            bank_name: data.bank_name || "",
+            bank_number: data.bank_number || "",
+            bank_holder: data.bank_holder || "",
+            address: data.address || "",
+            footer_note: data.footer_note || ""
+          });
+      } else {
+          // Fallback if no settings found
+          setSettings({
+            brand_name: "Enviel Admin (Default)",
+            brand_color: "#1e293b",
+            bank_name: "-",
+            bank_number: "-",
+            bank_holder: "-",
+            address: "-",
+            footer_note: "Harap atur setting invoice di menu Pengaturan."
+          });
+      }
+      setLoading(false);
+  }
+
+  // Fetch Settings on Open
+  useEffect(() => {
+    if (isOpen && !settings) {
+        // eslint-disable-next-line
+        fetchSettings();
+    }
+  }, [isOpen]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // --- ADAPTER: CONVERT RAW ORDER TO INVOICE ORDER ---
   const parseAmount = (str: string) => parseInt(str.replace(/[^0-9]/g, "")) || 0;
@@ -48,9 +75,6 @@ export default function InvoicePrintButton({ orderData }: { orderData: RawOrder 
   const totalAmount = parseAmount(orderData.amount);
   
   // Logic Paid Amount:
-  // 1. If 'paid_amount' exists (from DB), use it.
-  // 2. Fallback: If status is 'paid', assume Full Payment.
-  // 3. Fallback: If status is 'unpaid', assume 0.
   let finalPaid = orderData.paid_amount || 0;
   if (!orderData.paid_amount) {
       if (orderData.paymentStatus === 'paid') finalPaid = totalAmount;
@@ -116,8 +140,8 @@ export default function InvoicePrintButton({ orderData }: { orderData: RawOrder 
                  <Button variant="ghost" className="hidden sm:flex" onClick={() => setIsOpen(false)}>
                      Batal
                  </Button>
-                 <Button onClick={() => handlePrint()} className="gap-2 bg-blue-600 hover:bg-blue-700 text-white shadow-sm h-9">
-                    <Printer className="w-4 h-4" />
+                 <Button onClick={() => handlePrint()} disabled={loading} className="gap-2 bg-blue-600 hover:bg-blue-700 text-white shadow-sm h-9">
+                    {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Printer className="w-4 h-4" />}
                     Print / Save PDF
                  </Button>
              </div>
@@ -126,31 +150,33 @@ export default function InvoicePrintButton({ orderData }: { orderData: RawOrder 
 
         {/* Scrollable Preview Area */}
         <div className="flex-1 overflow-auto bg-slate-300/30 dark:bg-slate-900/50 flex justify-center p-4 sm:p-8">
-          {/* 
-            Wrapper Scale Logic: 
-            DYNAMIC ZOOM based on state.
-            Dimensions based on A4 (794x1123px) * Zoom
-          */}
-          <div 
-             className="relative bg-white shadow-2xl transition-all duration-200 ease-out origin-top-left flex-none my-auto overflow-hidden"
-             style={{
-                 width: `${794 * zoom}px`,
-                 height: `${1123 * zoom}px`
-             }}
-          >
-             <div 
-                className="absolute top-0 left-0 origin-top-left"
-                style={{
-                    transform: `scale(${zoom})`
-                }}
-             >
-               <InvoiceTemplate
-                   ref={componentRef}
-                   order={invoiceData}
-                   settings={appSettings}
-               />
-             </div>
-          </div>
+            {loading || !settings ? (
+                <div className="flex flex-col items-center justify-center h-full text-muted-foreground gap-2">
+                    <Loader2 className="w-8 h-8 animate-spin" />
+                    <p>Memuat Template...</p>
+                </div>
+            ) : (
+              <div 
+                 className="relative bg-white shadow-2xl transition-all duration-200 ease-out origin-top-left flex-none my-auto overflow-hidden"
+                 style={{
+                     width: `${794 * zoom}px`,
+                     height: `${1123 * zoom}px`
+                 }}
+              >
+                 <div 
+                    className="absolute top-0 left-0 origin-top-left"
+                    style={{
+                        transform: `scale(${zoom})`
+                    }}
+                 >
+                   <InvoiceTemplate
+                       ref={componentRef}
+                       order={invoiceData}
+                       settings={settings}
+                   />
+                 </div>
+              </div>
+            )}
         </div>
       </DialogContent>
     </Dialog>

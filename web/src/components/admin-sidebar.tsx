@@ -38,6 +38,11 @@ const sidebarItems = [
   {
     title: "Konten (CMS)",
     href: "/admin/content",
+    icon: Images,
+  },
+  {
+    title: "Pengaturan",
+    href: "/admin/settings",
     icon: Settings,
   },
 ]
