@@ -118,7 +118,7 @@ export default function InvoicePrintButton({ orderData }: { orderData: RawOrder 
             On mobile: Scale down significantly.
             On desktop: Scale down slightly if needed to avoid massive scrolling.
           */}
-          <div className="w-fit h-fit origin-top transform scale-[0.45] sm:scale-[0.6] md:scale-[0.7] lg:scale-[0.8] xl:scale-95 transition-transform duration-200 ease-out">
+          <div className="w-fit h-fit origin-top transform scale-[0.45] sm:scale-[0.55] md:scale-[0.65] lg:scale-[0.75] xl:scale-[0.85] transition-transform duration-200 ease-out">
              <div className="shadow-2xl">
               <InvoiceTemplate
                   ref={componentRef}
