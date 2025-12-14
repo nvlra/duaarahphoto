@@ -1189,8 +1189,8 @@ function OrderEditForm({
                     variant="outline" 
                     size="sm" 
                     onClick={() => {
-                        // Direct print: opens invoice editor for this order
-                        window.open(`/admin/invoices?orderId=${editingOrder.id}&clientName=${encodeURIComponent(editingOrder.client)}&contact=${encodeURIComponent(editingOrder.contact || '')}&package=${encodeURIComponent(editingOrder.package)}&amount=${encodeURIComponent(editingOrder.amount)}&date=${editingOrder.date}&status=${editingOrder.status}`, '_blank')
+                        // Direct print: opens invoice with print dialog
+                        window.open(`/admin/invoices?orderId=${editingOrder.id}&clientName=${encodeURIComponent(editingOrder.client)}&contact=${encodeURIComponent(editingOrder.contact || '')}&package=${encodeURIComponent(editingOrder.package)}&amount=${encodeURIComponent(editingOrder.amount)}&date=${editingOrder.date}&status=${editingOrder.paymentStatus || 'unpaid'}&print=true`, '_blank')
                     }}
                     className={`${isMobile ? 'h-8 px-2' : ''}`}
                 >

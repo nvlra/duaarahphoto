@@ -676,7 +676,7 @@ const SettingsControls = ({
   </div>
 )
 
-export function InvoiceEditor({ onBack, orderData }: { 
+export function InvoiceEditor({ onBack, orderData, autoPrint = false }: { 
   onBack?: () => void,
   orderData?: {
     orderId: string
@@ -686,7 +686,8 @@ export function InvoiceEditor({ onBack, orderData }: {
     amount: string
     date: string
     status: string
-  } | null
+  } | null,
+  autoPrint?: boolean
 }) {
   // State
   const [font, setFont] = useState("font-sans")
@@ -749,29 +750,44 @@ export function InvoiceEditor({ onBack, orderData }: {
   
   // Auto-populate from order data
   useEffect(() => {
-    if (orderData) {
+    console.log("InvoiceEditor received orderData:", orderData)
+    if (orderData && orderData.orderId) {
+      // Format dates safely
+      let dateStr = 'N/A'
+      let dueStr = 'N/A'
+      if (orderData.date) {
+        try {
+          const eventDate = new Date(orderData.date)
+          dateStr = eventDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
+          const dueDate = new Date(eventDate.getTime() + 7*24*60*60*1000)
+          dueStr = dueDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
+        } catch (e) {
+          console.error("Date parsing error:", e)
+        }
+      }
+      
       // Update invoice data
       setInvoiceData(prev => ({
         ...prev,
-        clientName: orderData.clientName,
-        clientAddress: orderData.contact,
-        dateValue: new Date(orderData.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
-        dueValue: new Date(new Date(orderData.date).getTime() + 7*24*60*60*1000).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
+        clientName: orderData.clientName || 'Klien',
+        clientAddress: orderData.contact || '-',
+        dateValue: dateStr,
+        dueValue: dueStr
       }))
       
       // Set items from order
       setItems([{
         id: 1,
-        desc: orderData.package,
-        amount: orderData.amount
+        desc: orderData.package || 'Paket',
+        amount: orderData.amount || 'Rp 0'
       }])
       
       // AUTO-STAMP based on status
-      if (orderData.status === 'completed') {
+      if (orderData.status === 'completed' || orderData.status === 'paid') {
         setShowStamp(true)
         setStampText('LUNAS')
         setStampColor('#22c55e') // Green
-      } else if (orderData.status === 'confirmed' || orderData.status === 'pending') {
+      } else if (orderData.status === 'booked' || orderData.status === 'confirmed' || orderData.status === 'pending') {
         setShowStamp(true)
         setStampText('BELUM LUNAS')
         setStampColor('#ef4444') // Red
@@ -782,6 +798,17 @@ export function InvoiceEditor({ onBack, orderData }: {
       toast.success("Data order berhasil dimuat!")
     }
   }, [orderData])
+  
+  // Auto-print functionality
+  useEffect(() => {
+    if (autoPrint && orderData) {
+      // Wait for canvas to render, then trigger print
+      const timer = setTimeout(() => {
+        window.print()
+      }, 1500) // Wait 1.5 seconds for canvas to load
+      return () => clearTimeout(timer)
+    }
+  }, [autoPrint, orderData])
   
   // Scaling State
   const [scale, setScale] = useState(1)

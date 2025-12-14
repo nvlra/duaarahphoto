@@ -54,6 +54,9 @@ function InvoicesPageContent() {
     date: searchParams.get('date') || '',
     status: searchParams.get('status') || ''
   } : null, [orderId, searchParams])
+  
+  // Check if autoPrint mode
+  const autoPrint = searchParams.get('print') === 'true'
 
   const fetchInvoices = async () => {
     const { data } = await supabase
@@ -105,6 +108,7 @@ function InvoicesPageContent() {
           fetchInvoices()
         }} 
         orderData={orderData}
+        autoPrint={autoPrint}
       />
   }
 
