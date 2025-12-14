@@ -14,7 +14,7 @@ import {
   TableRow,
 } from "@/components/ui/table"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Plus, Search, FileText, Trash2, Edit } from "lucide-react"
+import { Search, FileText, Trash2, Edit } from "lucide-react"
 import { Input } from "@/components/ui/input"
 import { toast } from "sonner"
 import { format } from "date-fns"
@@ -24,7 +24,7 @@ function InvoicesPageContent() {
   const searchParams = useSearchParams()
   const [view, setView] = useState<'list' | 'editor'>('list')
   const [invoices, setInvoices] = useState<any[]>([])
-  const [editingInvoice, setEditingInvoice] = useState<any>(null)
+  const [_editingInvoice, setEditingInvoice] = useState<any>(null)
   const [searchTerm, setSearchTerm] = useState("")
 
   // Check if we have order data from query params
@@ -63,8 +63,8 @@ function InvoicesPageContent() {
 
   const handleDelete = async (id: string) => {
       if (!confirm("Hapus invoice ini?")) return
-      const { error } = await supabase.from('invoices').delete().eq('id', id)
-      if (!error) {
+      const { error: _deleteError } = await supabase.from('invoices').delete().eq('id', id)
+      if (!_deleteError) {
           toast.success("Invoice dihapus")
           fetchInvoices()
       } else {
@@ -80,7 +80,7 @@ function InvoicesPageContent() {
       setView('editor')
   }
 
-  const handleCreate = () => {
+  const _handleCreate = () => {
       setEditingInvoice(null)
       setView('editor')
   }

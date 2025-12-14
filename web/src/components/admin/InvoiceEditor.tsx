@@ -3,9 +3,9 @@
 import { useState, useRef, useEffect } from "react"
 // Framer Motion removed
 import { 
-  Plus, Trash2, GripVertical, Type, Image as ImageIcon, 
-  RotateCcw, Save, Download, LayoutTemplate, 
-  ChevronDown, ChevronUp, Palette, Grid3X3, Bold, Italic, Underline,
+  Plus, Trash2, Type, Image as ImageIcon, 
+  RotateCcw, LayoutTemplate, 
+  Palette, Grid3X3,
   Move, ZoomIn, ZoomOut, Settings, Upload, ArrowLeft 
 } from "lucide-react"
 import * as LucideIcons from "lucide-react"
@@ -20,15 +20,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card"
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog"
+// Dialog imports removed - no longer used
 import {
   Popover,
   PopoverContent,

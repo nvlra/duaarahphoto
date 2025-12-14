@@ -85,7 +85,7 @@ export default function OrdersPage() {
   const [packages, setPackages] = useState<{id: string, name: string, price: number}[]>([])
   const [searchQuery, setSearchQuery] = useState("")
   const [statusFilter, setStatusFilter] = useState("all")
-  const [dateFilter, setDateFilter] = useState<Date | undefined>(undefined)
+  const [dateFilter, _setDateFilter] = useState<Date | undefined>(undefined)
   const [currentPage, setCurrentPage] = useState(1)
   const ITEMS_PER_PAGE = 5
   
@@ -877,7 +877,7 @@ function OrderEditForm({
     const fullWidthClass = isMobile ? "col-span-2" : "";
 
     // Helper to add allocation
-    const handleAddAllocation = () => {
+    const _handleAddAllocation = () => {
          if (newItem.name && newItem.role && newItem.fee) {
             const newAlloc: Allocation = {
                 id: Math.random().toString(36).substr(2, 9),
