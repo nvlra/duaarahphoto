@@ -91,8 +91,8 @@ export default function InvoicePrintButton({ orderData }: { orderData: RawOrder 
         </Button>
       </DialogTrigger>
 
-      <DialogContent className="max-w-[95vw] h-[85vh] flex flex-col p-0 bg-slate-100 dark:bg-slate-950 border-none sm:rounded-xl overflow-hidden">
-        <DialogHeader className="px-4 py-3 bg-white dark:bg-slate-900 border-b dark:border-slate-800 flex-none z-10 shadow-sm">
+      <DialogContent className="max-w-[85vw] h-[80vh] flex flex-col p-0 bg-slate-100 dark:bg-neutral-950 border-none sm:rounded-xl overflow-hidden">
+        <DialogHeader className="px-4 py-3 bg-white dark:bg-neutral-900 border-b dark:border-neutral-800 flex-none z-10 shadow-sm">
            <div className="flex justify-between items-center w-full">
              <div>
                 <DialogTitle>Preview Invoice</DialogTitle>

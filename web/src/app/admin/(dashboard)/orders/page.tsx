@@ -97,7 +97,6 @@ interface SupabaseOrderRow {
     order_allocations: SupabaseAllocationRow[]
 }
 
-// Status definitions mapping to colors and labels
 const statusConfig: Record<string, { label: string, color: string, icon: ElementType }> = {
   pending: { label: "Menunggu", color: "bg-slate-100 text-slate-700 hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-400", icon: CircleDashed },
   booked: { label: "Booked", color: "bg-blue-100 text-blue-700 hover:bg-blue-200 dark:bg-blue-900/40 dark:text-blue-400", icon: CalendarIcon }, // Legacy support
@@ -105,6 +104,29 @@ const statusConfig: Record<string, { label: string, color: string, icon: Element
   on_process: { label: "Proses", color: "bg-yellow-100 text-yellow-700 hover:bg-yellow-200 dark:bg-yellow-900/40 dark:text-yellow-400", icon: Camera },
   completed: { label: "Selesai", color: "bg-green-100 text-green-700 hover:bg-green-200 dark:bg-green-900/40 dark:text-green-400", icon: CheckCircle2 },
   cancelled: { label: "Cancel", color: "bg-red-100 text-red-700 hover:bg-red-200 dark:bg-red-900/40 dark:text-red-400", icon: XCircle },
+}
+
+const formatWhatsAppUrl = (phone: string | undefined) => {
+    if (!phone) return ""
+    
+    // Remove all non-numeric chars
+    let clean = phone.replace(/[^0-9]/g, "")
+    
+    // Logic:
+    // If starts with 08..., replace 0 with 62 -> 628...
+    // If starts with 62..., keep it -> 62...
+    // If starts with 8..., prepend 62 -> 628...
+    
+    if (clean.startsWith("08")) {
+        clean = "62" + clean.substring(1)
+    } else if (clean.startsWith("8")) {
+        clean = "62" + clean
+    }
+    // If it's just '0' or empty or weird, we might still try to prepend 62 if it doesn't have it,
+    // but the above is the most common case for Indo numbers.
+    // If it ALREADY starts with 62, do nothing.
+    
+    return `https://wa.me/${clean}`
 }
 
 
@@ -653,7 +675,29 @@ export default function OrdersPage() {
                    />
                 </div>
                 <div className="space-y-1 md:space-y-2">
-                   <Label>Uang Muka / DP (Opsional)</Label>
+                   <div className="flex items-center justify-between">
+                      <Label>Uang Muka / DP (Opsional)</Label>
+                      <div className="flex gap-2">
+                        <Button 
+                          type="button" 
+                          variant="ghost" 
+                          size="sm" 
+                          className="h-5 px-2 text-[10px] text-muted-foreground hover:text-foreground"
+                          onClick={() => setNewOrderDp("0")}
+                        >
+                          Reset
+                        </Button>
+                        <Button 
+                          type="button" 
+                          variant="outline" 
+                          size="sm" 
+                          className="h-5 px-2 text-[10px] border-green-200 text-green-700 hover:bg-green-50 hover:text-green-800 dark:border-green-900 dark:text-green-400 dark:hover:bg-green-950"
+                          onClick={() => setNewOrderDp(newOrderAmount)}
+                        >
+                          Set Lunas
+                        </Button>
+                      </div>
+                   </div>
                    <Input 
                       name="dp_amount" 
                       placeholder="Rp 0" 
@@ -777,7 +821,19 @@ function CardTable({ orders, expandedId, editingOrder, onRowClick, setEditingOrd
                     >
                         <TableCell className="font-medium text-muted-foreground text-xs">{order.id}</TableCell>
                         <TableCell className="font-medium truncate max-w-[180px]" title={order.client}>{order.client}</TableCell>
-                        <TableCell className="text-muted-foreground text-xs truncate max-w-[120px]" title={order.contact || ""}>{order.contact || "-"}</TableCell>
+                        <TableCell className="text-muted-foreground text-xs truncate max-w-[120px]" title={order.contact || ""}>
+                            {order.contact ? (
+                                <a 
+                                    href={formatWhatsAppUrl(order.contact)} 
+                                    target="_blank" 
+                                    rel="noopener noreferrer"
+                                    className="hover:underline hover:text-green-600 flex items-center gap-1"
+                                    onClick={(e) => e.stopPropagation()}
+                                >
+                                    {order.contact}
+                                </a>
+                            ) : "-"}
+                        </TableCell>
                         <TableCell className="text-muted-foreground text-xs w-[180px]">
                            {new Date(order.date).toLocaleDateString("id-ID", { day: "numeric", month: "long", year: "numeric" })}
                         </TableCell>
