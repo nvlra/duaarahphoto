@@ -59,8 +59,7 @@ const ToastItem = memo(({ toast, index, total, onRemove }: { toast: Toast, index
   const opacity = 1 - (inverseIndex / total) * 0.2
   const y = inverseIndex * 15 // Offset in pixels instead of % for simpler framer control
   
-  // Blur effect for stacked items
-  const blur = inverseIndex > 0 ? "blur-[2px]" : "blur-0"
+
 
   return (
     <motion.div
@@ -82,9 +81,9 @@ const ToastItem = memo(({ toast, index, total, onRemove }: { toast: Toast, index
       <div className={`
         pointer-events-auto
         relative flex items-center gap-3 w-full p-4 
-        rounded-2xl shadow-lg border border-slate-200/50 dark:border-white/5
-        backdrop-blur-xl bg-white/60 dark:bg-neutral-950/60
-        ${blur} transition-all duration-300
+        rounded-2xl shadow-lg border border-slate-200 dark:border-white/10
+        backdrop-blur-md bg-white/95 dark:bg-zinc-950/95
+        transition-all duration-300
       `}>
           {/* Icon Box */}
           <div className={`shrink-0 w-10 h-10 rounded-xl flex items-center justify-center ${BG_COLORS[toast.type]} shadow-sm`}>

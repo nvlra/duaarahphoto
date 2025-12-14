@@ -263,7 +263,7 @@ export default function FinancePage() {
                   </div>
                   <div className="flex flex-wrap gap-2 rounded-lg border p-3 bg-muted/20 min-h-[100px] max-h-[200px] overflow-y-auto">
                       {categories.map((cat) => (
-                        <Badge key={cat.id} variant="secondary" className="flex items-center gap-1">
+                        <Badge key={cat.id} variant="secondary" className="flex items-center gap-1 h-6 px-2 text-[10px]">
                           {cat.name}
                           <div role="button" onClick={() => handleDeleteCategory(cat.id)} className="ml-1 rounded-full p-0.5 hover:bg-red-200 cursor-pointer"><X className="h-3 w-3" /></div>
                         </Badge>
