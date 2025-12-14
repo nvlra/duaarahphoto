@@ -58,14 +58,27 @@ function InvoicesPageContent() {
   // Check if autoPrint mode
   const autoPrint = searchParams.get('print') === 'true'
 
+
   const fetchInvoices = async () => {
+    // Fetch orders and treat them as invoices
     const { data } = await supabase
-      .from('invoices')
-      .select('*, clients(id, name, email)')
+      .from('orders')
+      .select('*')
       .order('created_at', { ascending: false })
     
     if (data) {
-        setInvoices(data as Invoice[])
+        // Map orders to invoice format
+        const mappedInvoices: Invoice[] = data.map(order => ({
+          id: order.id,
+          invoice_number: `INV-${order.id}`,
+          client_name: order.client_name,
+          issue_date: order.event_date,
+          due_date: order.event_date, // Same as event date
+          status: order.payment_status || 'unpaid',
+          total_amount: order.total_amount,
+          created_at: order.created_at
+        }))
+        setInvoices(mappedInvoices)
     }
   }
 
@@ -75,55 +88,88 @@ function InvoicesPageContent() {
       // Using async IIFE to handle async operation in effect
       void (async () => {
         const { data } = await supabase
-          .from('invoices')
-          .select('*, clients(id, name, email)')
+          .from('orders')
+          .select('*')
           .order('created_at', { ascending: false })
         
         if (data) {
-          setInvoices(data as Invoice[])
+          const mappedInvoices: Invoice[] = data.map(order => ({
+            id: order.id,
+            invoice_number: `INV-${order.id}`,
+            client_name: order.client_name,
+            issue_date: order.event_date,
+            due_date: order.event_date,
+            status: order.payment_status || 'unpaid',
+            total_amount: order.total_amount,
+            created_at: order.created_at
+          }))
+          setInvoices(mappedInvoices)
         }
       })()
     }
   }, [view])
 
   const handleDelete = async (id: string) => {
-      if (!confirm("Hapus invoice ini?")) return
-      const { error: _deleteError } = await supabase.from('invoices').delete().eq('id', id)
+      if (!confirm("Hapus pesanan ini?")) return
+      const { error: _deleteError } = await supabase.from('orders').delete().eq('id', id)
       if (!_deleteError) {
-          toast.success("Invoice dihapus")
+          toast.success("Pesanan dihapus")
           fetchInvoices()
       } else {
-          toast.error("Gagal menghapus invoice")
+          toast.error("Gagal menghapus pesanan")
       }
   }
 
+  // State for selected order when editing from list
+  const [selectedOrderData, setSelectedOrderData] = useState<{
+    orderId: string
+    clientName: string
+    contact: string
+    package: string
+    amount: string
+    date: string
+    status: string
+  } | null>(null)
+
   const handleEdit = (invoice: Invoice) => {
-      // In a real implementation, we would pass this data to the Editor.
-      // For now, the Editor manages its own state, so we might need to implement data loading in Editor later.
-      // We'll mostly treat "Edit" as "Open Designer" potentially with loaded data if implemented.
+      // Create orderData from invoice for InvoiceEditor
+      const invoiceOrderData = {
+        orderId: invoice.id,
+        clientName: invoice.client_name || '',
+        contact: '', // Order doesn't have contact in invoice format
+        package: '', // Would need to fetch from order
+        amount: invoice.total_amount ? `Rp ${invoice.total_amount.toLocaleString('id-ID')}` : 'Rp 0',
+        date: invoice.issue_date || '',
+        status: invoice.status || 'unpaid'
+      }
+      setSelectedOrderData(invoiceOrderData)
       setEditingInvoice(invoice)
       setView('editor')
   }
 
   const _handleCreate = () => {
       setEditingInvoice(null)
+      setSelectedOrderData(null)
       setView('editor')
   }
 
   if (view === 'editor') {
+      // Use selectedOrderData (from list click) or orderData (from URL params)
+      const editorData = selectedOrderData || orderData
       return <InvoiceEditor 
         onBack={() => {
           setView('list')
+          setSelectedOrderData(null)
           fetchInvoices()
         }} 
-        orderData={orderData}
+        orderData={editorData}
         autoPrint={autoPrint}
       />
   }
 
   const filteredInvoices = invoices.filter(inv => 
      inv.invoice_number.toLowerCase().includes(searchTerm.toLowerCase()) ||
-     inv.clients?.name?.toLowerCase().includes(searchTerm.toLowerCase())
+     (inv.client_name || '').toLowerCase().includes(searchTerm.toLowerCase())
   )
 
   return (

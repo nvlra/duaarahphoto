@@ -745,6 +745,7 @@ export function InvoiceEditor({ onBack, orderData, autoPrint = false }: {
   const [logo, setLogo] = useState<string | null>(null)
   const [logoSize, setLogoSize] = useState(64) // Default h-16 (64px)
   const [selectedId, setSelectedId] = useState<string | null>(null)
+  const [dataLoaded, setDataLoaded] = useState(false)
   const [orientation, setOrientation] = useState<'portrait' | 'landscape'>('portrait')
   const [bgColor, setBgColor] = useState('#ffffff')
   
@@ -796,20 +797,21 @@ export function InvoiceEditor({ onBack, orderData, autoPrint = false }: {
       }
       
       toast.success("Data order berhasil dimuat!")
+      setDataLoaded(true)
     }
   }, [orderData])
   
   // Auto-print functionality - triggers AFTER invoice data is populated
   useEffect(() => {
     // Only print when autoPrint is enabled AND invoice data is actually populated
-    if (autoPrint && invoiceData.clientName && invoiceData.clientName !== 'John Doe') {
+    if (autoPrint && dataLoaded) {
       // Wait for canvas to fully render with data
       const timer = setTimeout(() => {
         window.print()
       }, 500) // Shorter delay since data is already loaded
       return () => clearTimeout(timer)
     }
-  }, [autoPrint, invoiceData.clientName])
+  }, [autoPrint, dataLoaded])
   
   // Scaling State
   const [scale, setScale] = useState(1)
