@@ -18,6 +18,8 @@ import {
   Plus
 } from "lucide-react"
 
+import InvoicePrintButton from "@/components/admin/orders/InvoicePrintButton"
+
 import { format } from "date-fns"
 import { cn } from "@/lib/utils"
 import { useRouter } from "next/navigation"
@@ -48,6 +50,8 @@ interface Order {
   status: string
   paymentStatus: string // 'paid' or 'unpaid'
   amount: string
+  paid_amount?: number // NEW: Nominal uang masuk
+  created_at?: string
   location: string
   mapsUrl?: string
   contact?: string
@@ -85,6 +89,8 @@ interface SupabaseOrderRow {
     status: string
     payment_status: string | null
     total_amount: number | string | null
+    paid_amount: number | null // NEW: DB Column
+    created_at: string
     location: string | null
     maps_url: string | null
     contact_info: string | null
@@ -142,6 +148,7 @@ export default function OrdersPage() {
         location: formData.get("location") as string,
         maps_url: formData.get("mapsUrl") as string,
         total_amount: parseInt((formData.get("amount") as string).replace(/[^0-9]/g, "")) || 0,
+        paid_amount: parseInt((formData.get("dp_amount") as string).replace(/[^0-9]/g, "")) || 0,
         status: "booked",
         created_at: new Date().toISOString()
     }
@@ -205,7 +212,9 @@ export default function OrdersPage() {
                   role: alloc.role,
                   fee: alloc.fee ? `Rp ${parseInt(String(alloc.fee)).toLocaleString('id-ID')}` : "Rp 0",
                   name: alloc.team_members?.name || "Unknown"
-              }))
+              })),
+              paid_amount: d.paid_amount || 0,
+              created_at: d.created_at
           }))
           setOrders(mappedOrders)
       }
@@ -276,6 +285,7 @@ export default function OrdersPage() {
           package_name: editingOrder.package,
           status: editingOrder.status,
           total_amount: parseInt(rawAmount) || 0,
+          paid_amount: editingOrder.paid_amount || 0, // Save current paid amount
       }
 
       if (isNewBookingOpen) {
@@ -541,9 +551,13 @@ export default function OrdersPage() {
                    <Label>Link Google Maps</Label>
                    <Input name="mapsUrl" placeholder="https://maps.app.goo.gl/..." className="h-9 md:h-10" />
                 </div>
-                <div className="space-y-1 md:space-y-2 md:col-span-2">
+                <div className="space-y-1 md:space-y-2">
                    <Label>Total Harga (Estimasi)</Label>
-                   <Input name="amount" placeholder="Rp 0" required className="h-9 md:h-10" />
+                   <Input name="amount" placeholder="Rp 5.000.000" required className="h-9 md:h-10" />
+                </div>
+                <div className="space-y-1 md:space-y-2">
+                   <Label>Uang Muka / DP (Opsional)</Label>
+                   <Input name="dp_amount" placeholder="Rp 0" className="h-9 md:h-10" />
                 </div>
              </div>
              <div className="flex justify-end gap-2">
@@ -994,12 +1008,26 @@ function OrderEditForm({
                 />
             </div>
             <div className={`${spaceClass} ${isMobile ? 'col-span-2' : ''}`}>
-                <Label className={labelClass}>Total</Label>
+                <Label className={labelClass}>Total Harga</Label>
                 <Input 
                 className={inputClass}
                 value={editingOrder.amount}
                 onChange={(e) => setEditingOrder({ ...editingOrder, amount: e.target.value })}
                 />
+            </div>
+
+            <div className={`${spaceClass} ${isMobile ? 'col-span-2' : ''}`}>
+                <Label className={labelClass}>Sudah Dibayar (DP)</Label>
+                <div className="relative">
+                    <span className="absolute left-3 top-2.5 text-xs text-muted-foreground md:top-2">Rp</span>
+                    <Input 
+                        className={`${inputClass} pl-8`}
+                        type="number"
+                        min="0"
+                        value={editingOrder.paid_amount || 0}
+                        onChange={(e) => setEditingOrder({ ...editingOrder, paid_amount: parseInt(e.target.value) || 0 })}
+                    />
+                </div>
             </div>
             
             {/* Team Allocation Modal Trigger */}
@@ -1192,13 +1220,21 @@ function OrderEditForm({
             </div>
 
             {/* Action Buttons */}
-            <div className={`col-span-2 md:col-span-3 flex justify-end gap-2 mt-1 pt-2 border-t ${isMobile ? 'grid grid-cols-2' : ''}`}>
-                <Button variant="ghost" size="sm" onClick={() => onDelete(editingOrder.id)} className={`text-red-500 hover:text-red-600 hover:bg-red-50 ${isMobile ? 'col-span-1 px-0' : 'mr-auto'}`}>
-                    <Trash2 className={`mr-2 h-4 w-4 ${isMobile ? 'mr-0 h-4 w-4' : ''}`} /> {isMobile ? "" : "Hapus"}
+            <div className={`col-span-2 md:col-span-3 flex justify-between gap-2 mt-4 pt-4 border-t ${isMobile ? 'flex-col-reverse' : 'items-center'}`}>
+                
+                {/* Left Side: Delete */}
+                <Button variant="ghost" size="sm" onClick={() => onDelete(editingOrder.id)} className={`text-red-500 hover:text-red-600 hover:bg-red-50 ${isMobile ? 'w-full' : ''}`}>
+                    <Trash2 className="mr-2 h-4 w-4" /> Hapus Order
                 </Button>
-                <Button size="sm" onClick={onSave} className={isMobile ? 'col-span-1 px-0' : ''}>
-                    <Save className={`mr-2 h-4 w-4 ${isMobile ? 'h-3 w-3' : ''}`} /> {isMobile ? "Simpan" : "Simpan Perubahan"}
-                </Button>
+
+                {/* Right Side: Actions */}
+                <div className={`flex gap-2 ${isMobile ? 'w-full flex-col' : ''}`}>
+                    <InvoicePrintButton orderData={editingOrder} />
+                    
+                    <Button size="sm" onClick={onSave} className={isMobile ? 'w-full' : ''}>
+                        <Save className="mr-2 h-4 w-4" /> Simpan Perubahan
+                    </Button>
+                </div>
             </div>
         </div>
     )
