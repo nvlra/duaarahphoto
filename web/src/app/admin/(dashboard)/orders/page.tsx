@@ -68,6 +68,29 @@ interface TeamMemberSimple {
     role: string
 }
 
+// Supabase row types for proper typing
+interface SupabaseAllocationRow {
+    id: string
+    member_id: string
+    role: string
+    fee: number | string | null
+    team_members?: { name: string } | null
+}
+
+interface SupabaseOrderRow {
+    id: string
+    client_name: string
+    event_date: string
+    package_name: string | null
+    status: string
+    payment_status: string | null
+    total_amount: number | string | null
+    location: string | null
+    maps_url: string | null
+    contact_info: string | null
+    order_allocations: SupabaseAllocationRow[]
+}
+
 // Status definitions mapping to colors and labels
 const statusConfig: Record<string, { label: string, color: string, icon: ElementType }> = {
   booked: { label: "Booked (DP)", color: "bg-blue-100 text-blue-700 hover:bg-blue-200 dark:bg-blue-900/30 dark:text-blue-400", icon: CalendarIcon },
@@ -165,22 +188,22 @@ export default function OrdersPage() {
           console.error(error)
           toast.error("Gagal mengambil data order")
       } else if (data) {
-          const mappedOrders: Order[] = data.map((d: any) => ({
+          const mappedOrders: Order[] = (data as SupabaseOrderRow[]).map((d) => ({
               id: d.id,
               client: d.client_name,
               date: d.event_date,
               package: d.package_name || "-",
               status: d.status,
               paymentStatus: d.payment_status || 'unpaid',
-              amount: d.total_amount ? `Rp ${parseInt(d.total_amount).toLocaleString('id-ID')}` : "Rp 0",
+              amount: d.total_amount ? `Rp ${parseInt(String(d.total_amount)).toLocaleString('id-ID')}` : "Rp 0",
               location: d.location || "-",
-              mapsUrl: d.maps_url,
-              contact: d.contact_info,
-              allocations: d.order_allocations.map((alloc: any) => ({
+              mapsUrl: d.maps_url ?? undefined,
+              contact: d.contact_info ?? undefined,
+              allocations: d.order_allocations.map((alloc) => ({
                   id: alloc.id,
                   member_id: alloc.member_id,
                   role: alloc.role,
-                  fee: alloc.fee ? `Rp ${parseInt(alloc.fee).toLocaleString('id-ID')}` : "Rp 0",
+                  fee: alloc.fee ? `Rp ${parseInt(String(alloc.fee)).toLocaleString('id-ID')}` : "Rp 0",
                   name: alloc.team_members?.name || "Unknown"
               }))
           }))
