@@ -106,8 +106,9 @@ export default function OrdersPage() {
     setIsLoading(true)
     const formData = new FormData(e.currentTarget)
     
-    // Generate simple ID
-    const newId = `DA-${new Date().getFullYear()}${Math.floor(Math.random() * 10000).toString().padStart(4, '0')}`
+    // Generate unique ID using crypto API
+    const randomPart = crypto.randomUUID().split('-')[0].toUpperCase()
+    const newId = `DA-${new Date().getFullYear()}${randomPart.slice(0, 4)}`
 
     const payload = {
         id: newId,
@@ -189,9 +190,11 @@ export default function OrdersPage() {
   }
 
   useEffect(() => {
-      fetchPackages()
-      fetchTeam()
-      fetchOrders()
+      void (async () => {
+          await fetchPackages()
+          await fetchTeam()
+          await fetchOrders()
+      })()
   }, [])
 
   // Filter Logic
