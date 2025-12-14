@@ -257,7 +257,7 @@
 
 /* Print Styles - Only show invoice canvas when printing */
 @media print {
-  /* Hide navigation, sidebar, and UI controls */
+  /* Hide navigation, sidebar, UI controls, and toasts */
   header,
   nav,
   aside,
@@ -268,7 +268,10 @@
   .fixed,
   .sticky,
   button,
-  .no-print {
+  .no-print,
+  [data-sonner-toaster],
+  .sonner-toast,
+  [role="status"] {
     display: none !important;
   }
   

@@ -799,16 +799,17 @@ export function InvoiceEditor({ onBack, orderData, autoPrint = false }: {
     }
   }, [orderData])
   
-  // Auto-print functionality
+  // Auto-print functionality - triggers AFTER invoice data is populated
   useEffect(() => {
-    if (autoPrint && orderData) {
-      // Wait for canvas to render, then trigger print
+    // Only print when autoPrint is enabled AND invoice data is actually populated
+    if (autoPrint && invoiceData.clientName && invoiceData.clientName !== 'John Doe') {
+      // Wait for canvas to fully render with data
       const timer = setTimeout(() => {
         window.print()
-      }, 1500) // Wait 1.5 seconds for canvas to load
+      }, 500) // Shorter delay since data is already loaded
       return () => clearTimeout(timer)
     }
-  }, [autoPrint, orderData])
+  }, [autoPrint, invoiceData.clientName])
   
   // Scaling State
   const [scale, setScale] = useState(1)
