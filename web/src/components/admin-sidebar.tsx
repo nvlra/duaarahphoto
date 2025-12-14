@@ -36,7 +36,7 @@ const sidebarItems = [
     icon: Package,
   },
   {
-    title: "Desain Invoice",
+    title: "Invoice",
     href: "/admin/invoices",
     icon: FileText,
   },

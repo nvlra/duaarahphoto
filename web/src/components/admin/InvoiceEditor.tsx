@@ -918,7 +918,7 @@ export function InvoiceEditor({ onBack, orderData }: {
                <ArrowLeft className="h-4 w-4" />
            </Button>
            <div>
-              <h2 className="text-xl md:text-3xl font-bold tracking-tight">Desain Invoice</h2>
+              <h2 className="text-xl md:text-3xl font-bold tracking-tight">Invoice Editor</h2>
               <p className="text-xs md:text-base text-muted-foreground hidden md:block">Klik teks di invoice untuk mengedit langsung.</p>
            </div>
         </div>
