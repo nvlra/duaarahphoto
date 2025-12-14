@@ -77,6 +77,7 @@ create table orders (
   package_id uuid references packages(id) on delete set null,
   package_name text, -- Cache
   status order_status default 'pending',
+  payment_status text default 'unpaid', -- 'paid' or 'unpaid'
   total_amount numeric(15, 2) default 0,
   notes text,
   created_at timestamptz default now(),
@@ -182,21 +183,5 @@ create policy "Enable read access for public" on package_categories for select u
 -- Insert Minimal Initial Data
 insert into site_settings (id, about_headline) values (1, 'Welcome to Enviel Admin');
 
--- 13. ADMIN USERS (Simple Custom Auth)
--- Note: Ideally use Supabase Auth. This is for simple custom implementation as requested.
-create table admin_users (
-  id uuid primary key default uuid_generate_v4(),
-  username text not null unique,
-  password text not null, -- Plain text as requested for default, but SHOULD be hashed in production app logic
-  created_at timestamptz default now()
-);
-
--- RLS for Admin Users
-alter table admin_users enable row level security;
-create policy "Enable all access for authenticated users" on admin_users for all using (auth.role() = 'authenticated');
--- Allow public read if needed for login check (CAREFUL: exposes usernames) or keep private and use RPC.
--- For simple client-side check (insecure but common in prototypes):
-create policy "Enable public read for login check" on admin_users for select using (true);
-
--- Default User
-insert into admin_users (username, password) values ('enviel', 'enviel');
+-- NOTE: Admin authentication is now handled by Supabase Auth (Authentication > Users in Dashboard)
+-- The previously defined `admin_users` table is no longer needed and has been removed.
