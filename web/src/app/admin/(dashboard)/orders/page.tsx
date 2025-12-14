@@ -15,7 +15,8 @@ import {
   ChevronDown,
   Save,
   Printer,
-  Plus
+  Plus,
+  XCircle
 } from "lucide-react"
 
 import InvoicePrintButton from "@/components/admin/orders/InvoicePrintButton"
@@ -99,9 +100,12 @@ interface SupabaseOrderRow {
 
 // Status definitions mapping to colors and labels
 const statusConfig: Record<string, { label: string, color: string, icon: ElementType }> = {
-  booked: { label: "Booked (DP)", color: "bg-blue-100 text-blue-700 hover:bg-blue-200 dark:bg-blue-900/30 dark:text-blue-400", icon: CalendarIcon },
-  process: { label: "Proses", color: "bg-yellow-100 text-yellow-700 hover:bg-yellow-200 dark:bg-yellow-900/30 dark:text-yellow-400", icon: Camera },
-  completed: { label: "Selesai", color: "bg-green-100 text-green-700 hover:bg-green-200 dark:bg-green-900/30 dark:text-green-400", icon: CheckCircle2 },
+  pending: { label: "Menunggu", color: "bg-slate-100 text-slate-700 hover:bg-slate-200", icon: CircleDashed },
+  booked: { label: "Booked", color: "bg-blue-100 text-blue-700 hover:bg-blue-200", icon: CalendarIcon }, // Legacy support
+  confirmed: { label: "Booked", color: "bg-blue-100 text-blue-700 hover:bg-blue-200", icon: CalendarIcon },
+  on_process: { label: "Proses", color: "bg-yellow-100 text-yellow-700 hover:bg-yellow-200", icon: Camera },
+  completed: { label: "Selesai", color: "bg-green-100 text-green-700 hover:bg-green-200", icon: CheckCircle2 },
+  cancelled: { label: "Cancel", color: "bg-red-100 text-red-700 hover:bg-red-200", icon: XCircle },
 }
 
 
@@ -155,7 +159,7 @@ export default function OrdersPage() {
         maps_url: formData.get("mapsUrl") as string,
         total_amount: parseInt((formData.get("amount") as string).replace(/[^0-9]/g, "")) || 0,
         paid_amount: parseInt((formData.get("dp_amount") as string).replace(/[^0-9]/g, "")) || 0,
-        status: "booked",
+        status: "confirmed",
         created_at: new Date().toISOString()
     }
 
@@ -704,6 +708,7 @@ function CardTable({ orders, expandedId, editingOrder, onRowClick, setEditingOrd
                 <TableHead>Lokasi</TableHead>
                 <TableHead>Paket</TableHead>
                 <TableHead>Status</TableHead>
+                <TableHead>Pembayaran</TableHead>
                 <TableHead className="text-right">Total</TableHead>
                 <TableHead className="w-[50px]"></TableHead>
                 </TableRow>
@@ -711,7 +716,7 @@ function CardTable({ orders, expandedId, editingOrder, onRowClick, setEditingOrd
             <TableBody>
                 {orders.length === 0 ? (
                 <TableRow>
-                    <TableCell colSpan={9} className="h-24 text-center">
+                    <TableCell colSpan={10} className="h-24 text-center">
                     Belum ada pesanan.
                     </TableCell>
                 </TableRow>
@@ -764,6 +769,19 @@ function CardTable({ orders, expandedId, editingOrder, onRowClick, setEditingOrd
                             {statusConfig[order.status]?.label || order.status}
                         </Badge>
                         </TableCell>
+                        <TableCell>
+                        {(() => {
+                            const total = parseInt(order.amount.replace(/[^0-9]/g, "")) || 0
+                            const paid = order.paid_amount || 0
+                            if (paid >= total && total > 0) {
+                                return <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200">LUNAS</Badge>
+                            } else if (paid > 0) {
+                                return <Badge variant="outline" className="bg-yellow-50 text-yellow-700 border-yellow-200">PARTIAL</Badge>
+                            } else {
+                                return <Badge variant="outline" className="bg-red-50 text-red-700 border-red-200">BELUM</Badge>
+                            }
+                        })()}
+                        </TableCell>
                         <TableCell className="text-right font-medium">{order.amount}</TableCell>
                         <TableCell>
                             <div className="flex items-center justify-center h-8 w-8">
@@ -782,7 +800,7 @@ function CardTable({ orders, expandedId, editingOrder, onRowClick, setEditingOrd
                     <AnimatePresence>
                     {isExpanded && editingOrder && (
                         <TableRow className="bg-muted/30 border-t-0 hover:bg-muted/30">
-                            <TableCell colSpan={9} className="p-0 border-0">
+                            <TableCell colSpan={10} className="p-0 border-0">
                                 <motion.div 
                                     initial={{ height: 0, opacity: 0 }}
                                     animate={{ height: "auto", opacity: 1 }}
@@ -815,7 +833,7 @@ function CardTable({ orders, expandedId, editingOrder, onRowClick, setEditingOrd
             {orders.length > 0 && (
                 <TableFooter>
                 <TableRow>
-                    <TableCell colSpan={7} className="text-right font-semibold">
+                    <TableCell colSpan={8} className="text-right font-semibold">
                     Total Estimasi (Semua)
                     </TableCell>
                     <TableCell className="text-right font-bold text-foreground">{formattedTotal}</TableCell>
@@ -1021,9 +1039,8 @@ function OrderEditForm({
 
     return (
         <div className={containerClass}>
-            {/* Top Status Bar: Project & Payment */}
-            <div className={`col-span-2 md:col-span-3 flex flex-col sm:flex-row gap-4 mb-2 pb-4 border-b border-dashed ${isMobile ? 'col-span-2' : ''}`}>
-                {/* Project Status Dropdown */}
+            {/* Top Status Bar: Project Status Only */}
+            <div className={`col-span-2 md:col-span-3 mb-2 pb-4 border-b border-dashed ${isMobile ? 'col-span-2' : ''}`}>
                 <div className="flex-1 space-y-1">
                     <Label className="text-xs text-muted-foreground uppercase">Status Project</Label>
                     <Select 
@@ -1034,30 +1051,32 @@ function OrderEditForm({
                             <SelectValue />
                         </SelectTrigger>
                         <SelectContent>
-                            <SelectItem value="booked">📅 Booked</SelectItem>
-                            <SelectItem value="on_process">📸 On Process</SelectItem>
-                            <SelectItem value="completed">✅ Selesai (Completed)</SelectItem>
-                            <SelectItem value="cancelled">❌ Cancelled</SelectItem>
+                            <SelectItem value="confirmed">
+                                <span className="flex items-center gap-2">
+                                    <CalendarIcon className="w-4 h-4 text-muted-foreground" />
+                                    <span>Booked</span>
+                                </span>
+                            </SelectItem>
+                            <SelectItem value="on_process">
+                                <span className="flex items-center gap-2">
+                                    <Camera className="w-4 h-4 text-muted-foreground" />
+                                    <span>Proses</span>
+                                </span>
+                            </SelectItem>
+                            <SelectItem value="completed">
+                                <span className="flex items-center gap-2">
+                                    <CheckCircle2 className="w-4 h-4 text-green-600" />
+                                    <span>Selesai</span>
+                                </span>
+                            </SelectItem>
+                            <SelectItem value="cancelled">
+                                <span className="flex items-center gap-2">
+                                    <XCircle className="w-4 h-4 text-red-600" />
+                                    <span>Cancel</span>
+                                </span>
+                            </SelectItem>
                         </SelectContent>
                     </Select>
-                </div>
-
-                {/* Payment Status Indicator (Read Only View) */}
-                <div className="flex-1 space-y-1">
-                    <Label className="text-xs text-muted-foreground uppercase">Status Pembayaran</Label>
-                    <div className="h-9 flex items-center">
-                        {(() => {
-                            const total = parseInt(editingOrder.amount.replace(/[^0-9]/g, "")) || 0
-                            const paid = editingOrder.paid_amount || 0
-                            if (paid >= total && total > 0) {
-                                return <Badge className="bg-green-600 text-white hover:bg-green-700 pointer-events-none"><CheckCircle2 className="w-3 h-3 mr-1"/> LUNAS</Badge>
-                            } else if (paid > 0) {
-                                return <Badge variant="secondary" className="bg-yellow-100 text-yellow-800 pointer-events-none">PARTIAL / DP</Badge>
-                            } else {
-                                return <Badge variant="outline" className="border-red-200 text-red-700 bg-red-50 pointer-events-none">BELUM BAYAR</Badge>
-                            }
-                        })()}
-                    </div>
                 </div>
             </div>
 
