@@ -15,8 +15,7 @@ import {
   ChevronDown,
   Save,
   Printer,
-  Plus,
-  FileText
+  Plus
 } from "lucide-react"
 
 import { format } from "date-fns"
@@ -79,7 +78,7 @@ const statusConfig: Record<string, { label: string, color: string, icon: Element
 
 
 export default function OrdersPage() {
-  const router = useRouter()
+  const _router = useRouter()
   const [orders, setOrders] = useState<Order[]>([])
   const [teamMembers, setTeamMembers] = useState<TeamMemberSimple[]>([])
   const [packages, setPackages] = useState<{id: string, name: string, price: number}[]>([])
@@ -101,19 +100,6 @@ export default function OrdersPage() {
   // Editing State
   const [editingOrder, setEditingOrder] = useState<Order | null>(null)
 
-  const handleGenerateInvoice = (order: Order) => {
-    const params = new URLSearchParams({
-      orderId: order.id,
-      clientName: order.client,
-      contact: order.contact || '',
-      package: order.package,
-      amount: order.amount,
-      date: order.date,
-      status: order.status
-    })
-    router.push(`/admin/invoices?${params.toString()}`)
-    toast.success("Membuka Invoice Designer...")
-  }
 
   const handleCreateOrder = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
@@ -428,7 +414,6 @@ export default function OrdersPage() {
              setEditingOrder={setEditingOrder as (order: Order) => void}
              onSave={handleSaveEdit}
              onDelete={handleDelete}
-             onGenerateInvoice={handleGenerateInvoice}
              onPaymentStatusChange={handlePaymentStatusChange}
              teamMembers={teamMembers}
           />
@@ -442,7 +427,6 @@ export default function OrdersPage() {
              setEditingOrder={setEditingOrder as (order: Order) => void}
              onSave={handleSaveEdit}
              onDelete={handleDelete}
-             onGenerateInvoice={handleGenerateInvoice}
              onPaymentStatusChange={handlePaymentStatusChange}
              teamMembers={teamMembers}
           />
@@ -456,7 +440,6 @@ export default function OrdersPage() {
              setEditingOrder={setEditingOrder as (order: Order) => void}
              onSave={handleSaveEdit}
              onDelete={handleDelete}
-             onGenerateInvoice={handleGenerateInvoice}
              onPaymentStatusChange={handlePaymentStatusChange}
              teamMembers={teamMembers}
           />
@@ -556,13 +539,12 @@ interface CardTableProps {
     setEditingOrder: (order: Order) => void
     onSave: () => void
     onDelete: (id: string) => void
-    onGenerateInvoice: (order: Order) => void
     onPaymentStatusChange: (orderId: string, newStatus: string) => void
     teamMembers: TeamMemberSimple[]
 }
 
 
-function CardTable({ orders, expandedId, editingOrder, onRowClick, setEditingOrder, onSave, onDelete, onGenerateInvoice, onPaymentStatusChange, teamMembers }: CardTableProps) {
+function CardTable({ orders, expandedId, editingOrder, onRowClick, setEditingOrder, onSave, onDelete, onPaymentStatusChange, teamMembers }: CardTableProps) {
   const [currentPage, setCurrentPage] = useState(1)
   const ITEMS_PER_PAGE = 5
   
@@ -694,7 +676,6 @@ function CardTable({ orders, expandedId, editingOrder, onRowClick, setEditingOrd
                                         setEditingOrder={setEditingOrder}
                                         onSave={onSave}
                                         onDelete={onDelete}
-                                        onGenerateInvoice={onGenerateInvoice}
                                         onPaymentStatusChange={onPaymentStatusChange}
                                         teamMembers={teamMembers}
                                     />
@@ -780,7 +761,6 @@ function CardTable({ orders, expandedId, editingOrder, onRowClick, setEditingOrd
                                         setEditingOrder={setEditingOrder}
                                         onSave={onSave}
                                         onDelete={onDelete}
-                                        onGenerateInvoice={onGenerateInvoice}
                                         onPaymentStatusChange={onPaymentStatusChange}
                                         teamMembers={teamMembers}
                                         isMobile={true}
@@ -859,7 +839,6 @@ function OrderEditForm({
     setEditingOrder, 
     onSave, 
     onDelete,
-    onGenerateInvoice,
     onPaymentStatusChange,
     teamMembers,
     isMobile = false
@@ -868,7 +847,6 @@ function OrderEditForm({
     setEditingOrder: (order: Order) => void, 
     onSave: () => void, 
     onDelete: (id: string) => void,
-    onGenerateInvoice: (order: Order) => void,
     onPaymentStatusChange: (orderId: string, newStatus: string) => void,
     teamMembers: TeamMemberSimple[],
     isMobile?: boolean
@@ -1189,7 +1167,7 @@ function OrderEditForm({
                     variant="outline" 
                     size="sm" 
                     onClick={() => {
-                        // Direct print: opens invoice with print dialog
+                        // Direct print: opens invoice page in new tab with print dialog
                         window.open(`/admin/invoices?orderId=${editingOrder.id}&clientName=${encodeURIComponent(editingOrder.client)}&contact=${encodeURIComponent(editingOrder.contact || '')}&package=${encodeURIComponent(editingOrder.package)}&amount=${encodeURIComponent(editingOrder.amount)}&date=${editingOrder.date}&status=${editingOrder.paymentStatus || 'unpaid'}&print=true`, '_blank')
                     }}
                     className={`${isMobile ? 'h-8 px-2' : ''}`}
@@ -1199,12 +1177,9 @@ function OrderEditForm({
             </div>
 
             {/* Action Buttons */}
-            <div className={`col-span-2 md:col-span-3 flex justify-end gap-2 mt-1 pt-2 border-t ${isMobile ? 'grid grid-cols-3' : ''}`}>
+            <div className={`col-span-2 md:col-span-3 flex justify-end gap-2 mt-1 pt-2 border-t ${isMobile ? 'grid grid-cols-2' : ''}`}>
                 <Button variant="ghost" size="sm" onClick={() => onDelete(editingOrder.id)} className={`text-red-500 hover:text-red-600 hover:bg-red-50 ${isMobile ? 'col-span-1 px-0' : 'mr-auto'}`}>
                     <Trash2 className={`mr-2 h-4 w-4 ${isMobile ? 'mr-0 h-4 w-4' : ''}`} /> {isMobile ? "" : "Hapus"}
-                </Button>
-                <Button variant="outline" size="sm" onClick={() => onGenerateInvoice(editingOrder)} className={isMobile ? 'col-span-1 px-0' : ''}>
-                    <FileText className={`mr-2 h-4 w-4 ${isMobile ? 'mr-0 h-4 w-4' : ''}`} /> {isMobile ? "" : "Edit Invoice"}
                 </Button>
                 <Button size="sm" onClick={onSave} className={isMobile ? 'col-span-1 px-0' : ''}>
                     <Save className={`mr-2 h-4 w-4 ${isMobile ? 'h-3 w-3' : ''}`} /> {isMobile ? "Simpan" : "Simpan Perubahan"}
