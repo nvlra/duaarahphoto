@@ -774,11 +774,11 @@ function CardTable({ orders, expandedId, editingOrder, onRowClick, setEditingOrd
                             const total = parseInt(order.amount.replace(/[^0-9]/g, "")) || 0
                             const paid = order.paid_amount || 0
                             if (paid >= total && total > 0) {
-                                return <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200">LUNAS</Badge>
+                                return <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200">Sudah Lunas</Badge>
                             } else if (paid > 0) {
-                                return <Badge variant="outline" className="bg-yellow-50 text-yellow-700 border-yellow-200">PARTIAL</Badge>
+                                return <Badge variant="outline" className="bg-yellow-50 text-yellow-700 border-yellow-200">Belum Lunas</Badge>
                             } else {
-                                return <Badge variant="outline" className="bg-red-50 text-red-700 border-red-200">BELUM</Badge>
+                                return <Badge variant="outline" className="bg-red-50 text-red-700 border-red-200">Belum Bayar</Badge>
                             }
                         })()}
                         </TableCell>
@@ -882,7 +882,21 @@ function CardTable({ orders, expandedId, editingOrder, onRowClick, setEditingOrd
                                         </div>
                                     </div>
                                     <div className="flex items-center justify-between font-medium text-foreground pt-1 border-t mt-1.5 border-dashed">
-                                        <span className="text-[10px] text-muted-foreground">{order.package}</span>
+                                        <div className="flex flex-col gap-0.5">
+                                            <span className="text-[10px] text-muted-foreground">{order.package}</span>
+                                            {/* Mobile Payment Status Badge */}
+                                            {(() => {
+                                                const total = parseInt(order.amount.replace(/[^0-9]/g, "")) || 0
+                                                const paid = order.paid_amount || 0
+                                                if (paid >= total && total > 0) {
+                                                    return <span className="text-[10px] text-green-600 font-bold">Sudah Lunas</span>
+                                                } else if (paid > 0) {
+                                                    return <span className="text-[10px] text-yellow-600 font-bold">Belum Lunas</span>
+                                                } else {
+                                                    return <span className="text-[10px] text-red-600 font-bold">Belum Bayar</span>
+                                                }
+                                            })()}
+                                        </div>
                                         <span className="text-sm">{order.amount}</span>
                                     </div>
                                 </div>

@@ -91,28 +91,34 @@ export default function InvoicePrintButton({ orderData }: { orderData: RawOrder 
         </Button>
       </DialogTrigger>
 
-      <DialogContent className="max-w-7xl h-[95vh] flex flex-col p-0 bg-slate-100 border-none sm:rounded-xl overflow-hidden">
-        <DialogHeader className="p-4 bg-white border-b flex-none z-10 shadow-sm">
-           <div className="flex justify-between items-center w-full pr-8">
+      <DialogContent className="max-w-[95vw] h-[95vh] flex flex-col p-0 bg-slate-100 border-none sm:rounded-xl overflow-hidden">
+        <DialogHeader className="px-4 py-3 bg-white border-b flex-none z-10 shadow-sm">
+           <div className="flex justify-between items-center w-full">
              <div>
                 <DialogTitle>Preview Invoice</DialogTitle>
-                <DialogDescription className="hidden sm:block">Pastikan data sudah benar sebelum dicetak.</DialogDescription>
+                <DialogDescription className="hidden sm:block text-xs text-muted-foreground mt-0.5">Pastikan data sudah benar sebelum dicetak.</DialogDescription>
              </div>
-             <Button onClick={() => handlePrint()} className="gap-2 bg-blue-600 hover:bg-blue-700 text-white shadow-md">
-                <Printer className="w-4 h-4" />
-                Print / Save PDF
-             </Button>
+             <div className="flex items-center gap-2">
+                 <Button variant="ghost" className="hidden sm:flex" onClick={() => setIsOpen(false)}>
+                     Batal
+                 </Button>
+                 <Button onClick={() => handlePrint()} className="gap-2 bg-blue-600 hover:bg-blue-700 text-white shadow-sm h-9">
+                    <Printer className="w-4 h-4" />
+                    Print / Save PDF
+                 </Button>
+             </div>
            </div>
         </DialogHeader>
 
         {/* Scrollable Preview Area */}
-        <div className="flex-1 overflow-auto bg-slate-200/50 flex justify-center py-8">
+        <div className="flex-1 overflow-auto bg-slate-300/30 flex justify-center p-4 sm:p-8">
           {/* 
             Wrapper Scale Logic: 
-            Original A4 Width = 210mm (~794px).
-            We use CSS scale to fit it in smaller screens.
+            Use w-fit to let the content dictate sizing, but constrain max-width.
+            On mobile: Scale down significantly.
+            On desktop: Scale down slightly if needed to avoid massive scrolling.
           */}
-          <div className="scale-[0.5] sm:scale-[0.6] md:scale-[0.75] lg:scale-[0.85] xl:scale-100 origin-top transition-transform duration-200 ease-out mb-10">
+          <div className="w-fit h-fit origin-top transform scale-[0.45] sm:scale-[0.6] md:scale-[0.7] lg:scale-[0.8] xl:scale-95 transition-transform duration-200 ease-out">
              <div className="shadow-2xl">
               <InvoiceTemplate
                   ref={componentRef}
