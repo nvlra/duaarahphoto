@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { Save, Loader2, Building2, CreditCard, FileText } from "lucide-react"
+import { Save, Loader2, Building2, CreditCard, FileText, Upload, Trash2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -17,6 +17,7 @@ export default function SettingsPage() {
   const [saving, setSaving] = useState(false)
   const [settings, setSettings] = useState<BusinessSettings>({
     brand_name: "",
+    brand_logo_url: "",
     brand_color: "#1e293b",
     bank_name: "",
     bank_number: "",
@@ -27,6 +28,9 @@ export default function SettingsPage() {
 
   // We need the ID to update the specific row, assuming single row table
   const [settingsId, setSettingsId] = useState<string | null>(null)
+  
+  // File Upload State
+  const [uploading, setUploading] = useState(false)
 
   useEffect(() => {
     fetchSettings()
@@ -52,6 +56,7 @@ export default function SettingsPage() {
         setSettingsId(data.id)
         setSettings({
             brand_name: data.brand_name || "",
+            brand_logo_url: data.brand_logo_url || "",
             brand_color: data.brand_color || "#1e293b",
             bank_name: data.bank_name || "",
             bank_number: data.bank_number || "",
@@ -59,14 +64,43 @@ export default function SettingsPage() {
             address: data.address || "",
             footer_note: data.footer_note || ""
         })
-      } else {
-        // No row exists, we will create one on save
       }
     } catch (err) {
        console.error(err)
     } finally {
        setLoading(false)
     }
+  }
+  
+  const handleLogoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+      if (!e.target.files || e.target.files.length === 0) {
+          return
+      }
+      const file = e.target.files[0]
+      const fileExt = file.name.split('.').pop()
+      const fileName = `${Math.random()}.${fileExt}`
+      const filePath = `${fileName}`
+
+      try {
+          setUploading(true)
+          const { error: uploadError } = await supabase.storage.from('branding').upload(filePath, file)
+          
+          if (uploadError) {
+              throw uploadError
+          }
+
+          const { data } = supabase.storage.from('branding').getPublicUrl(filePath)
+          
+          if (data) {
+              handleChange("brand_logo_url", data.publicUrl)
+              toast.success("Upload Berhasil", "Logo berhasil diunggah")
+          }
+      } catch (error: any) {
+          console.error(error)
+          toast.error("Gagal Upload", error.message)
+      } finally {
+          setUploading(false)
+      }
   }
 
   const handleSave = async (e: React.FormEvent) => {
@@ -76,13 +110,13 @@ export default function SettingsPage() {
     try {
         const payload = {
             brand_name: settings.brand_name,
+            brand_logo_url: settings.brand_logo_url,
             brand_color: settings.brand_color,
             bank_name: settings.bank_name,
             bank_number: settings.bank_number,
             bank_holder: settings.bank_holder,
             address: settings.address,
             footer_note: settings.footer_note,
-            // updated_at: new Date().toISOString() // if column exists
         }
 
         let error;
@@ -155,6 +189,43 @@ export default function SettingsPage() {
                                 required
                             />
                         </div>
+                        
+                         {/* LOGO UPLOAD */}
+                        <div className="space-y-2">
+                            <Label htmlFor="logo">Logo Perusahaan (Opsional)</Label>
+                            <div className="flex flex-col gap-3">
+                                {settings.brand_logo_url && (
+                                    <div className="relative w-32 h-16 bg-muted/30 border rounded-md flex items-center justify-center">
+                                         {/* eslint-disable-next-line @next/next/no-img-element */}
+                                         <img 
+                                            src={settings.brand_logo_url} 
+                                            alt="Preview" 
+                                            className="max-w-full max-h-full object-contain"
+                                         />
+                                         <button 
+                                            type="button"
+                                            onClick={() => handleChange("brand_logo_url", "")}
+                                            className="absolute -top-2 -right-2 bg-red-100 text-red-600 rounded-full p-1 border border-red-200 hover:bg-red-200"
+                                         >
+                                            <Trash2 className="w-3 h-3" />
+                                         </button>
+                                    </div>
+                                )}
+                                <div className="flex items-center gap-2">
+                                     <Input 
+                                        id="logo" 
+                                        type="file" 
+                                        accept="image/*"
+                                        onChange={handleLogoUpload}
+                                        disabled={uploading}
+                                        className="text-xs"
+                                     />
+                                     {uploading && <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />}
+                                </div>
+                                <p className="text-[10px] text-muted-foreground">Format PNG/JPG. Max 2MB.</p>
+                            </div>
+                        </div>
+
                         <div className="space-y-2">
                             <Label htmlFor="brand_color">Warna Brand (Hex)</Label>
                             <div className="flex gap-2">

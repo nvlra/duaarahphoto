@@ -39,6 +39,7 @@ export default function InvoicePrintButton({ orderData }: { orderData: RawOrder 
       if (data) {
           setSettings({
             brand_name: data.brand_name || "Enviel Admin",
+            brand_logo_url: data.brand_logo_url || undefined,
             brand_color: data.brand_color || "#1e293b",
             bank_name: data.bank_name || "",
             bank_number: data.bank_number || "",
