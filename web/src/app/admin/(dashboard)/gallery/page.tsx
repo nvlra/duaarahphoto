@@ -192,7 +192,7 @@ export default function ManageGallery() {
 
       <Tabs defaultValue="landing" onValueChange={setActiveTab} className="w-full">
         {/* Mobile: Stack controls */}
-        <div className="flex flex-col gap-3 mb-4 sticky top-14 z-40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 pt-2 pb-4 -mx-4 px-4 md:mx-0 md:px-0 md:static md:bg-transparent md:z-auto md:p-0">
+        <div className="flex flex-col gap-3 mb-4 sticky top-14 z-40 bg-background/95 backdrop-blur supports-backdrop-filter:bg-background/60 pt-2 pb-4 -mx-4 px-4 md:mx-0 md:px-0 md:static md:bg-transparent md:z-auto md:p-0">
            <TabsList className="w-full grid grid-cols-2 h-auto p-1">
             <TabsTrigger value="landing" className="text-xs md:text-sm py-2">Landing Page</TabsTrigger>
             <TabsTrigger value="categories" className="text-xs md:text-sm py-2">Kategori</TabsTrigger>

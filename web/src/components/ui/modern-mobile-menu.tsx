@@ -78,7 +78,7 @@ const InteractiveMenu: React.FC<InteractiveMenuProps> = ({ items, accentColor })
             key={item.label}
             ref={el => { itemsRef.current[index] = el }}
             className={`
-              relative flex-shrink-0 flex items-center justify-center w-10 h-10 rounded-full transition-all duration-300
+              relative shrink-0 flex items-center justify-center w-10 h-10 rounded-full transition-all duration-300
               ${isActive ? 'bg-primary text-primary-foreground scale-110 shadow-sm' : 'text-muted-foreground hover:bg-muted hover:scale-105'}
             `}
             onClick={() => handleItemClick(item.href)}

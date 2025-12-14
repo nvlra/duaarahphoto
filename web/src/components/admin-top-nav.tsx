@@ -39,7 +39,7 @@ export function AdminProfileDropdown({ showLabel = false }: { showLabel?: boolea
               )}
            </Button>
         </DropdownMenuTrigger>
-        <DropdownMenuContent align="end" className="z-[100]">
+        <DropdownMenuContent align="end" className="z-100">
            <DropdownMenuLabel>Akun Saya</DropdownMenuLabel>
            <DropdownMenuSeparator />
            <DropdownMenuItem asChild>

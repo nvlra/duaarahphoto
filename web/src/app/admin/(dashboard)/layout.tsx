@@ -10,7 +10,7 @@ export default function AdminLayout({
   children: React.ReactNode
 }) {
   return (
-    <div className="flex h-[100dvh] w-full overflow-hidden flex-row">
+    <div className="flex h-dvh w-full overflow-hidden flex-row">
       {/* Desktop Sidebar */}
       <aside className="hidden w-64 border-r bg-muted/40 md:block shrink-0">
         <Sidebar />
@@ -68,7 +68,7 @@ export default function AdminLayout({
 
 
       {/* Modern Mobile Menu (Floating Dock) */}
-      <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-[100] md:hidden">
+      <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-100 md:hidden">
          <InteractiveMenu />
       </div>
     </div>
