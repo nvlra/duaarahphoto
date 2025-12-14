@@ -170,11 +170,11 @@ export default function OrdersPage() {
 
     const { error } = await supabase.from('orders').insert(payload)
     if (!error) {
-        toast.success("Booking berhasil dibuat")
+        toast.success("Success Notification", "Booking berhasil dibuat")
         setIsNewBookingOpen(false)
         fetchOrders()
     } else {
-        toast.error("Gagal membuat booking: " + error.message)
+        toast.error("Failed Notification", "Gagal membuat booking: " + error.message)
         console.error(error)
     }
     setIsLoading(false)
@@ -211,7 +211,7 @@ export default function OrdersPage() {
 
       if (error) {
           console.error(error)
-          toast.error("Gagal mengambil data order")
+          toast.error("Failed Notification", "Gagal mengambil data order")
       } else if (data) {
           const mappedOrders: Order[] = (data as SupabaseOrderRow[]).map((d) => ({
               id: d.id,
@@ -297,10 +297,10 @@ export default function OrdersPage() {
       if (confirm("Hapus order ini?")) {
           const { error } = await supabase.from('orders').delete().eq('id', orderId)
           if (!error) {
-              toast.success("Order dihapus")
+              toast.success("Success Notification", "Order dihapus")
               setOrders(orders.filter(o => o.id !== orderId))
           } else {
-              toast.error("Gagal menghapus")
+              toast.error("Failed Notification", "Gagal menghapus")
           }
       }
   }
@@ -336,7 +336,7 @@ export default function OrdersPage() {
          })
          
          if (error) {
-             toast.error("Gagal membuat order")
+             toast.error("Failed Notification", "Gagal membuat order")
              console.error(error)
              return
          }
@@ -356,7 +356,7 @@ export default function OrdersPage() {
              await supabase.from('order_allocations').insert(allocs)
          }
 
-         toast.success("Order berhasil dibuat")
+         toast.success("Success Notification", "Order berhasil dibuat")
          setIsNewBookingOpen(false)
          fetchOrders()
          
@@ -365,7 +365,7 @@ export default function OrdersPage() {
           const { error } = await supabase.from('orders').update(orderPayload).eq('id', editingOrder.id)
           
           if (error) {
-              toast.error("Gagal update order")
+              toast.error("Failed Notification", "Gagal update order")
                return
           }
           
@@ -392,7 +392,7 @@ export default function OrdersPage() {
               if (allocs.length > 0) await supabase.from('order_allocations').insert(allocs)
           }
 
-          toast.success("Order diupdate")
+          toast.success("Success Notification", "Order diupdate")
           setIsEditDialogOpen(false)
           fetchOrders()
       }
@@ -411,9 +411,9 @@ export default function OrdersPage() {
       const { error } = await supabase.from('orders').delete().eq('id', deleteId)
 
       if (error) {
-          toast.error("Gagal menghapus", error.message)
+          toast.error("Failed Notification", "Gagal menghapus: " + error.message)
       } else {
-          toast.success("Order dihapus", "Data berhasil dihapus selamanya")
+          toast.success("Success Notification", "Data berhasil dihapus selamanya")
           setOrders(orders.filter(o => o.id !== deleteId))
           if (expandedId === deleteId) {
              setExpandedId(null)
@@ -430,10 +430,10 @@ export default function OrdersPage() {
       .eq('id', orderId)
     
     if (error) {
-      toast.error("Gagal mengupdate status pembayaran")
+      toast.error("Failed Notification", "Gagal mengupdate status pembayaran")
       console.error(error)
     } else {
-      toast.success(newStatus === 'paid' ? "Ditandai LUNAS" : "Ditandai BELUM LUNAS")
+      toast.success("Success Notification", newStatus === 'paid' ? "Ditandai LUNAS" : "Ditandai BELUM LUNAS")
       setOrders(orders.map(o => o.id === orderId ? { ...o, paymentStatus: newStatus } : o))
     }
   }

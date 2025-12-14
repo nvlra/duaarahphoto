@@ -65,7 +65,7 @@ const InteractiveMenu: React.FC<InteractiveMenuProps> = ({ items, accentColor })
   return (
     <nav
       ref={navRef}
-      className="flex items-center p-2 rounded-2xl bg-background/80 backdrop-blur-md border shadow-lg gap-2 overflow-x-auto w-full no-scrollbar justify-start px-2 h-full mx-auto"
+      className="flex items-center p-2 rounded-full bg-background/80 backdrop-blur-md border shadow-lg gap-2 overflow-x-auto w-full no-scrollbar justify-start px-2 h-full mx-auto"
       role="navigation"
       style={navStyle}
     >
