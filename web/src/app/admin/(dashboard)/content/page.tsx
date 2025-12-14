@@ -17,7 +17,6 @@ import { Save } from "lucide-react"
 
 import { supabase } from "@/lib/supabaseClient"
 import { useEffect, useState } from "react"
-// import { toast } from "sonner" removed
 import { useToast } from "@/components/ui/ios-toast"
 
 export default function ManageContent() {
@@ -31,7 +30,6 @@ export default function ManageContent() {
       contact_phone: "",
       contact_address: "",
       social_instagram: ""
-      // seo fields if needed
   })
 
   const fetchSettings = async () => {
@@ -53,6 +51,7 @@ export default function ManageContent() {
   }
 
   useEffect(() => {
+     // eslint-disable-next-line react-hooks/set-state-in-effect
      fetchSettings()
   }, [])
 
@@ -86,10 +85,8 @@ export default function ManageContent() {
         <TabsList>
           <TabsTrigger value="about">Halaman Tentang</TabsTrigger>
           <TabsTrigger value="contact">Info Kontak</TabsTrigger>
-          {/* <TabsTrigger value="seo">Pengaturan SEO</TabsTrigger> */}
         </TabsList>
 
-        {/* About Page Content */}
         <TabsContent value="about" className="space-y-4 mt-4">
           <Card>
             <CardHeader>
@@ -135,7 +132,6 @@ export default function ManageContent() {
           </Card>
         </TabsContent>
 
-        {/* Contact Page Content */}
         <TabsContent value="contact" className="space-y-4 mt-4">
           <Card>
             <CardHeader>
@@ -189,7 +185,6 @@ export default function ManageContent() {
           </Card>
         </TabsContent>
 
-        {/* SEO Content */}
         <TabsContent value="seo" className="space-y-4 mt-4 data-[state=active]:animate-in data-[state=active]:fade-in-0 data-[state=active]:slide-in-from-left-4 data-[state=active]:duration-500 ease-in-out">
           <Card>
              <CardHeader>

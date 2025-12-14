@@ -26,10 +26,8 @@ export default function SettingsPage() {
     footer_note: ""
   })
 
-  // We need the ID to update the specific row, assuming single row table
   const [settingsId, setSettingsId] = useState<string | null>(null)
   
-  // File Upload State
   const [uploading, setUploading] = useState(false)
 
   useEffect(() => {
@@ -39,14 +37,13 @@ export default function SettingsPage() {
   const fetchSettings = async () => {
     try {
       setLoading(true)
-      // Get the first row
       const { data, error } = await supabase
         .from('invoice_settings')
         .select('*')
         .limit(1)
         .single()
 
-      if (error && error.code !== 'PGRST116') { // PGRST116 is "The result contains 0 rows"
+      if (error && error.code !== 'PGRST116') {
          console.error(error)
          toast.error("Error", "Gagal memuat pengaturan")
          return
@@ -123,11 +120,9 @@ export default function SettingsPage() {
         let error;
         
         if (settingsId) {
-            // Update
             const result = await supabase.from('invoice_settings').update(payload).eq('id', settingsId)
             error = result.error
         } else {
-            // Insert
             const result = await supabase.from('invoice_settings').insert(payload).select()
             if (result.data && result.data.length > 0) {
                 setSettingsId(result.data[0].id)
@@ -169,7 +164,6 @@ export default function SettingsPage() {
 
       <form onSubmit={handleSave}>
         <div className="grid gap-6">
-            {/* BRANDING */}
             <Card>
                 <CardHeader>
                     <CardTitle className="flex items-center gap-2">
@@ -191,7 +185,6 @@ export default function SettingsPage() {
                             />
                         </div>
                         
-                         {/* LOGO UPLOAD */}
                         <div className="space-y-2">
                             <Label htmlFor="logo">Logo Perusahaan (Opsional)</Label>
                             <div className="flex flex-col gap-3">
@@ -259,7 +252,6 @@ export default function SettingsPage() {
                 </CardContent>
             </Card>
 
-            {/* BANK ACCOUNT */}
             <Card>
                 <CardHeader>
                     <CardTitle className="flex items-center gap-2">
@@ -301,7 +293,6 @@ export default function SettingsPage() {
                 </CardContent>
             </Card>
             
-            {/* NOTES */}
             <Card>
                 <CardHeader>
                     <CardTitle className="flex items-center gap-2">

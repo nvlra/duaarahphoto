@@ -4,7 +4,6 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Calendar } from "@/components/ui/calendar"
 import { DollarSign, ShoppingBag, Users, TrendingUp, MapPin } from "lucide-react"
 import { useState, useEffect } from "react"
-import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { useToast } from "@/components/ui/ios-toast"
 import { Area, AreaChart, ResponsiveContainer, XAxis, YAxis, Tooltip, CartesianGrid } from "recharts"
@@ -23,12 +22,12 @@ export default function AdminDashboard() {
   }
 
   interface Booking {
-      id: string; // or number, depends on usage. We generate random one in old code, but should use real ID.
+      id: string;
       client_name: string;
       package_name: string;
       event_date: string;
       status: string;
-      maps_url?: string; // Added maps_url
+      maps_url?: string;
   }
 
   const [stats, setStats] = useState({
@@ -43,15 +42,12 @@ export default function AdminDashboard() {
   const [bookedDays, setBookedDays] = useState<Date[]>([])
   const [recentBookings, setRecentBookings] = useState<Booking[]>([])
 
-  // Refactored Fetch
   useEffect(() => {
       const load = async () => {
           const today = new Date()
           const thisMonthStart = startOfMonth(today)
           const lastMonthStart = startOfMonth(subMonths(today, 1))
           
-          // FETCH ORDERS
-          // Fixed: Added client_name, package_name, event_date, maps_url to select
           const { data: orders } = await supabase
             .from('orders')
             .select('id, total_amount, created_at, status, event_date, client_name, package_name, maps_url')
@@ -76,7 +72,6 @@ export default function AdminDashboard() {
 
           const activeCount = ordersSafe.filter(o => ['pending', 'confirmed'].includes(o.status)).length
 
-          // FETCH CLIENTS
           const { data: clients } = await supabase.from('clients').select('created_at')
           const clientsSafe = clients || []
           const newClientsCount = clientsSafe.filter(c => new Date(c.created_at) >= thisMonthStart).length
@@ -90,7 +85,6 @@ export default function AdminDashboard() {
               clientGrowth: 0
           })
 
-          // Chart
           const months: ChartData[] = []
           for (let i = 11; i >= 0; i--) {
              const d = subMonths(today, i)
@@ -100,11 +94,9 @@ export default function AdminDashboard() {
           }
           setChartData(months)
 
-          // Calendar using event_date
           const bookings = ordersSafe.filter(o => o.event_date).map(o => new Date(o.event_date))
           setBookedDays(bookings)
           
-           // Recent Bookings (Upcoming)
           const upcoming: Booking[] = ordersSafe
             .filter(o => o.event_date && new Date(o.event_date) >= today)
             .sort((a, b) => new Date(a.event_date).getTime() - new Date(b.event_date).getTime())
@@ -132,7 +124,6 @@ export default function AdminDashboard() {
       
       <div>
          <div className="grid gap-3 grid-cols-2 md:grid-cols-2 lg:grid-cols-3">
-            {/* Card 1: Revenue */}
             <Card className="shadow-sm hover:shadow-md transition-shadow">
                <CardHeader className="pb-2 p-3 sm:p-6">
                   <div className="flex flex-row items-center justify-between space-y-0">
@@ -161,7 +152,6 @@ export default function AdminDashboard() {
                </CardContent>
             </Card>
             
-            {/* Card 2: Active Projects */}
             <Card className="shadow-sm hover:shadow-md transition-shadow">
                <CardHeader className="pb-2 p-3 sm:p-6">
                   <div className="flex flex-row items-center justify-between space-y-0">
@@ -188,7 +178,6 @@ export default function AdminDashboard() {
                </CardContent>
             </Card>
             
-            {/* Card 3: New Clients */}
             <Card className="shadow-sm hover:shadow-md transition-shadow col-span-2 sm:col-span-1 lg:col-span-1">
                <CardHeader className="pb-2 p-3 sm:p-6">
                   <div className="flex flex-row items-center justify-between space-y-0">
@@ -217,7 +206,6 @@ export default function AdminDashboard() {
       </div>
 
       <div className="grid gap-6 grid-cols-1 lg:grid-cols-7">
-        {/* Client Statistics Chart */}
         <Card className="col-span-1 lg:col-span-4 border shadow-sm dark:bg-zinc-950/50">
           <CardHeader>
             <CardTitle>Statistik Order</CardTitle>
@@ -248,7 +236,6 @@ export default function AdminDashboard() {
           </CardContent>
         </Card>
 
-        {/* Calendar & Upcoming */}
          <div className="col-span-1 lg:col-span-3 flex flex-col gap-6">
             <Card className="border shadow-sm dark:bg-zinc-950/50">
                <CardHeader className="pb-3">

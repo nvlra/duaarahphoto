@@ -72,8 +72,8 @@ interface Expense {
   id: string
   description: string
   amount: number
-  category: string // joined name
-  category_id?: string // joined id
+  category: string
+  category_id?: string
   date: string
   type: string
 }
@@ -96,20 +96,17 @@ export default function FinancePage() {
   const toast = useToast()
   const [isCategoryManageOpen, setIsCategoryManageOpen] = useState(false)
   
-  // Confirm Modal State
   const [confirmOpen, setConfirmOpen] = useState(false)
   const [confirmAction, setConfirmAction] = useState<() => Promise<void> | void>(() => {})
   const [confirmTitle, setConfirmTitle] = useState("")
   const [confirmDescription, setConfirmDescription] = useState("")
 
-  // Edit State
   const [editingExpense, setEditingExpense] = useState<Expense | null>(null)
   const [isFormOpen, setIsFormOpen] = useState(false)
 
   const [currentPage, setCurrentPage] = useState(1)
   const ITEMS_PER_PAGE = 8
 
-  // Charts Data Type
   interface ChartDataPoint {
     name: string
     revenue: number
@@ -120,7 +117,6 @@ export default function FinancePage() {
   const [expenses, setExpenses] = useState<Expense[]>([])
   const [categories, setCategories] = useState<Category[]>([])
   const [newCategoryName, setNewCategoryName] = useState("")
-  // Removed unused 'loading' state
   const [metrics, setMetrics] = useState({
       revenue: 0,
       expenses: 0,
@@ -132,35 +128,30 @@ export default function FinancePage() {
 
   const fetchData = useCallback(async () => {
     try {
-      // 1. Fetch Expenses Categories
       const { data: catData } = await supabase.from('expense_categories').select('*').order('name')
       if (catData) setCategories(catData)
 
-      // 2. Fetch Expenses
       const { data: expData } = await supabase.from('expenses').select('*, expense_categories(name)').order('date', { ascending: false }).limit(1000)
      
       if (expData) {
-         // Cast to unknown first to avoid TS conflict if any, then to ExpenseDB[]
          const mapped = (expData as unknown as ExpenseDB[]).map((e) => ({
              id: e.id,
              description: e.description,
              category: e.expense_categories?.name || "Uncategorized",
              category_id: e.category_id,
-             date: format(new Date(e.date), "dd MMM yyyy"), // Display format
-             rawDate: e.date, // For calculation
+             date: format(new Date(e.date), "dd MMM yyyy"),
+             rawDate: e.date,
              amount: e.amount,
              type: "expense"
          }))
          setExpenses(mapped)
          
-         // 3. AGGREGATION
          const { data: orders } = await supabase
             .from('orders')
             .select('total_amount, created_at')
             .neq('status', 'cancelled')
             .gte('created_at', subMonths(new Date(), 6).toISOString())
 
-         // Calculate Totals using fetched orders and expenses (filtered to 6mo)
          let totalRev = 0
          let totalExp = 0
          let totalTeamExp = 0
@@ -170,7 +161,6 @@ export default function FinancePage() {
 
          const sixMonthsAgo = subMonths(new Date(), 6)
          
-         // Filter expenses for metrics (ensure date is within 6 months)
          const recentExpensesForMetrics = mapped.filter(e => new Date(e.rawDate) >= sixMonthsAgo)
          
          recentExpensesForMetrics.forEach(e => {
@@ -192,17 +182,14 @@ export default function FinancePage() {
             opsExpenses: totalOpsExp
          })
 
-         // Generate Chart Data (Last 6 Months)
          const months: ChartDataPoint[] = []
          for (let i = 5; i >= 0; i--) {
             const d = subMonths(new Date(), i)
             const monthName = format(d, 'MMM', { locale: idLocale })
             
-            // Revenue for Month
             const rev = orders?.filter(o => isSameMonth(parseISO(o.created_at), d))
                 .reduce((sum, o) => sum + Number(o.total_amount || 0), 0) || 0
             
-            // Expenses for Month
             const exp = recentExpensesForMetrics.filter(e => isSameMonth(parseISO(e.rawDate), d))
                 .reduce((sum, e) => sum + Number(e.amount || 0), 0) || 0
 
@@ -232,7 +219,7 @@ export default function FinancePage() {
       const { error } = await supabase.from('expense_categories').insert({ name: newCategoryName })
       if (!error) {
          setNewCategoryName("")
-         fetchData() // Refresh
+         fetchData()
       } else {
          toast.error("Gagal menambah kategori")
       }
@@ -271,14 +258,12 @@ export default function FinancePage() {
 
   return (
     <div className="space-y-6 pb-20">
-      {/* ... Header ... */}
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <div>
           <h2 className="text-3xl font-bold tracking-tight">Keuangan</h2>
           <p className="text-muted-foreground hidden sm:block">Monitor profit bersih, kotor, dan pengeluaran tim.</p>
         </div>
         <div className="flex flex-wrap gap-2 w-full sm:w-auto">
-          {/* Manage Categories Button */}
           <Dialog open={isCategoryManageOpen} onOpenChange={setIsCategoryManageOpen}>
             <DialogTrigger asChild>
               <Button variant="outline" size="sm" className="h-8 text-xs sm:h-9 sm:text-sm">
@@ -332,9 +317,7 @@ export default function FinancePage() {
         </div>
       </div>
 
-      {/* METRICS CARDS */}
       <div className="grid grid-cols-2 gap-3 md:grid-cols-2 lg:grid-cols-4">
-        {/* GROSS REVENUE */}
         <Card className="bg-linear-to-br from-blue-50 to-white dark:from-blue-950/20 dark:to-background border-blue-100 dark:border-blue-900">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 p-4">
             <CardTitle className="text-xs font-medium truncate text-blue-600 dark:text-blue-400">Total Omset (Kotor)</CardTitle>
@@ -348,7 +331,6 @@ export default function FinancePage() {
           </CardContent>
         </Card>
 
-        {/* TEAM EXPENSES */}
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 p-4">
             <CardTitle className="text-xs font-medium truncate text-muted-foreground">Pengeluaran Tim</CardTitle>
@@ -362,7 +344,6 @@ export default function FinancePage() {
           </CardContent>
         </Card>
 
-        {/* OPERATIONAL EXPENSES */}
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 p-4">
             <CardTitle className="text-xs font-medium truncate text-muted-foreground">Operasional</CardTitle>
@@ -376,7 +357,6 @@ export default function FinancePage() {
           </CardContent>
         </Card>
 
-        {/* NET PROFIT */}
         <Card className="bg-linear-to-br from-green-50 to-white dark:from-green-950/20 dark:to-background border-green-100 dark:border-green-900 shadow-sm">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 p-4">
             <CardTitle className="text-xs font-bold truncate text-green-700 dark:text-green-400">Profit Bersih (Net)</CardTitle>
@@ -393,7 +373,6 @@ export default function FinancePage() {
         </Card>
       </div>
 
-      {/* CHARTS SECTION */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <Card className="col-span-1 lg:col-span-2">
             <CardHeader>
@@ -434,8 +413,6 @@ export default function FinancePage() {
             </CardContent>
         </Card>
         
-        {/* ... Payment Composition Chart ... */}
-        {/* Keeping original Composition chart implementation (static or can be updated similarly) */}
         <Card className="col-span-1">
             <CardHeader>
                 <CardTitle>Komposisi Pengeluaran</CardTitle>
@@ -443,7 +420,6 @@ export default function FinancePage() {
             </CardHeader>
             <CardContent>
                  <div className="h-[300px] w-full flex flex-col justify-center items-center gap-4">
-                     {/* Dynamic Progress Bars */}
                      <div className="w-full space-y-4">
                         <div className="space-y-1">
                             <div className="flex justify-between text-sm">
@@ -511,7 +487,6 @@ export default function FinancePage() {
                     <TableCell className="text-right font-medium">{parseInt(expense.amount.toString()).toLocaleString('id-ID', { style: 'currency', currency: 'IDR' })}</TableCell>
                     <TableCell className="text-right">
                         <div className="flex justify-end gap-1">
-                            {/* PREVENT EDIT FOR AUTO / FEE? Optional, for now allowed */}
                             <Button 
                                 variant="ghost" size="icon" className="h-7 w-7 text-muted-foreground hover:text-blue-600"
                                 onClick={() => {
@@ -534,7 +509,6 @@ export default function FinancePage() {
             </TableBody>
             </Table>
 
-            {/* Pagination Controls */}
             <div className="mt-4">
                 <Pagination>
                 <PaginationContent>
@@ -569,7 +543,6 @@ export default function FinancePage() {
                         href="#" 
                         onClick={(e) => {
                             e.preventDefault()
-                            // Calculate total pages
                             const totalPages = Math.ceil(expenses.length / ITEMS_PER_PAGE)
                             if (currentPage < totalPages) setCurrentPage(currentPage + 1)
                         }}
@@ -607,7 +580,6 @@ function ExpenseFormDialog({ categories, onSuccess, initialData, isOpen, onOpenC
            <DialogTitle>{initialData ? "Edit Pengeluaran" : "Tambah Pengeluaran"}</DialogTitle>
            <DialogDescription>{initialData ? "Ubah detail pengeluaran ini." : "Catat pengeluaran operasional baru."}</DialogDescription>
         </DialogHeader>
-        {/* Render child content ONLY when open to force re-mount on open */}
         {isOpen && (
             <ExpenseFormContent 
                 categories={categories} 
@@ -624,7 +596,6 @@ function ExpenseFormDialog({ categories, onSuccess, initialData, isOpen, onOpenC
 function ExpenseFormContent({ categories, onSuccess, initialData, close }: { categories: Category[], onSuccess: () => void, initialData?: Expense | null, close: () => void }) {
   const toast = useToast()
   
-  // Initialize state directly from props - no useEffect needed !
   const [desc, setDesc] = useState(initialData?.description || "")
   const [amount, setAmount] = useState(initialData ? initialData.amount.toString() : "")
   const [catId, setCatId] = useState(initialData?.category_id || "")
@@ -635,7 +606,6 @@ function ExpenseFormContent({ categories, onSuccess, initialData, close }: { cat
      let error = null
      
      if (initialData) {
-         // UPDATE
          const { error: err } = await supabase.from('expenses').update({
              description: desc,
              amount: parseFloat(amount),
@@ -643,7 +613,6 @@ function ExpenseFormContent({ categories, onSuccess, initialData, close }: { cat
          }).eq('id', initialData.id)
          error = err
      } else {
-         // INSERT
          const { error: err } = await supabase.from('expenses').insert({
             description: desc,
             amount: parseFloat(amount),

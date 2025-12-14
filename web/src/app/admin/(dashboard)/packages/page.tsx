@@ -16,7 +16,6 @@ import {
 import { supabase } from "@/lib/supabaseClient"
 import { useEffect } from "react"
 
-// import { toast } from "sonner" removed 
 import { ConfirmModal } from "@/components/ui/confirm-modal"
 import { useToast } from "@/components/ui/ios-toast"
 
@@ -44,14 +43,12 @@ import { Textarea } from "@/components/ui/textarea"
 import { ScrollArea } from "@/components/ui/scroll-area"
 
 import { cn } from "@/lib/utils"
-// ... imports ...
 
-// Types
 interface Category {
   id: string
   name: string
   description?: string
-  totalPackages?: number // Computed on frontend
+  totalPackages?: number
 }
 
 interface ProductPackage {
@@ -81,41 +78,32 @@ interface PackageDB {
 }
 
 export default function PackagesPage() {
-  // State
   const [categories, setCategories] = useState<Category[]>([])
   const [packages, setPackages] = useState<ProductPackage[]>([])
   const [selectedCategoryId, setSelectedCategoryId] = useState<string>("")
   
-  // Mobile Collapsible State
   const [isCategoryOpen, setIsCategoryOpen] = useState(false)
 
-  // Dialog States
   const [isCatDialogOpen, setIsCatDialogOpen] = useState(false)
   const [isPkgDialogOpen, setIsPkgDialogOpen] = useState(false)
   
-  // Form States
-  // Form States
   const [catForm, setCatForm] = useState({ name: "", description: "" })
   const [pkgForm, setPkgForm] = useState({ name: "", price: "", description: "", featuresString: "" })
 
   const toast = useToast()
-  // Confirm Modal State
   const [confirmOpen, setConfirmOpen] = useState(false)
   const [confirmAction, setConfirmAction] = useState<() => Promise<void> | void>(() => {})
   const [confirmTitle, setConfirmTitle] = useState("")
   const [confirmDescription, setConfirmDescription] = useState("")
 
   const fetchData = async () => {
-     // Use generics or assertion if Supabase client isn't fully typed for these tables
      const { data: cats } = await supabase.from('package_categories').select('*').order('created_at', { ascending: true })
      const { data: pkgs } = await supabase.from('packages').select('*').order('created_at', { ascending: true })
 
-     // Cast the data to our DB interfaces since implicit typing might be 'any[]'
      const typedCats = cats as unknown as CategoryDB[] | null
      const typedPkgs = pkgs as unknown as PackageDB[] | null
 
      if (typedCats) {
-        // Calculate totalPackages count
         const calculatedCats = typedCats.map((c) => ({
              id: c.id,
              name: c.name,
@@ -124,7 +112,6 @@ export default function PackagesPage() {
         }))
         setCategories(calculatedCats)
         
-        // Set default selected category if none or invalid
         if (calculatedCats.length > 0 && (!selectedCategoryId || !calculatedCats.find((c) => c.id === selectedCategoryId))) {
              setSelectedCategoryId(calculatedCats[0].id)
         }
@@ -133,7 +120,7 @@ export default function PackagesPage() {
      if (typedPkgs) {
         setPackages(typedPkgs.map((p) => ({
              id: p.id,
-             categoryId: p.category_id, // Map DB snake_case
+             categoryId: p.category_id,
              name: p.name,
              price: `Rp ${p.price.toLocaleString('id-ID')}`, 
              description: p.description,
@@ -148,11 +135,9 @@ export default function PackagesPage() {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
-  // Derived State
   const selectedCategory = categories.find(c => c.id === selectedCategoryId)
   const categoryPackages = packages.filter(p => p.categoryId === selectedCategoryId)
 
-  // Handlers - Category
   const handleAddCategory = async () => {
     if (!catForm.name) return
     const { error } = await supabase.from('package_categories').insert({
@@ -188,12 +173,10 @@ export default function PackagesPage() {
     setConfirmOpen(true)
   }
 
-  // Handlers - Package
   const handleAddPackage = async () => {
      if (!pkgForm.name || !selectedCategoryId) return
      
      const features = pkgForm.featuresString.split(",").map(f => f.trim()).filter(f => f !== "")
-     // Parse price: remove non-numeric
      const cleanPrice = parseInt(pkgForm.price.replace(/\D/g, '')) || 0
 
      const { error } = await supabase.from('packages').insert({
@@ -201,7 +184,7 @@ export default function PackagesPage() {
          name: pkgForm.name,
          price: cleanPrice,
          description: pkgForm.description,
-         features: features // JSONB array
+         features: features
      })
 
      if (!error) {
@@ -240,14 +223,12 @@ export default function PackagesPage() {
 
       <div className="grid grid-cols-1 md:grid-cols-12 gap-4 md:gap-6 h-auto md:h-[calc(100vh-200px)]">
         
-        {/* Left Sidebar: Categories - Collapsible on Mobile */}
         <div className="md:col-span-4 lg:col-span-3 flex flex-col gap-4">
           <Card className={`flex flex-col ${isCategoryOpen ? 'h-auto' : 'h-auto md:h-full'}`}>
             <CardHeader className="pb-3 border-b p-3 md:p-6 cursor-pointer md:cursor-default bg-muted/20 md:bg-transparent" onClick={() => setIsCategoryOpen(!isCategoryOpen)}>
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
                     <CardTitle className="text-base md:text-lg">Kategori</CardTitle>
-                    {/* Selected category badge on mobile when collapsed */}
                     {!isCategoryOpen && (
                         <div className="md:hidden">
                             <Badge variant="secondary" className="text-[10px] h-5 px-1.5 font-normal">
@@ -258,7 +239,6 @@ export default function PackagesPage() {
                 </div>
                 
                 <div className="flex items-center gap-2">
-                    {/* Toggle Icon Mobile */}
                     <div className="md:hidden text-muted-foreground">
                         {isCategoryOpen ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
                     </div>
@@ -301,7 +281,6 @@ export default function PackagesPage() {
               </div>
             </CardHeader>
             
-            {/* Scroll Area - Hidden on mobile if closed */}
             <div className={cn("md:flex-1 md:flex flex-col transition-all duration-300 ease-in-out", isCategoryOpen ? "max-h-[300px] overflow-hidden flex" : "hidden max-h-0 md:max-h-none")}>
                 <ScrollArea className="flex-1 md:max-h-none h-[300px] md:h-auto">
                 <div className="p-2 space-y-1">
@@ -318,7 +297,7 @@ export default function PackagesPage() {
                         )}
                         onClick={() => {
                             setSelectedCategoryId(category.id);
-                            setIsCategoryOpen(false); // Auto close on mobile selection
+                            setIsCategoryOpen(false);
                         }}
                     >
                         <div className="flex flex-col items-start gap-0.5 md:gap-1 w-full text-left">
@@ -333,7 +312,6 @@ export default function PackagesPage() {
                             </span>
                         </div>
                         </div>
-                        {/* Hover Actions for Category */}
                         <div className="absolute right-2 top-2 opacity-0 group-hover:opacity-100 transition-opacity bg-background/80 rounded-md">
                         <Button size="icon" variant="ghost" className="h-6 w-6 text-red-500 hover:text-red-700" onClick={(e) => { e.stopPropagation(); handleDeleteCategory(category.id); }}>
                             <Trash2 className="h-3 w-3" />
@@ -347,7 +325,6 @@ export default function PackagesPage() {
           </Card>
         </div>
 
-        {/* Right Content: Packages */}
         <div className="md:col-span-8 lg:col-span-9 flex flex-col gap-4">
            {selectedCategory ? (
              <div className="space-y-4 h-full flex flex-col">
@@ -403,7 +380,6 @@ export default function PackagesPage() {
                   </Dialog>
                </div>
 
-               {/* Packages Grid */}
                <ScrollArea className="flex-1">
                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 pb-20 md:pb-0">
                     {categoryPackages.length === 0 ? (

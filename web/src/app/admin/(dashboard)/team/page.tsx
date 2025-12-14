@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/set-state-in-effect */
 "use client"
 
 import { useState } from "react"
@@ -54,11 +55,8 @@ import { Badge } from "@/components/ui/badge"
 import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 
-// import { toast } from "sonner" removed
-
 import { supabase } from "@/lib/supabaseClient"
 import { useEffect } from "react"
-// TEAM_DATA removed, use DB
 
 interface TeamMember {
   id: string
@@ -75,13 +73,13 @@ const initialRoles = [
 ]
 
 export default function TeamPage() {
-  const [team, setTeam] = useState<TeamMember[]>([]) // Init empty
+  const [team, setTeam] = useState<TeamMember[]>([])
   const [roles, setRoles] = useState<string[]>(initialRoles)
   const [searchQuery, setSearchQuery] = useState("")
   const [currentPage, setCurrentPage] = useState(1)
   const itemsPerPage = 5
   
-  const [isLoading, setIsLoading] = useState(true)
+  const [, setIsLoading] = useState(true)
 
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false)
   const [isRoleManagerOpen, setIsRoleManagerOpen] = useState(false)
@@ -89,13 +87,11 @@ export default function TeamPage() {
   
   const toast = useToast()
   
-  // Confirm Modal State
   const [confirmOpen, setConfirmOpen] = useState(false)
   const [confirmAction, setConfirmAction] = useState<() => Promise<void> | void>(() => {})
   const [confirmTitle, setConfirmTitle] = useState("")
   const [confirmDescription, setConfirmDescription] = useState("")
 
-  // Fetch Team Data
   const fetchTeam = async () => {
     setIsLoading(true)
     const { data, error } = await supabase.from('team_members').select('*').order('created_at', { ascending: false })
@@ -107,7 +103,7 @@ export default function TeamPage() {
         id: d.id,
         name: d.name,
         role: d.role,
-        email: d.email || "", // Handle nulls
+        email: d.email || "",
         phone: d.phone || "",
         status: d.status,
         joinedDate: d.joined_date
@@ -118,16 +114,15 @@ export default function TeamPage() {
 
   useEffect(() => {
     fetchTeam()
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
-  // Filter team based on search query
   const filteredTeam = team.filter(member => 
     member.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
     member.role.toLowerCase().includes(searchQuery.toLowerCase()) ||
     member.email.toLowerCase().includes(searchQuery.toLowerCase())
   )
 
-  // Pagination Logic
   const totalPages = Math.ceil(filteredTeam.length / itemsPerPage)
   const paginatedItems = filteredTeam.slice(
     (currentPage - 1) * itemsPerPage,
@@ -153,7 +148,6 @@ export default function TeamPage() {
     const newStatus = formData.get("status") as "active" | "inactive"
 
     if (editingMember) {
-      // Edit Mode (Update DB)
       const { error } = await supabase.from('team_members').update({
         name: newName,
         role: newRole,
@@ -169,7 +163,6 @@ export default function TeamPage() {
          fetchTeam()
       }
     } else {
-      // Add Mode (Insert DB)
       const { error } = await supabase.from('team_members').insert({
         name: newName,
         role: newRole,
@@ -265,7 +258,7 @@ export default function TeamPage() {
                 value={searchQuery}
                 onChange={(e) => {
                    setSearchQuery(e.target.value)
-                   setCurrentPage(1) // Reset to page 1 on search
+                   setCurrentPage(1)
                 }}
               />
             </div>
@@ -350,7 +343,6 @@ export default function TeamPage() {
           </Table>
           </div>
 
-          {/* Mobile Card View (Compact) */}
           <div className="grid gap-3 md:hidden">
              {paginatedItems.map((member) => (
                 <div key={member.id} className="flex flex-col gap-2 p-3 border rounded-lg bg-card/50 text-sm">
@@ -408,7 +400,6 @@ export default function TeamPage() {
              )}
           </div>
 
-          {/* Pagination Controls */}
           {filteredTeam.length > 0 && (
              <div className="flex items-center justify-end space-x-2 py-4">
                <div className="flex-1 text-sm text-muted-foreground">
@@ -439,7 +430,6 @@ export default function TeamPage() {
         </CardContent>
       </Card>
 
-      {/* Add/Edit Member Dialog */}
       <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
         <DialogContent className="sm:max-w-[500px]">
           <form onSubmit={handleSaveMember}>
@@ -495,7 +485,6 @@ export default function TeamPage() {
         </DialogContent>
       </Dialog>
 
-      {/* Role Manager Dialog */}
       <Dialog open={isRoleManagerOpen} onOpenChange={setIsRoleManagerOpen}>
         <DialogContent className="sm:max-w-[400px]">
           <DialogHeader>
@@ -506,7 +495,6 @@ export default function TeamPage() {
           </DialogHeader>
           
           <div className="space-y-4 py-4">
-             {/* Add Role Form */}
              <form onSubmit={handleAddRole} className="flex gap-2">
                 <Input id="newRole" name="newRole" placeholder="Nama Role Baru (misal: Supir)" required />
                 <Button type="submit" size="icon">
@@ -514,7 +502,6 @@ export default function TeamPage() {
                 </Button>
              </form>
 
-             {/* Role List */}
              <div className="border rounded-md divide-y max-h-[300px] overflow-y-auto">
                 {roles.map((role) => (
                    <div key={role} className="flex items-center justify-between p-2 text-sm">
@@ -533,7 +520,6 @@ export default function TeamPage() {
           </div>
         </DialogContent>
       </Dialog>
-      {/* Confirm Modal */}
       <ConfirmModal 
         isOpen={confirmOpen}
         onClose={() => setConfirmOpen(false)}

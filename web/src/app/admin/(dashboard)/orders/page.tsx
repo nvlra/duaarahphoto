@@ -48,9 +48,9 @@ interface Order {
   date: string
   package: string
   status: string
-  paymentStatus: string // 'paid' or 'unpaid'
+  paymentStatus: string
   amount: string
-  paid_amount?: number // NEW: Nominal uang masuk
+  paid_amount?: number
   created_at?: string
   location: string
   mapsUrl?: string
@@ -63,7 +63,7 @@ interface Allocation {
   name: string
   role: string
   fee: string
-  member_id?: string // For DB reference
+  member_id?: string
 }
 
 interface TeamMemberSimple {
@@ -72,7 +72,6 @@ interface TeamMemberSimple {
     role: string
 }
 
-// Supabase row types for proper typing
 interface SupabaseAllocationRow {
     id: string
     member_id: string
@@ -89,7 +88,7 @@ interface SupabaseOrderRow {
     status: string
     payment_status: string | null
     total_amount: number | string | null
-    paid_amount: number | null // NEW: DB Column
+    paid_amount: number | null
     created_at: string
     location: string | null
     maps_url: string | null
@@ -99,7 +98,7 @@ interface SupabaseOrderRow {
 
 const statusConfig: Record<string, { label: string, color: string, icon: ElementType }> = {
   pending: { label: "Menunggu", color: "bg-slate-100 text-slate-700 hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-400", icon: CircleDashed },
-  booked: { label: "Booked", color: "bg-blue-100 text-blue-700 hover:bg-blue-200 dark:bg-blue-900/40 dark:text-blue-400", icon: CalendarIcon }, // Legacy support
+  booked: { label: "Booked", color: "bg-blue-100 text-blue-700 hover:bg-blue-200 dark:bg-blue-900/40 dark:text-blue-400", icon: CalendarIcon },
   confirmed: { label: "Booked", color: "bg-blue-100 text-blue-700 hover:bg-blue-200 dark:bg-blue-900/40 dark:text-blue-400", icon: CalendarIcon },
   on_process: { label: "Proses", color: "bg-yellow-100 text-yellow-700 hover:bg-yellow-200 dark:bg-yellow-900/40 dark:text-yellow-400", icon: Camera },
   completed: { label: "Selesai", color: "bg-green-100 text-green-700 hover:bg-green-200 dark:bg-green-900/40 dark:text-green-400", icon: CheckCircle2 },
@@ -109,22 +108,13 @@ const statusConfig: Record<string, { label: string, color: string, icon: Element
 const formatWhatsAppUrl = (phone: string | undefined) => {
     if (!phone) return ""
     
-    // Remove all non-numeric chars
     let clean = phone.replace(/[^0-9]/g, "")
-    
-    // Logic:
-    // If starts with 08..., replace 0 with 62 -> 628...
-    // If starts with 62..., keep it -> 62...
-    // If starts with 8..., prepend 62 -> 628...
     
     if (clean.startsWith("08")) {
         clean = "62" + clean.substring(1)
     } else if (clean.startsWith("8")) {
         clean = "62" + clean
     }
-    // If it's just '0' or empty or weird, we might still try to prepend 62 if it doesn't have it,
-    // but the above is the most common case for Indo numbers.
-    // If it ALREADY starts with 62, do nothing.
     
     return `https://wa.me/${clean}`
 }
@@ -138,31 +128,23 @@ export default function OrdersPage() {
   const [categories, setCategories] = useState<{id: string, name: string}[]>([])
   const [searchQuery, setSearchQuery] = useState("")
   const [statusFilter, setStatusFilter] = useState("all")
-  /* eslint-disable @typescript-eslint/no-unused-vars */
-  const [dateFilter, _setDateFilter] = useState<Date | undefined>(undefined)
-  const [_currentPage, _setCurrentPage] = useState(1)
-  const _ITEMS_PER_PAGE = 5
-  
-  const [_isLoading, setIsLoading] = useState(true)
+  const [dateFilter] = useState<Date | undefined>(undefined)
+  const [, setIsLoading] = useState(true)
 
   const [expandedId, setExpandedId] = useState<string | null>(null)
   
   const toast = useToast()
   
-  // Dialog States
   const [isNewBookingOpen, setIsNewBookingOpen] = useState(false)
   
-  // Delete Confirmation State
   const [deleteId, setDeleteId] = useState<string | null>(null)
-  const [_isEditDialogOpen, setIsEditDialogOpen] = useState(false)
+  const [, setIsEditDialogOpen] = useState(false)
   const [newBookingDate, setNewBookingDate] = useState<Date | undefined>(undefined)
   const [newBookingCategory, setNewBookingCategory] = useState<string>("all")
   
-  // New Booking Form State (for live status preview)
   const [newOrderAmount, setNewOrderAmount] = useState("")
   const [newOrderDp, setNewOrderDp] = useState("")
 
-  // Editing State
   const [editingOrder, setEditingOrder] = useState<Order | null>(null)
   const [editingCategory, setEditingCategory] = useState<string>("all")
 
@@ -172,7 +154,6 @@ export default function OrdersPage() {
     setIsLoading(true)
     const formData = new FormData(e.currentTarget)
     
-    // Generate unique ID using crypto API
     const randomPart = crypto.randomUUID().split('-')[0].toUpperCase()
     const newId = `DA-${new Date().getFullYear()}${randomPart.slice(0, 4)}`
 
@@ -202,7 +183,6 @@ export default function OrdersPage() {
     setIsLoading(false)
   }
 
-  // Fetch Packages & Team (Stable Dependencies)
   const fetchInitData = useCallback(async () => {
       const { data: catData } = await supabase.from('package_categories').select('id, name').order('name')
       if (catData) setCategories(catData)
@@ -214,8 +194,6 @@ export default function OrdersPage() {
       if (teamData) setTeamMembers(teamData)
   }, [])
 
-  // Fetch Orders (Depends on packages/categories but fetching logic is independent of local state for network request, 
-  // however mapping requires current packages state. We accept re-fetching when packages update.)
   const fetchOrders = useCallback(async () => {
       setIsLoading(true)
       const { data, error } = await supabase
@@ -267,18 +245,15 @@ export default function OrdersPage() {
       setIsLoading(false)
   }, [packages, categories, toast])
 
-  // Initial Data Load
   useEffect(() => {
     // eslint-disable-next-line
     fetchInitData()
   }, [fetchInitData])
 
-  // Orders Load
   useEffect(() => {
     fetchOrders()
   }, [fetchOrders])
 
-  // Filter Logic
   const filteredOrders = orders.filter((order) => {
     const matchesSearch = 
       order.id.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -287,7 +262,6 @@ export default function OrdersPage() {
       
     const matchesStatus = statusFilter === 'all' || order.status === statusFilter;
     
-    // Date filter
     let matchesDate = true;
     if (dateFilter) {
        matchesDate = order.date === format(dateFilter, "yyyy-MM-dd")
@@ -298,15 +272,12 @@ export default function OrdersPage() {
 
   const handleRowClick = (order: Order) => {
     if (expandedId === order.id) {
-      // Collapsing - clear both
       setExpandedId(null)
       setEditingOrder(null)
     } else {
-      // Expanding - set both
       setExpandedId(order.id)
       setEditingOrder(order)
       
-      // Try to find category from package name
       const foundPkg = packages.find(p => p.name === order.package)
       if (foundPkg && foundPkg.category_id) {
           setEditingCategory(foundPkg.category_id)
@@ -314,18 +285,6 @@ export default function OrdersPage() {
           setEditingCategory("all")
       }
     }
-  }
-
-  const handleDeleteOrder = async (orderId: string) => {
-      if (confirm("Hapus order ini?")) {
-          const { error } = await supabase.from('orders').delete().eq('id', orderId)
-          if (!error) {
-              toast.success("Success Notification", "Order dihapus")
-              setOrders(orders.filter(o => o.id !== orderId))
-          } else {
-              toast.error("Failed Notification", "Gagal menghapus")
-          }
-      }
   }
 
   const handleSaveEdit = async () => {
@@ -342,15 +301,10 @@ export default function OrdersPage() {
           package_name: editingOrder.package,
           status: editingOrder.status,
           total_amount: parseInt(rawAmount) || 0,
-          paid_amount: editingOrder.paid_amount || 0, // Save current paid amount
+          paid_amount: editingOrder.paid_amount || 0,
       }
 
       if (isNewBookingOpen) {
-         // Create New
-         // ID is manual in frontend or auto? 
-         // DB `id` is text primary key. Let's auto-generate formatting 'ORD-YYYY-XXX' or just use UUID if permissible, but Schema said text.
-         // Schema: id text primary key.
-         // I'll generate a random ID for now or timestamp.
          const newId = `ORD-${new Date().getFullYear()}-${Math.floor(Math.random() * 10000)}`
          
          const { error } = await supabase.from('orders').insert({
@@ -364,17 +318,13 @@ export default function OrdersPage() {
              return
          }
          
-         // Insert Allocations
          if (editingOrder.allocations && editingOrder.allocations.length > 0) {
              const allocs = editingOrder.allocations.map(a => ({
                  order_id: newId,
-                 member_id: a.member_id, // We need member ID! frontend must store it
+                 member_id: a.member_id,
                  role: a.role,
                  fee: parseInt(a.fee.replace(/[^0-9]/g, "")) || 0
              }))
-             // Filter out those without member_id if any (manual input not supported fully yet)
-             // But my UI uses Select from TEAM_DATA (now teamMembers).
-             // I need to update UI to store member_id in `newItem` state!
              
              await supabase.from('order_allocations').insert(allocs)
          }
@@ -384,7 +334,6 @@ export default function OrdersPage() {
          fetchOrders()
          
       } else {
-          // Update
           const { error } = await supabase.from('orders').update(orderPayload).eq('id', editingOrder.id)
           
           if (error) {
@@ -392,13 +341,10 @@ export default function OrdersPage() {
                return
           }
           
-          // Sync Allocations (Delete all and re-insert is easiest for now)
           await supabase.from('order_allocations').delete().eq('order_id', editingOrder.id)
           
           if (editingOrder.allocations && editingOrder.allocations.length > 0) {
               const allocs = editingOrder.allocations.map(a => {
-                  // If member_id missing (legacy data), try finding by name?
-                  // For now assume member_id exists or skip
                   const member = teamMembers.find(t => t.name === a.name)
                   const mId = a.member_id || member?.id
                   
@@ -422,12 +368,10 @@ export default function OrdersPage() {
       setEditingOrder(null)
   }
 
-  // Trigger Delete Modal
   const handleDelete = (id: string) => {
       setDeleteId(id)
   }
 
-  // Actual Delete Logic
   const confirmDelete = async () => {
       if (!deleteId) return
 
@@ -446,20 +390,7 @@ export default function OrdersPage() {
       setDeleteId(null)
   }
 
-  const handlePaymentStatusChange = async (orderId: string, newStatus: string) => {
-    const { error } = await supabase
-      .from('orders')
-      .update({ payment_status: newStatus })
-      .eq('id', orderId)
-    
-    if (error) {
-      toast.error("Failed Notification", "Gagal mengupdate status pembayaran")
-      console.error(error)
-    } else {
-      toast.success("Success Notification", newStatus === 'paid' ? "Ditandai LUNAS" : "Ditandai BELUM LUNAS")
-      setOrders(orders.map(o => o.id === orderId ? { ...o, paymentStatus: newStatus } : o))
-    }
-  }
+
 
   return (
     <div className="space-y-6">
@@ -521,7 +452,6 @@ export default function OrdersPage() {
              setEditingOrder={setEditingOrder as (order: Order) => void}
              onSave={handleSaveEdit}
              onDelete={handleDelete}
-             onPaymentStatusChange={handlePaymentStatusChange}
              teamMembers={teamMembers}
              packages={packages}
              categories={categories}
@@ -538,7 +468,6 @@ export default function OrdersPage() {
              setEditingOrder={setEditingOrder as (order: Order) => void}
              onSave={handleSaveEdit}
              onDelete={handleDelete}
-             onPaymentStatusChange={handlePaymentStatusChange}
              teamMembers={teamMembers}
              packages={packages}
              categories={categories}
@@ -555,7 +484,6 @@ export default function OrdersPage() {
              setEditingOrder={setEditingOrder as (order: Order) => void}
              onSave={handleSaveEdit}
              onDelete={handleDelete}
-             onPaymentStatusChange={handlePaymentStatusChange}
              teamMembers={teamMembers}
              packages={packages}
              categories={categories}
@@ -575,7 +503,7 @@ export default function OrdersPage() {
         variant="destructive"
       />
 
-      {/* New Booking Dialog */}
+
       <Dialog open={isNewBookingOpen} onOpenChange={setIsNewBookingOpen}>
         <DialogContent className="w-[90%] max-w-[400px] sm:max-w-[600px] rounded-xl max-h-[85vh] overflow-y-auto">
           <form onSubmit={handleCreateOrder}>
@@ -708,7 +636,7 @@ export default function OrdersPage() {
                    />
                 </div>
 
-                {/* Live Status Preview for New Booking */}
+
                 <div className="md:col-span-2 bg-slate-50 dark:bg-slate-900/50 p-3 rounded-lg border dark:border-slate-800 flex items-center justify-between">
                      <span className="text-xs text-muted-foreground uppercase font-medium">Status Pembayaran:</span>
                      {(() => {
@@ -744,7 +672,6 @@ interface CardTableProps {
     setEditingOrder: (order: Order) => void
     onSave: () => void
     onDelete: (id: string) => void
-    onPaymentStatusChange: (orderId: string, newStatus: string) => void
     teamMembers: TeamMemberSimple[]
     packages: {id: string, name: string, price: number, category_id?: string}[]
     categories: {id: string, name: string}[]
@@ -753,7 +680,7 @@ interface CardTableProps {
 }
 
 
-function CardTable({ orders, expandedId, editingOrder, onRowClick, setEditingOrder, onSave, onDelete, onPaymentStatusChange, teamMembers, packages, categories, editingCategory, setEditingCategory }: CardTableProps) {
+function CardTable({ orders, expandedId, editingOrder, onRowClick, setEditingOrder, onSave, onDelete, teamMembers, packages, categories, editingCategory, setEditingCategory }: CardTableProps) {
   const [currentPage, setCurrentPage] = useState(1)
   const ITEMS_PER_PAGE = 5
   
@@ -782,7 +709,7 @@ function CardTable({ orders, expandedId, editingOrder, onRowClick, setEditingOrd
       <div className="rounded-xl bg-background/50 p-6">
         <h3 className="mb-4 text-xl font-semibold text-foreground">Daftar Pesanan</h3>
         
-        {/* Desktop Table View */}
+
         <div className="hidden md:block rounded-md h-[calc(100vh-420px)] min-h-[300px] overflow-y-auto relative no-scrollbar">
             <Table>
             <TableHeader className="sticky top-0 z-10 bg-background border-b">
@@ -895,7 +822,7 @@ function CardTable({ orders, expandedId, editingOrder, onRowClick, setEditingOrd
                         </TableCell>
                     </TableRow>
                     
-                    {/* Expanded Row Content (Form) */}
+
                     <AnimatePresence>
                     {isExpanded && editingOrder && (
                         <TableRow className="bg-muted/30 border-t-0 hover:bg-muted/30">
@@ -912,7 +839,7 @@ function CardTable({ orders, expandedId, editingOrder, onRowClick, setEditingOrd
                                         setEditingOrder={setEditingOrder}
                                         onSave={onSave}
                                         onDelete={onDelete}
-                                        onPaymentStatusChange={onPaymentStatusChange}
+
                                         teamMembers={teamMembers}
                                         packages={packages}
                                         categories={categories}
@@ -943,8 +870,8 @@ function CardTable({ orders, expandedId, editingOrder, onRowClick, setEditingOrd
             </Table>
         </div>
 
-        {/* Mobile Card List View */}
-        {/* Mobile Card List View */}
+
+
         <div className="md:hidden space-y-2">
             {orders.length === 0 ? (
                 <div className="text-center py-8 text-muted-foreground text-sm">Belum ada pesanan.</div>
@@ -983,7 +910,7 @@ function CardTable({ orders, expandedId, editingOrder, onRowClick, setEditingOrd
                                     <div className="flex items-center justify-between font-medium text-foreground pt-1 border-t mt-1.5 border-dashed">
                                         <div className="flex flex-col gap-0.5">
                                             <span className="text-[10px] text-muted-foreground">{order.package}</span>
-                                            {/* Mobile Payment Status Badge */}
+
                                             {(() => {
                                                 const total = parseInt(order.amount.replace(/[^0-9]/g, "")) || 0
                                                 const paid = order.paid_amount || 0
@@ -1015,7 +942,6 @@ function CardTable({ orders, expandedId, editingOrder, onRowClick, setEditingOrd
                                         setEditingOrder={setEditingOrder}
                                         onSave={onSave}
                                         onDelete={onDelete}
-                                        onPaymentStatusChange={onPaymentStatusChange}
                                         teamMembers={teamMembers}
                                         packages={packages}
                                         categories={categories}
@@ -1032,7 +958,7 @@ function CardTable({ orders, expandedId, editingOrder, onRowClick, setEditingOrd
             )}
         </div>
         
-        {/* Mobile Total Summary */}
+
         <div className="md:hidden rounded-lg border bg-card text-card-foreground shadow-sm p-4 mt-4">
              <div className="flex items-center justify-between">
                  <span className="font-semibold text-sm">Total Estimasi (Semua)</span>
@@ -1040,7 +966,7 @@ function CardTable({ orders, expandedId, editingOrder, onRowClick, setEditingOrd
              </div>
         </div>
 
-        {/* Pagination Controls */}
+
         <div className="py-4">
              <Pagination>
               <PaginationContent>
@@ -1097,7 +1023,6 @@ function OrderEditForm({
     setEditingOrder, 
     onSave, 
     onDelete,
-    onPaymentStatusChange,
     teamMembers,
     packages,
     categories,
@@ -1109,7 +1034,6 @@ function OrderEditForm({
     setEditingOrder: (order: Order) => void, 
     onSave: () => void, 
     onDelete: (id: string) => void,
-    onPaymentStatusChange: (orderId: string, newStatus: string) => void,
     teamMembers: TeamMemberSimple[],
     packages: {id: string, name: string, price: number, category_id?: string}[],
     categories: {id: string, name: string}[],
@@ -1117,42 +1041,20 @@ function OrderEditForm({
     setEditingCategory: (c: string) => void,
     isMobile?: boolean
 }) {
-    // Determine sizing classes based on isMobile prop
-    // Use grid-cols-2 for mobile to save vertical space
     const containerClass = isMobile ? "p-3 grid gap-3 grid-cols-2" : "p-4 grid gap-4 md:grid-cols-2 lg:grid-cols-3";
     
-    // State for new allocation (controlled inputs)
     const [newItem, setNewItem] = useState<{name: string, role: string, fee: string, member_id?: string}>({ name: "", role: "", fee: "", member_id: "" });
 
     const spaceClass = isMobile ? "space-y-0.5" : "space-y-2";
-    // Mobile spans 2 columns by default unless specified otherwise
     const fullWidthClass = isMobile ? "col-span-2" : "";
 
-    // Helper to add allocation
-    const _handleAddAllocation = () => {
-         if (newItem.name && newItem.role && newItem.fee) {
-            const newAlloc: Allocation = {
-                id: Math.random().toString(36).substr(2, 9),
-                name: newItem.name,
-                role: newItem.role,
-                fee: newItem.fee.startsWith("Rp") ? newItem.fee : `Rp ${newItem.fee}`,
-                member_id: newItem.member_id
-            }
-            setEditingOrder({
-                ...editingOrder,
-                allocations: [...(editingOrder.allocations || []), newAlloc]
-            })
-            // Reset inputs
-            setNewItem({ name: "", role: "", fee: "", member_id: "" })
-        }
-    }
+
     const labelClass = isMobile ? "text-[10px] uppercase tracking-wider text-muted-foreground/70" : "";
     const inputClass = isMobile ? "h-8 text-sm px-2" : "";
     const btnClass = isMobile ? "h-8 text-xs px-2" : "h-9";
 
     return (
         <div className={containerClass}>
-            {/* Top Status Bar: Project Status Only */}
             <div className={`col-span-2 md:col-span-3 mb-2 pb-4 border-b border-dashed ${isMobile ? 'col-span-2' : ''}`}>
                 <div className="flex-1 space-y-1">
                     <Label className="text-xs text-muted-foreground uppercase">Status Project</Label>
@@ -1210,7 +1112,6 @@ function OrderEditForm({
                     placeholder="0812..."
                 />
             </div>
-            {/* Split Date & Package on Mobile */}
             <div className={`${spaceClass} flex flex-col`}>
                 <Label className={labelClass}>Tanggal</Label>
                 <Popover>
@@ -1336,7 +1237,6 @@ function OrderEditForm({
                 </div>
             </div>
             
-            {/* Team Allocation Modal Trigger */}
             <div className={`col-span-2 md:col-span-3 flex justify-between items-center bg-muted/20 ${isMobile ? 'p-2' : 'p-3'} rounded-lg border border-dashed`}>
                 <div className={`text-muted-foreground ${isMobile ? 'text-[10px]' : 'text-sm'}`}>
                     <span className="font-medium text-foreground">Tim: </span>
@@ -1357,7 +1257,6 @@ function OrderEditForm({
                         </DialogHeader>
 
                         <div className="space-y-4 py-4">
-                             {/* Add New Allocation */}
                             <div className="flex flex-col sm:flex-row gap-3 items-stretch sm:items-end border-b pb-4">
                                 <div className="flex-1 space-y-1">
                                     <Label className="text-xs">Nama Anggota</Label>
@@ -1429,7 +1328,6 @@ function OrderEditForm({
                                 </Button>
                             </div>
 
-                            {/* Allocation List */}
                             <div className="space-y-2 max-h-[300px] overflow-y-auto">
                                 {(editingOrder.allocations || []).length === 0 ? (
                                     <div className="text-center text-sm text-muted-foreground py-8 border-dashed border rounded-md">
@@ -1498,15 +1396,12 @@ function OrderEditForm({
                 </Dialog>
             </div>
             
-            {/* Action Buttons */}
             <div className={`col-span-2 md:col-span-3 flex justify-between gap-2 mt-4 pt-4 border-t ${isMobile ? 'flex-col-reverse' : 'items-center'}`}>
                 
-                {/* Left Side: Delete */}
                 <Button variant="ghost" size="sm" onClick={() => onDelete(editingOrder.id)} className={`text-red-500 hover:text-red-600 hover:bg-red-50 ${isMobile ? 'w-full' : ''}`}>
                     <Trash2 className="mr-2 h-4 w-4" /> Hapus Order
                 </Button>
 
-                {/* Right Side: Actions */}
                 <div className={`flex gap-2 ${isMobile ? 'w-full flex-col' : ''}`}>
                     <InvoicePrintButton orderData={editingOrder} />
                     
@@ -1524,7 +1419,6 @@ function LocationPicker({ value, onChange }: { value: string, onChange: (val: st
   const [loading, setLoading] = useState(false)
   const [suggestions, setSuggestions] = useState<string[]>([])
   
-  // Debounce search
   const handleSearch = async (query: string) => {
       onChange(query)
       if (query.length < 3) return
@@ -1558,7 +1452,6 @@ function LocationPicker({ value, onChange }: { value: string, onChange: (val: st
         </div>
       </div>
       
-      {/* Autocomplete Suggestions */}
       {open && suggestions.length > 0 && (
          <PopoverContent className="p-0 w-[400px] max-w-[90vw]" onOpenAutoFocus={(e) => e.preventDefault()}>
             <div className="p-2">
