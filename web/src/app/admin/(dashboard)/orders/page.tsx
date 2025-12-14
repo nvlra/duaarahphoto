@@ -866,6 +866,10 @@ function CardTable({ orders, expandedId, editingOrder, onRowClick, setEditingOrd
                                         onDelete={onDelete}
                                         onPaymentStatusChange={onPaymentStatusChange}
                                         teamMembers={teamMembers}
+                                        packages={packages}
+                                        categories={categories}
+                                        editingCategory={editingCategory}
+                                        setEditingCategory={setEditingCategory}
                                         isMobile={true}
                                     />
                                 </motion.div>
@@ -944,6 +948,10 @@ function OrderEditForm({
     onDelete,
     onPaymentStatusChange,
     teamMembers,
+    packages,
+    categories,
+    editingCategory,
+    setEditingCategory,
     isMobile = false
 }: { 
     editingOrder: Order, 
@@ -952,6 +960,10 @@ function OrderEditForm({
     onDelete: (id: string) => void,
     onPaymentStatusChange: (orderId: string, newStatus: string) => void,
     teamMembers: TeamMemberSimple[],
+    packages: {id: string, name: string, price: number, category_id?: string}[],
+    categories: {id: string, name: string}[],
+    editingCategory: string,
+    setEditingCategory: (c: string) => void,
     isMobile?: boolean
 }) {
     // Determine sizing classes based on isMobile prop
@@ -1140,7 +1152,22 @@ function OrderEditForm({
             </div>
 
             <div className={`${spaceClass} ${isMobile ? 'col-span-2' : ''}`}>
-                <Label className={labelClass}>Sudah Dibayar (DP)</Label>
+                <div className="flex items-center justify-between mb-1">
+                    <Label className={labelClass}>Sudah Dibayar (DP)</Label>
+                    <div className="flex gap-1">
+                        <Button 
+                            size="sm" variant="ghost" className="h-5 px-2 text-[10px] text-green-600 hover:text-green-700 hover:bg-green-50"
+                            onClick={() => {
+                                const total = parseInt(editingOrder.amount.replace(/[^0-9]/g, "")) || 0
+                                setEditingOrder({ ...editingOrder, paid_amount: total })
+                            }}
+                        >Set Lunas</Button>
+                        <Button 
+                            size="sm" variant="ghost" className="h-5 px-2 text-[10px] text-muted-foreground"
+                            onClick={() => setEditingOrder({ ...editingOrder, paid_amount: 0 })}
+                        >Reset</Button>
+                    </div>
+                </div>
                 <div className="relative">
                     <span className="absolute left-3 top-2.5 text-xs text-muted-foreground md:top-2">Rp</span>
                     <Input 
@@ -1315,58 +1342,6 @@ function OrderEditForm({
                 </Dialog>
             </div>
             
-            {/* Payment Status Section - AUTO CALCULATED */}
-            <div className={`col-span-2 md:col-span-3 bg-slate-50 p-3 rounded-lg border flex flex-col sm:flex-row items-center justify-between gap-4 mt-2`}>
-                 <div className="flex items-center gap-3">
-                    <Label className="text-xs text-muted-foreground uppercase tracking-wide">Status Pembayaran</Label>
-                    {(() => {
-                        const total = parseInt(editingOrder.amount.replace(/[^0-9]/g, "")) || 0
-                        const paid = editingOrder.paid_amount || 0
-                        
-                        let statusNode = <Badge variant="outline" className="border-red-200 bg-red-50 text-red-700">BELUM BAYAR</Badge>
-                        if (paid >= total && total > 0) {
-                            statusNode = <Badge className="bg-green-600 hover:bg-green-700 text-white border-none flex gap-1"><CheckCircle2 className="w-3 h-3" /> LUNAS</Badge>
-                        } else if (paid > 0) {
-                            statusNode = <Badge variant="secondary" className="bg-yellow-100 text-yellow-800 hover:bg-yellow-200 border-yellow-200">PARTIAL / DP</Badge>
-                        }
-                        
-                        return (
-                            <div className="flex items-center gap-2">
-                                {statusNode}
-                                {paid > 0 && paid < total && (
-                                    <span className="text-xs text-muted-foreground font-mono">
-                                        (Kurang: {new Intl.NumberFormat("id-ID", { style: "currency", currency: "IDR", maximumFractionDigits: 0 }).format(total - paid)})
-                                    </span>
-                                )}
-                            </div>
-                        )
-                    })()}
-                 </div>
-
-                 {/* Quick Actions */}
-                 <div className="flex items-center gap-2">
-                    <Button 
-                        size="sm" 
-                        variant="outline" 
-                        className="h-8 text-xs border-green-200 text-green-700 hover:bg-green-50"
-                        onClick={() => {
-                             const total = parseInt(editingOrder.amount.replace(/[^0-9]/g, "")) || 0
-                             setEditingOrder({ ...editingOrder, paid_amount: total })
-                        }}
-                    >
-                        Set Lunas
-                    </Button>
-                    <Button 
-                        size="sm" 
-                        variant="ghost" 
-                        className="h-8 text-xs text-muted-foreground"
-                        onClick={() => setEditingOrder({ ...editingOrder, paid_amount: 0 })}
-                    >
-                        Reset 0
-                    </Button>
-                 </div>
-            </div>
-
             {/* Action Buttons */}
             <div className={`col-span-2 md:col-span-3 flex justify-between gap-2 mt-4 pt-4 border-t ${isMobile ? 'flex-col-reverse' : 'items-center'}`}>
                 
