@@ -712,8 +712,8 @@ function CardTable({ orders, expandedId, editingOrder, onRowClick, setEditingOrd
                 <TableHead className="w-[180px]">Klien</TableHead>
                 <TableHead className="w-[120px]">Kontak</TableHead>
                 <TableHead className="w-[180px]">Tanggal Acara</TableHead>
-                <TableHead className="max-w-[150px]">Lokasi</TableHead>
-                <TableHead className="w-[100px]">Paket</TableHead>
+                <TableHead className="w-[180px]">Lokasi</TableHead>
+                <TableHead className="w-[180px]">Paket</TableHead>
                 <TableHead className="w-[100px]">Status</TableHead>
                 <TableHead className="w-[120px]">Pembayaran</TableHead>
                 <TableHead className="text-right w-[140px]">Total</TableHead>
@@ -747,7 +747,7 @@ function CardTable({ orders, expandedId, editingOrder, onRowClick, setEditingOrd
                         <TableCell className="text-muted-foreground text-xs w-[180px]">
                            {new Date(order.date).toLocaleDateString("id-ID", { day: "numeric", month: "long", year: "numeric" })}
                         </TableCell>
-                        <TableCell onClick={(e) => e.stopPropagation()} className="max-w-[150px]">
+                        <TableCell onClick={(e) => e.stopPropagation()} className="max-w-[180px]">
                         {order.location ? (
                             order.mapsUrl ? (
                                 <a 
@@ -770,7 +770,7 @@ function CardTable({ orders, expandedId, editingOrder, onRowClick, setEditingOrd
                             "-"
                         )}
                         </TableCell>
-                        <TableCell className="truncate max-w-[100px]" title={order.package}>{order.package}</TableCell>
+                        <TableCell className="truncate max-w-[180px]" title={order.package}>{order.package}</TableCell>
                         <TableCell>
                         <Badge variant="secondary" className={`${statusConfig[order.status]?.color || "bg-gray-100 text-gray-800"} rounded-full px-2 py-1 text-xs font-semibold border-0`}>
                             <StatusIcon className="mr-1 h-3 w-3" />
