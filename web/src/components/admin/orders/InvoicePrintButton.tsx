@@ -85,14 +85,14 @@ export default function InvoicePrintButton({ orderData }: { orderData: RawOrder 
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogTrigger asChild>
-        <Button size="sm" variant="outline" className="gap-2 border-slate-300 text-slate-700 hover:bg-slate-50">
+        <Button size="sm" variant="outline" className="gap-2 border-slate-300 text-slate-700 hover:bg-slate-50 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800">
            <Printer className="w-4 h-4" />
            Cetak Invoice
         </Button>
       </DialogTrigger>
 
-      <DialogContent className="max-w-[95vw] h-[90vh] flex flex-col p-0 bg-slate-100 border-none sm:rounded-xl overflow-hidden">
-        <DialogHeader className="px-4 py-3 bg-white border-b flex-none z-10 shadow-sm">
+      <DialogContent className="max-w-[95vw] h-[90vh] flex flex-col p-0 bg-slate-100 dark:bg-slate-950 border-none sm:rounded-xl overflow-hidden">
+        <DialogHeader className="px-4 py-3 bg-white dark:bg-slate-900 border-b dark:border-slate-800 flex-none z-10 shadow-sm">
            <div className="flex justify-between items-center w-full">
              <div>
                 <DialogTitle>Preview Invoice</DialogTitle>
@@ -111,7 +111,7 @@ export default function InvoicePrintButton({ orderData }: { orderData: RawOrder 
         </DialogHeader>
 
         {/* Scrollable Preview Area */}
-        <div className="flex-1 overflow-auto bg-slate-300/30 flex justify-center p-4 sm:p-8">
+        <div className="flex-1 overflow-auto bg-slate-300/30 dark:bg-slate-900/50 flex justify-center p-4 sm:p-8">
           {/* 
             Wrapper Scale Logic: 
             Use w-fit to let the content dictate sizing, but constrain max-width.
