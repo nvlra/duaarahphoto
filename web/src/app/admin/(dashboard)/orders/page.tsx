@@ -469,6 +469,10 @@ export default function OrdersPage() {
              onDelete={handleDelete}
              onPaymentStatusChange={handlePaymentStatusChange}
              teamMembers={teamMembers}
+             packages={packages}
+             categories={categories}
+             editingCategory={editingCategory}
+             setEditingCategory={setEditingCategory}
           />
         </TabsContent>
         <TabsContent value="active" className="mt-4 data-[state=active]:animate-in data-[state=active]:fade-in-0 data-[state=active]:slide-in-from-left-4 data-[state=active]:duration-500 ease-in-out">
@@ -482,6 +486,10 @@ export default function OrdersPage() {
              onDelete={handleDelete}
              onPaymentStatusChange={handlePaymentStatusChange}
              teamMembers={teamMembers}
+             packages={packages}
+             categories={categories}
+             editingCategory={editingCategory}
+             setEditingCategory={setEditingCategory}
           />
         </TabsContent>
         <TabsContent value="completed" className="mt-4 data-[state=active]:animate-in data-[state=active]:fade-in-0 data-[state=active]:slide-in-from-left-4 data-[state=active]:duration-500 ease-in-out">
@@ -495,6 +503,10 @@ export default function OrdersPage() {
              onDelete={handleDelete}
              onPaymentStatusChange={handlePaymentStatusChange}
              teamMembers={teamMembers}
+             packages={packages}
+             categories={categories}
+             editingCategory={editingCategory}
+             setEditingCategory={setEditingCategory}
           />
         </TabsContent>
       </Tabs>
@@ -644,10 +656,14 @@ interface CardTableProps {
     onDelete: (id: string) => void
     onPaymentStatusChange: (orderId: string, newStatus: string) => void
     teamMembers: TeamMemberSimple[]
+    packages: {id: string, name: string, price: number, category_id?: string}[]
+    categories: {id: string, name: string}[]
+    editingCategory: string
+    setEditingCategory: (c: string) => void
 }
 
 
-function CardTable({ orders, expandedId, editingOrder, onRowClick, setEditingOrder, onSave, onDelete, onPaymentStatusChange, teamMembers }: CardTableProps) {
+function CardTable({ orders, expandedId, editingOrder, onRowClick, setEditingOrder, onSave, onDelete, onPaymentStatusChange, teamMembers, packages, categories, editingCategory, setEditingCategory }: CardTableProps) {
   const [currentPage, setCurrentPage] = useState(1)
   const ITEMS_PER_PAGE = 5
   
