@@ -47,6 +47,7 @@ interface Order {
   date: string
   package: string
   status: string
+  paymentStatus: string // 'paid' or 'unpaid'
   amount: string
   location: string
   mapsUrl?: string
@@ -183,6 +184,7 @@ export default function OrdersPage() {
               date: d.event_date,
               package: d.package_name || "-",
               status: d.status,
+              paymentStatus: d.payment_status || 'unpaid',
               amount: d.total_amount ? `Rp ${parseInt(d.total_amount).toLocaleString('id-ID')}` : "Rp 0",
               location: d.location || "-",
               mapsUrl: d.maps_url,
@@ -343,6 +345,21 @@ export default function OrdersPage() {
     }
   }
 
+  const handlePaymentStatusChange = async (orderId: string, newStatus: string) => {
+    const { error } = await supabase
+      .from('orders')
+      .update({ payment_status: newStatus })
+      .eq('id', orderId)
+    
+    if (error) {
+      toast.error("Gagal mengupdate status pembayaran")
+      console.error(error)
+    } else {
+      toast.success(newStatus === 'paid' ? "Ditandai LUNAS" : "Ditandai BELUM LUNAS")
+      setOrders(orders.map(o => o.id === orderId ? { ...o, paymentStatus: newStatus } : o))
+    }
+  }
+
   return (
     <div className="space-y-6">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
@@ -404,6 +421,7 @@ export default function OrdersPage() {
              onSave={handleSaveEdit}
              onDelete={handleDelete}
              onGenerateInvoice={handleGenerateInvoice}
+             onPaymentStatusChange={handlePaymentStatusChange}
              teamMembers={teamMembers}
           />
         </TabsContent>
@@ -417,6 +435,7 @@ export default function OrdersPage() {
              onSave={handleSaveEdit}
              onDelete={handleDelete}
              onGenerateInvoice={handleGenerateInvoice}
+             onPaymentStatusChange={handlePaymentStatusChange}
              teamMembers={teamMembers}
           />
         </TabsContent>
@@ -430,6 +449,7 @@ export default function OrdersPage() {
              onSave={handleSaveEdit}
              onDelete={handleDelete}
              onGenerateInvoice={handleGenerateInvoice}
+             onPaymentStatusChange={handlePaymentStatusChange}
              teamMembers={teamMembers}
           />
         </TabsContent>
@@ -529,11 +549,12 @@ interface CardTableProps {
     onSave: () => void
     onDelete: (id: string) => void
     onGenerateInvoice: (order: Order) => void
+    onPaymentStatusChange: (orderId: string, newStatus: string) => void
     teamMembers: TeamMemberSimple[]
 }
 
 
-function CardTable({ orders, expandedId, editingOrder, onRowClick, setEditingOrder, onSave, onDelete, onGenerateInvoice, teamMembers }: CardTableProps) {
+function CardTable({ orders, expandedId, editingOrder, onRowClick, setEditingOrder, onSave, onDelete, onGenerateInvoice, onPaymentStatusChange, teamMembers }: CardTableProps) {
   const [currentPage, setCurrentPage] = useState(1)
   const ITEMS_PER_PAGE = 5
   
@@ -666,6 +687,7 @@ function CardTable({ orders, expandedId, editingOrder, onRowClick, setEditingOrd
                                         onSave={onSave}
                                         onDelete={onDelete}
                                         onGenerateInvoice={onGenerateInvoice}
+                                        onPaymentStatusChange={onPaymentStatusChange}
                                         teamMembers={teamMembers}
                                     />
                                 </motion.div>
@@ -751,6 +773,7 @@ function CardTable({ orders, expandedId, editingOrder, onRowClick, setEditingOrd
                                         onSave={onSave}
                                         onDelete={onDelete}
                                         onGenerateInvoice={onGenerateInvoice}
+                                        onPaymentStatusChange={onPaymentStatusChange}
                                         teamMembers={teamMembers}
                                         isMobile={true}
                                     />
@@ -829,6 +852,7 @@ function OrderEditForm({
     onSave, 
     onDelete,
     onGenerateInvoice,
+    onPaymentStatusChange,
     teamMembers,
     isMobile = false
 }: { 
@@ -837,6 +861,7 @@ function OrderEditForm({
     onSave: () => void, 
     onDelete: (id: string) => void,
     onGenerateInvoice: (order: Order) => void,
+    onPaymentStatusChange: (orderId: string, newStatus: string) => void,
     teamMembers: TeamMemberSimple[],
     isMobile?: boolean
 }) {
@@ -1127,13 +1152,51 @@ function OrderEditForm({
                 </Dialog>
             </div>
             
+            {/* Payment Status Section */}
+            <div className={`col-span-2 md:col-span-3 flex items-center gap-3 mt-2 pt-2 border-t border-dashed ${isMobile ? 'justify-between' : ''}`}>
+                <Label className={`text-xs text-muted-foreground ${isMobile ? '' : 'min-w-[100px]'}`}>Status Pembayaran:</Label>
+                <Select 
+                    value={editingOrder.paymentStatus || 'unpaid'} 
+                    onValueChange={(val) => onPaymentStatusChange(editingOrder.id, val)}
+                >
+                    <SelectTrigger className={`${isMobile ? 'h-8 text-xs flex-1' : 'h-9 w-[180px]'}`}>
+                        <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                        <SelectItem value="unpaid">
+                            <span className="flex items-center gap-2">
+                                <span className="h-2 w-2 rounded-full bg-red-500"></span>
+                                BELUM LUNAS
+                            </span>
+                        </SelectItem>
+                        <SelectItem value="paid">
+                            <span className="flex items-center gap-2">
+                                <span className="h-2 w-2 rounded-full bg-green-500"></span>
+                                LUNAS
+                            </span>
+                        </SelectItem>
+                    </SelectContent>
+                </Select>
+                <Button 
+                    variant="outline" 
+                    size="sm" 
+                    onClick={() => {
+                        // Direct print: opens invoice editor for this order
+                        window.open(`/admin/invoices?orderId=${editingOrder.id}&clientName=${encodeURIComponent(editingOrder.client)}&contact=${encodeURIComponent(editingOrder.contact || '')}&package=${encodeURIComponent(editingOrder.package)}&amount=${encodeURIComponent(editingOrder.amount)}&date=${editingOrder.date}&status=${editingOrder.status}`, '_blank')
+                    }}
+                    className={`${isMobile ? 'h-8 px-2' : ''}`}
+                >
+                    <Printer className={`${isMobile ? 'h-3 w-3' : 'mr-2 h-4 w-4'}`} /> {isMobile ? '' : 'Print Invoice'}
+                </Button>
+            </div>
+
             {/* Action Buttons */}
             <div className={`col-span-2 md:col-span-3 flex justify-end gap-2 mt-1 pt-2 border-t ${isMobile ? 'grid grid-cols-3' : ''}`}>
                 <Button variant="ghost" size="sm" onClick={() => onDelete(editingOrder.id)} className={`text-red-500 hover:text-red-600 hover:bg-red-50 ${isMobile ? 'col-span-1 px-0' : 'mr-auto'}`}>
                     <Trash2 className={`mr-2 h-4 w-4 ${isMobile ? 'mr-0 h-4 w-4' : ''}`} /> {isMobile ? "" : "Hapus"}
                 </Button>
                 <Button variant="outline" size="sm" onClick={() => onGenerateInvoice(editingOrder)} className={isMobile ? 'col-span-1 px-0' : ''}>
-                    <FileText className={`mr-2 h-4 w-4 ${isMobile ? 'mr-0 h-4 w-4' : ''}`} /> {isMobile ? "" : "Invoice"}
+                    <FileText className={`mr-2 h-4 w-4 ${isMobile ? 'mr-0 h-4 w-4' : ''}`} /> {isMobile ? "" : "Edit Invoice"}
                 </Button>
                 <Button size="sm" onClick={onSave} className={isMobile ? 'col-span-1 px-0' : ''}>
                     <Save className={`mr-2 h-4 w-4 ${isMobile ? 'h-3 w-3' : ''}`} /> {isMobile ? "Simpan" : "Simpan Perubahan"}
