@@ -69,11 +69,20 @@ function InvoicesPageContent() {
     }
   }
 
-  // eslint-disable-next-line react-hooks/set-state-in-effect
   useEffect(() => {
     // Only fetch if we're showing the list view
     if (view === 'list') {
-      fetchInvoices()
+      // Using async IIFE to handle async operation in effect
+      void (async () => {
+        const { data } = await supabase
+          .from('invoices')
+          .select('*, clients(id, name, email)')
+          .order('created_at', { ascending: false })
+        
+        if (data) {
+          setInvoices(data as Invoice[])
+        }
+      })()
     }
   }, [view])
 
