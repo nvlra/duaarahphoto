@@ -15,6 +15,9 @@ import {
   ChevronRight
 } from "lucide-react"
 
+import { ConfirmModal } from "@/components/ui/confirm-modal"
+import { useToast } from "@/components/ui/ios-toast"
+
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import {
@@ -50,7 +53,8 @@ import {
 import { Badge } from "@/components/ui/badge"
 import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { toast } from "sonner"
+
+// import { toast } from "sonner" removed
 
 import { supabase } from "@/lib/supabaseClient"
 import { useEffect } from "react"
@@ -82,6 +86,14 @@ export default function TeamPage() {
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false)
   const [isRoleManagerOpen, setIsRoleManagerOpen] = useState(false)
   const [editingMember, setEditingMember] = useState<TeamMember | null>(null)
+  
+  const toast = useToast()
+  
+  // Confirm Modal State
+  const [confirmOpen, setConfirmOpen] = useState(false)
+  const [confirmAction, setConfirmAction] = useState<() => Promise<void> | void>(() => {})
+  const [confirmTitle, setConfirmTitle] = useState("")
+  const [confirmDescription, setConfirmDescription] = useState("")
 
   // Fetch Team Data
   const fetchTeam = async () => {
@@ -180,16 +192,19 @@ export default function TeamPage() {
     setEditingMember(null)
   }
 
-  const handleDeleteMember = async (id: string) => {
-    if (confirm("Apakah Anda yakin ingin menghapus anggota ini?")) {
-      const { error } = await supabase.from('team_members').delete().eq('id', id)
-      if (error) {
-         toast.error("Gagal menghapus")
-      } else {
-         setTeam(team.filter(t => t.id !== id))
-         toast.success("Anggota berhasil dihapus")
-      }
-    }
+  const handleDeleteMember = (id: string) => {
+    setConfirmTitle("Hapus Anggota")
+    setConfirmDescription("Apakah Anda yakin ingin menghapus anggota ini? Tindakan ini tidak dapat dibatalkan.")
+    setConfirmAction(() => async () => {
+        const { error } = await supabase.from('team_members').delete().eq('id', id)
+        if (error) {
+           toast.error("Gagal menghapus")
+        } else {
+           setTeam(team.filter(t => t.id !== id))
+           toast.success("Anggota berhasil dihapus")
+        }
+    })
+    setConfirmOpen(true)
   }
 
   const openEditDialog = (member: TeamMember) => {
@@ -210,10 +225,13 @@ export default function TeamPage() {
   }
 
   const handleDeleteRole = (roleToDelete: string) => {
-    if (confirm(`Hapus role "${roleToDelete}"?`)) {
-      setRoles(roles.filter(r => r !== roleToDelete))
-      toast.success("Role berhasil dihapus")
-    }
+    setConfirmTitle("Hapus Role")
+    setConfirmDescription(`Apakah anda yakin ingin menghapus role "${roleToDelete}"?`)
+    setConfirmAction(() => () => {
+       setRoles(roles.filter(r => r !== roleToDelete))
+       toast.success("Role berhasil dihapus")
+    })
+    setConfirmOpen(true)
   }
 
   return (
@@ -515,6 +533,16 @@ export default function TeamPage() {
           </div>
         </DialogContent>
       </Dialog>
+      {/* Confirm Modal */}
+      <ConfirmModal 
+        isOpen={confirmOpen}
+        onClose={() => setConfirmOpen(false)}
+        onConfirm={confirmAction}
+        title={confirmTitle}
+        description={confirmDescription}
+        confirmText="Hapus"
+        variant="destructive"
+      />
     </div>
   )
 }

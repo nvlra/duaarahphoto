@@ -1,6 +1,6 @@
 "use client"
 
-import Link from "next/link"
+// import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import {
   Card,
@@ -14,11 +14,13 @@ import { Label } from "@/components/ui/label"
 import { useState } from "react"
 import { useRouter } from "next/navigation"
 import { supabase } from "@/lib/supabaseClient"
-import { toast } from "sonner"
+// import { toast } from "sonner" removed 
+import { useToast } from "@/components/ui/ios-toast"
 import { Loader2 } from "lucide-react"
 
 export default function AdminLogin() {
   const router = useRouter()
+  const toast = useToast()
   const [identifier, setIdentifier] = useState("")
   const [password, setPassword] = useState("")
   const [loading, setLoading] = useState(false)
@@ -32,7 +34,7 @@ export default function AdminLogin() {
     const emailToUse = identifier.includes("@") ? identifier : `${identifier}@admin.com`
 
     try {
-      const { data, error } = await supabase.auth.signInWithPassword({
+      const { error } = await supabase.auth.signInWithPassword({
         email: emailToUse,
         password,
       })

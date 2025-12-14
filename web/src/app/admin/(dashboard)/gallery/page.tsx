@@ -5,7 +5,7 @@ import { Plus, Trash2, Video, FolderPlus, AlertTriangle } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import {
   Card,
-  CardFooter,
+  // CardFooter removed
 } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -26,22 +26,14 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog"
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger,
-} from "@/components/ui/alert-dialog"
+// AlertDialog imports removed
 
 
 import { supabase } from "@/lib/supabaseClient"
 import { useEffect } from "react"
-import { toast } from "sonner"
+// import { toast } from "sonner" removed
+import { ConfirmModal } from "@/components/ui/confirm-modal"
+import { useToast } from "@/components/ui/ios-toast"
 
 // ... imports ...
 
@@ -75,6 +67,13 @@ export default function ManageGallery() {
 
   const [isCatDialogOpen, setIsCatDialogOpen] = useState(false) // For adding category
 
+  const toast = useToast()
+  // Confirm Modal State
+  const [confirmOpen, setConfirmOpen] = useState(false)
+  const [confirmAction, setConfirmAction] = useState<() => Promise<void> | void>(() => {})
+  const [confirmTitle, setConfirmTitle] = useState("")
+  const [confirmDescription, setConfirmDescription] = useState("")
+
   const fetchData = async () => {
     const { data: cats } = await supabase.from('gallery_categories').select('*').order('name', { ascending: true })
     const { data: items } = await supabase.from('gallery_items').select('*, gallery_categories(name)').order('created_at', { ascending: false })
@@ -104,15 +103,19 @@ export default function ManageGallery() {
   }, [])
 
   // Handlers
-  const handleDelete = async (id: string) => {
-    if (!confirm("Hapus item ini?")) return
-    const { error } = await supabase.from('gallery_items').delete().eq('id', id)
-    if (!error) {
-        toast.success("Berhasil dihapus")
-        fetchData()
-    } else {
-        toast.error("Gagal menghapus: " + error.message)
-    }
+  const handleDelete = (id: string) => {
+    setConfirmTitle("Hapus Item")
+    setConfirmDescription("Apakah anda yakin ingin menghapus item galeri ini?")
+    setConfirmAction(() => async () => {
+        const { error } = await supabase.from('gallery_items').delete().eq('id', id)
+        if (!error) {
+            toast.success("Berhasil dihapus")
+            fetchData()
+        } else {
+            toast.error("Gagal menghapus: " + error.message)
+        }
+    })
+    setConfirmOpen(true)
   }
 
   const handleAddCategory = async () => {
@@ -357,6 +360,16 @@ export default function ManageGallery() {
       </Tabs>
       
       {/* Hidden Alert Dialog Logic if needed, but we used window.confirm for simplicity */}
+      
+      <ConfirmModal 
+        isOpen={confirmOpen}
+        onClose={() => setConfirmOpen(false)}
+        onConfirm={confirmAction}
+        title={confirmTitle}
+        description={confirmDescription}
+        confirmText="Hapus"
+        variant="destructive"
+      />
     </div>
   )
 }

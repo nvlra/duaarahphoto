@@ -11,13 +11,13 @@ import { Order as InvoiceOrder, BusinessSettings } from "@/types/invoice";
 
 // === SETTINGS CONFIG (Temporary, later move to DB) ===
 const appSettings: BusinessSettings = {
-  brand_name: "Duaarah Photo",
+  brand_name: "Enviel Admin",
   brand_color: "#1e293b", // Slate 800 - Classy Dark
   // brand_logo_url: "/logo.png", // Add logo in public folder if available
   bank_name: "BCA (Bank Central Asia)",
-  bank_number: "123-456-7890",
-  bank_holder: "Duaarah Photography",
-  address: "Jakarta Selatan, DKI Jakarta",
+  bank_number: "4210000000",
+  bank_holder: "Noval RIzki",
+  address: "Jakarta Timur, DKI Jakarta",
   footer_note: "1. Booking Fee (DP) tidak dapat dikembalikan (Non-refundable).\n2. Pelunasan wajib dilakukan H-7 sebelum hari H.\n3. Reschedule diperbolehkan maksimal 1x (S&K Berlaku).",
 };
 
@@ -111,20 +111,33 @@ export default function InvoicePrintButton({ orderData }: { orderData: RawOrder 
         </DialogHeader>
 
         {/* Scrollable Preview Area */}
+        {/* Scrollable Preview Area */}
         <div className="flex-1 overflow-auto bg-slate-300/30 dark:bg-slate-900/50 flex justify-center p-4 sm:p-8">
           {/* 
             Wrapper Scale Logic: 
-            Use w-fit to let the content dictate sizing, but constrain max-width.
-            On mobile: Scale down significantly.
-            On desktop: Scale down slightly if needed to avoid massive scrolling.
+            We use a fixed-size container (Outer) to define the layout footprint, 
+            and an absolute-positioned inner container for the scaled content.
+            This prevents 'ghost' whitespace and scrollbars caused by the original A4 size.
+            
+            Dimensions based on A4 (794x1123px) * Scale Factor
+            Scales: 0.45, 0.55, 0.6, 0.65, 0.7
           */}
-          <div className="w-fit h-fit origin-top transform scale-[0.45] sm:scale-[0.55] md:scale-[0.6] lg:scale-[0.65] xl:scale-[0.7] transition-transform duration-200 ease-out">
-             <div className="shadow-2xl">
-              <InvoiceTemplate
-                  ref={componentRef}
-                  order={invoiceData}
-                  settings={appSettings}
-              />
+          <div className="relative bg-white shadow-2xl transition-all duration-200 ease-out origin-top-left
+             w-[358px] h-[506px] 
+             sm:w-[437px] sm:h-[618px] 
+             md:w-[477px] md:h-[674px] 
+             lg:w-[517px] lg:h-[730px] 
+             xl:w-[556px] xl:h-[787px]
+             flex-none my-auto overflow-hidden
+          ">
+             <div className="absolute top-0 left-0 origin-top-left 
+                scale-[0.45] sm:scale-[0.55] md:scale-[0.6] lg:scale-[0.65] xl:scale-[0.7]
+             ">
+               <InvoiceTemplate
+                   ref={componentRef}
+                   order={invoiceData}
+                   settings={appSettings}
+               />
              </div>
           </div>
         </div>

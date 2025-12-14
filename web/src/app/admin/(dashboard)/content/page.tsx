@@ -17,9 +17,11 @@ import { Save } from "lucide-react"
 
 import { supabase } from "@/lib/supabaseClient"
 import { useEffect, useState } from "react"
-import { toast } from "sonner"
+// import { toast } from "sonner" removed
+import { useToast } from "@/components/ui/ios-toast"
 
 export default function ManageContent() {
+  const toast = useToast()
   const [loading, setLoading] = useState(true)
   const [data, setData] = useState({
       about_headline: "",
@@ -34,7 +36,7 @@ export default function ManageContent() {
 
   const fetchSettings = async () => {
       setLoading(true)
-      const { data: settings, error } = await supabase.from('site_settings').select('*').single()
+      const { data: settings } = await supabase.from('site_settings').select('*').single()
       
       if (settings) {
           setData({

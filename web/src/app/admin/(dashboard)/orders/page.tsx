@@ -847,7 +847,7 @@ function CardTable({ orders, expandedId, editingOrder, onRowClick, setEditingOrd
                                     className="flex items-center text-blue-600 hover:text-blue-800 hover:underline truncate"
                                     title={order.location}
                                 >
-                                    <MapPin className="mr-1 h-3 w-3 flex-shrink-0" />
+                                    <MapPin className="mr-1 h-3 w-3 shrink-0" />
                                     <span className="truncate">{order.location}</span>
                                 </a>
                             ) : (

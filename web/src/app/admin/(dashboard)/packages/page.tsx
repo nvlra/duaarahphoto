@@ -15,7 +15,10 @@ import {
 
 import { supabase } from "@/lib/supabaseClient"
 import { useEffect } from "react"
-import { toast } from "sonner"
+
+// import { toast } from "sonner" removed 
+import { ConfirmModal } from "@/components/ui/confirm-modal"
+import { useToast } from "@/components/ui/ios-toast"
 
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
@@ -74,8 +77,16 @@ export default function PackagesPage() {
   const [isPkgDialogOpen, setIsPkgDialogOpen] = useState(false)
   
   // Form States
+  // Form States
   const [catForm, setCatForm] = useState({ name: "", description: "" })
   const [pkgForm, setPkgForm] = useState({ name: "", price: "", description: "", featuresString: "" })
+
+  const toast = useToast()
+  // Confirm Modal State
+  const [confirmOpen, setConfirmOpen] = useState(false)
+  const [confirmAction, setConfirmAction] = useState<() => Promise<void> | void>(() => {})
+  const [confirmTitle, setConfirmTitle] = useState("")
+  const [confirmDescription, setConfirmDescription] = useState("")
 
   const fetchData = async () => {
      const { data: cats } = await supabase.from('package_categories').select('*').order('created_at', { ascending: true })
@@ -135,25 +146,22 @@ export default function PackagesPage() {
     }
   }
 
-  const handleDeleteCategory = async (id: string) => {
-    if (!confirm("Hapus kategori ini? Semua paket di dalamnya akan ikut terhapus.")) return
+  const handleDeleteCategory = (id: string) => {
+    setConfirmTitle("Hapus Kategori")
+    setConfirmDescription("Hapus kategori ini? Semua paket di dalamnya akan ikut terhapus.")
+    setConfirmAction(() => async () => {
+        await supabase.from('packages').delete().eq('category_id', id)
+        const { error } = await supabase.from('package_categories').delete().eq('id', id)
     
-    // First delete packages (optional if ON DELETE SET NULL, but we want clean up)
-    // Actually if we want to delete packages, we must do it manually if logic dictates.
-    // Let's rely on manual deletion for now or just delete category.
-    // Wait, schema says SET NULL suitable for preserving history, but for this admin panel, user expects clean delete.
-    // I will delete packages first.
-    
-    await supabase.from('packages').delete().eq('category_id', id)
-    const { error } = await supabase.from('package_categories').delete().eq('id', id)
-
-    if (!error) {
-        toast.success("Kategori dihapus")
-        if (selectedCategoryId === id) setSelectedCategoryId("")
-        fetchData()
-    } else {
-        toast.error("Gagal menghapus kategori")
-    }
+        if (!error) {
+            toast.success("Kategori dihapus")
+            if (selectedCategoryId === id) setSelectedCategoryId("")
+            fetchData()
+        } else {
+            toast.error("Gagal menghapus kategori")
+        }
+    })
+    setConfirmOpen(true)
   }
 
   // Handlers - Package
@@ -182,15 +190,19 @@ export default function PackagesPage() {
      }
   }
 
-  const handleDeletePackage = async (id: string) => {
-    if (!confirm("Hapus paket ini?")) return
-    const { error } = await supabase.from('packages').delete().eq('id', id)
-    if (!error) {
-        toast.success("Paket dihapus")
-        fetchData()
-    } else {
-        toast.error("Gagal menghapus paket: " + error.message)
-    }
+  const handleDeletePackage = (id: string) => {
+    setConfirmTitle("Hapus Paket")
+    setConfirmDescription("Apakah anda yakin ingin menghapus paket ini?")
+    setConfirmAction(() => async () => {
+        const { error } = await supabase.from('packages').delete().eq('id', id)
+        if (!error) {
+            toast.success("Paket dihapus")
+            fetchData()
+        } else {
+            toast.error("Gagal menghapus paket: " + error.message)
+        }
+    })
+    setConfirmOpen(true)
   }
 
   return (
@@ -428,6 +440,16 @@ export default function PackagesPage() {
            )}
         </div>
       </div>
+    
+      <ConfirmModal  
+        isOpen={confirmOpen}
+        onClose={() => setConfirmOpen(false)}
+        onConfirm={confirmAction}
+        title={confirmTitle}
+        description={confirmDescription}
+        confirmText="Hapus"
+        variant="destructive"
+      />
     </div>
   )
 }

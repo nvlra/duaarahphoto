@@ -14,7 +14,8 @@ import {
   CreditCard,
   Wallet
 } from "lucide-react"
-import { toast } from "sonner"
+import { ConfirmModal } from "@/components/ui/confirm-modal"
+import { useToast } from "@/components/ui/ios-toast"
 import { 
   ResponsiveContainer,
   AreaChart,
@@ -80,17 +81,18 @@ interface Category {
   name: string
 }
 
-const data = [
-  { name: 'Jan', revenue: 45000000, profit: 32000000, expense: 13000000 },
-  { name: 'Feb', revenue: 52000000, profit: 38000000, expense: 14000000 },
-  { name: 'Mar', revenue: 48000000, profit: 35000000, expense: 13000000 },
-  { name: 'Apr', revenue: 61000000, profit: 45000000, expense: 16000000 },
-  { name: 'May', revenue: 55000000, profit: 39000000, expense: 16000000 },
-  { name: 'Jun', revenue: 75000000, profit: 55000000, expense: 20000000 },
-];
+
 
 export default function FinancePage() {
+  const toast = useToast()
   const [isCategoryManageOpen, setIsCategoryManageOpen] = useState(false)
+  
+  // Confirm Modal State
+  const [confirmOpen, setConfirmOpen] = useState(false)
+  const [confirmAction, setConfirmAction] = useState<() => Promise<void> | void>(() => {})
+  const [confirmTitle, setConfirmTitle] = useState("")
+  const [confirmDescription, setConfirmDescription] = useState("")
+
   const [currentPage, setCurrentPage] = useState(1)
   const ITEMS_PER_PAGE = 8
 
@@ -98,7 +100,6 @@ export default function FinancePage() {
   const [categories, setCategories] = useState<Category[]>([])
   const [newCategoryName, setNewCategoryName] = useState("")
   const [loading, setLoading] = useState(true)
-  const [recentExpenses, setRecentExpenses] = useState<Expense[]>([])
   const [metrics, setMetrics] = useState({
       revenue: 0,
       expenses: 0,
@@ -219,16 +220,19 @@ export default function FinancePage() {
     }
   }
 
-  const handleDeleteCategory = async (id: string) => {
-    if (confirm("Hapus kategori ini?")) {
-       const { error } = await supabase.from('expense_categories').delete().eq('id', id)
-       if (!error) {
-           fetchData()
-           toast.success("Kategori dihapus")
-       } else {
-           toast.error("Gagal menghapus kategori")
-       }
-    }
+  const handleDeleteCategory = (id: string) => {
+    setConfirmTitle("Hapus Kategori")
+    setConfirmDescription("Apakah anda yakin ingin menghapus kategori ini?")
+    setConfirmAction(() => async () => {
+        const { error } = await supabase.from('expense_categories').delete().eq('id', id)
+        if (!error) {
+            fetchData()
+            toast.success("Kategori dihapus", "Kategori pengeluaran berhasil dihapus.")
+        } else {
+            toast.error("Gagal menghapus kategori", "Terjadi kesalahan saat menghapus kategori.")
+        }
+    })
+    setConfirmOpen(true)
   }
 
   return (
@@ -508,11 +512,22 @@ export default function FinancePage() {
           </CardContent>
         </Card>
       </div>
+      
+      <ConfirmModal 
+        isOpen={confirmOpen}
+        onClose={() => setConfirmOpen(false)}
+        onConfirm={confirmAction}
+        title={confirmTitle}
+        description={confirmDescription}
+        confirmText="Hapus"
+        variant="destructive"
+      />
     </div>
   )
 }
 
 function AddExpenseDialog({ categories, onSuccess }: { categories: Category[], onSuccess: () => void }) {
+  const toast = useToast()
   const [isOpen, setIsOpen] = useState(false)
   const [desc, setDesc] = useState("")
   const [amount, setAmount] = useState("")
@@ -532,10 +547,10 @@ function AddExpenseDialog({ categories, onSuccess }: { categories: Category[], o
         setDesc("")
         setAmount("")
         setCatId("")
-        toast.success("Pengeluaran dicatat")
+        toast.success("Pengeluaran dicatat", "Data pengeluaran berhasil disimpan.")
         onSuccess()
      } else {
-        toast.error("Gagal mencatat")
+        toast.error("Gagal mencatat", "Terjadi kesalahan saat menyimpan data.")
      }
   }
 
