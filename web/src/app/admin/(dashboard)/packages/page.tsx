@@ -63,6 +63,23 @@ interface ProductPackage {
   features: string[]
 }
 
+interface CategoryDB {
+    id: string
+    name: string
+    description: string
+    created_at: string
+}
+
+interface PackageDB {
+    id: string
+    category_id: string
+    name: string
+    price: number 
+    description: string
+    features: string[] | null
+    created_at: string
+}
+
 export default function PackagesPage() {
   // State
   const [categories, setCategories] = useState<Category[]>([])
@@ -89,31 +106,36 @@ export default function PackagesPage() {
   const [confirmDescription, setConfirmDescription] = useState("")
 
   const fetchData = async () => {
+     // Use generics or assertion if Supabase client isn't fully typed for these tables
      const { data: cats } = await supabase.from('package_categories').select('*').order('created_at', { ascending: true })
      const { data: pkgs } = await supabase.from('packages').select('*').order('created_at', { ascending: true })
 
-     if (cats) {
+     // Cast the data to our DB interfaces since implicit typing might be 'any[]'
+     const typedCats = cats as unknown as CategoryDB[] | null
+     const typedPkgs = pkgs as unknown as PackageDB[] | null
+
+     if (typedCats) {
         // Calculate totalPackages count
-        const calculatedCats = cats.map((c: any) => ({
+        const calculatedCats = typedCats.map((c) => ({
              id: c.id,
              name: c.name,
              description: c.description,
-             totalPackages: pkgs ? pkgs.filter((p: any) => p.category_id === c.id).length : 0
+             totalPackages: typedPkgs ? typedPkgs.filter((p) => p.category_id === c.id).length : 0
         }))
         setCategories(calculatedCats)
         
         // Set default selected category if none or invalid
-        if (calculatedCats.length > 0 && (!selectedCategoryId || !calculatedCats.find((c: any) => c.id === selectedCategoryId))) {
+        if (calculatedCats.length > 0 && (!selectedCategoryId || !calculatedCats.find((c) => c.id === selectedCategoryId))) {
              setSelectedCategoryId(calculatedCats[0].id)
         }
      }
 
-     if (pkgs) {
-        setPackages(pkgs.map((p: any) => ({
+     if (typedPkgs) {
+        setPackages(typedPkgs.map((p) => ({
              id: p.id,
              categoryId: p.category_id, // Map DB snake_case
              name: p.name,
-             price: `Rp ${parseInt(p.price).toLocaleString('id-ID')}`, // Formatting might be tricky if stored as number, let's assume raw number
+             price: `Rp ${p.price.toLocaleString('id-ID')}`, 
              description: p.description,
              features: Array.isArray(p.features) ? p.features : [] 
         })))
@@ -121,7 +143,9 @@ export default function PackagesPage() {
   }
 
   useEffect(() => {
+      
      fetchData()
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   // Derived State
@@ -304,7 +328,7 @@ export default function PackagesPage() {
                         </div>
                         <div className="text-xs text-muted-foreground flex items-center justify-between w-full">
                             <span className="truncate max-w-[120px] opacity-80">{category.description || "Tanpa deskripsi"}</span>
-                            <span className="bg-background/50 border px-1.5 py-0.5 rounded-full text-[10px] font-medium min-w-[max-content]">
+                            <span className="bg-background/50 border px-1.5 py-0.5 rounded-full text-[10px] font-medium min-w-max">
                                 {category.totalPackages} Pkt
                             </span>
                         </div>

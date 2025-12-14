@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { Save, Loader2, Building2, CreditCard, FileText, Upload, Trash2 } from "lucide-react"
+import { Save, Loader2, Building2, CreditCard, FileText, Trash2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -95,9 +95,10 @@ export default function SettingsPage() {
               handleChange("brand_logo_url", data.publicUrl)
               toast.success("Upload Berhasil", "Logo berhasil diunggah")
           }
-      } catch (error: any) {
+      } catch (error: unknown) {
           console.error(error)
-          toast.error("Gagal Upload", error.message)
+          const message = error instanceof Error ? error.message : "Unknown error occurred"
+          toast.error("Gagal Upload", message)
       } finally {
           setUploading(false)
       }
@@ -128,7 +129,7 @@ export default function SettingsPage() {
         } else {
             // Insert
             const result = await supabase.from('invoice_settings').insert(payload).select()
-            if (result.data && result.data[0]) {
+            if (result.data && result.data.length > 0) {
                 setSettingsId(result.data[0].id)
             }
             error = result.error
@@ -305,7 +306,7 @@ export default function SettingsPage() {
                 <CardHeader>
                     <CardTitle className="flex items-center gap-2">
                         <FileText className="h-5 w-5" />
-                        Catatan Kaki
+                        Footer Note
                     </CardTitle>
                     <CardDescription>Syarat & Ketentuan yang muncul di bagian bawah invoice.</CardDescription>
                 </CardHeader>
