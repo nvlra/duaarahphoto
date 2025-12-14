@@ -14,7 +14,6 @@ import {
   CircleDashed,
   ChevronDown,
   Save,
-  Printer,
   Plus,
   XCircle
 } from "lucide-react"
@@ -23,7 +22,6 @@ import InvoicePrintButton from "@/components/admin/orders/InvoicePrintButton"
 
 import { format } from "date-fns"
 import { cn } from "@/lib/utils"
-import { useRouter } from "next/navigation"
 // Import shared team data
 import { supabase } from "@/lib/supabaseClient"
 import { useEffect } from "react"
@@ -100,12 +98,12 @@ interface SupabaseOrderRow {
 
 // Status definitions mapping to colors and labels
 const statusConfig: Record<string, { label: string, color: string, icon: ElementType }> = {
-  pending: { label: "Menunggu", color: "bg-slate-100 text-slate-700 hover:bg-slate-200", icon: CircleDashed },
-  booked: { label: "Booked", color: "bg-blue-100 text-blue-700 hover:bg-blue-200", icon: CalendarIcon }, // Legacy support
-  confirmed: { label: "Booked", color: "bg-blue-100 text-blue-700 hover:bg-blue-200", icon: CalendarIcon },
-  on_process: { label: "Proses", color: "bg-yellow-100 text-yellow-700 hover:bg-yellow-200", icon: Camera },
-  completed: { label: "Selesai", color: "bg-green-100 text-green-700 hover:bg-green-200", icon: CheckCircle2 },
-  cancelled: { label: "Cancel", color: "bg-red-100 text-red-700 hover:bg-red-200", icon: XCircle },
+  pending: { label: "Menunggu", color: "bg-slate-100 text-slate-700 hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-400", icon: CircleDashed },
+  booked: { label: "Booked", color: "bg-blue-100 text-blue-700 hover:bg-blue-200 dark:bg-blue-900/40 dark:text-blue-400", icon: CalendarIcon }, // Legacy support
+  confirmed: { label: "Booked", color: "bg-blue-100 text-blue-700 hover:bg-blue-200 dark:bg-blue-900/40 dark:text-blue-400", icon: CalendarIcon },
+  on_process: { label: "Proses", color: "bg-yellow-100 text-yellow-700 hover:bg-yellow-200 dark:bg-yellow-900/40 dark:text-yellow-400", icon: Camera },
+  completed: { label: "Selesai", color: "bg-green-100 text-green-700 hover:bg-green-200 dark:bg-green-900/40 dark:text-green-400", icon: CheckCircle2 },
+  cancelled: { label: "Cancel", color: "bg-red-100 text-red-700 hover:bg-red-200 dark:bg-red-900/40 dark:text-red-400", icon: XCircle },
 }
 
 
@@ -117,17 +115,18 @@ export default function OrdersPage() {
   const [categories, setCategories] = useState<{id: string, name: string}[]>([])
   const [searchQuery, setSearchQuery] = useState("")
   const [statusFilter, setStatusFilter] = useState("all")
+  /* eslint-disable @typescript-eslint/no-unused-vars */
   const [dateFilter, _setDateFilter] = useState<Date | undefined>(undefined)
-  const [currentPage, setCurrentPage] = useState(1)
-  const ITEMS_PER_PAGE = 5
+  const [_currentPage, _setCurrentPage] = useState(1)
+  const _ITEMS_PER_PAGE = 5
   
-  const [isLoading, setIsLoading] = useState(true)
+  const [_isLoading, setIsLoading] = useState(true)
 
   const [expandedId, setExpandedId] = useState<string | null>(null)
   
   // Dialog States
   const [isNewBookingOpen, setIsNewBookingOpen] = useState(false)
-  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false)
+  const [_isEditDialogOpen, setIsEditDialogOpen] = useState(false)
   const [newBookingDate, setNewBookingDate] = useState<Date | undefined>(undefined)
   const [newBookingCategory, setNewBookingCategory] = useState<string>("all")
   
@@ -212,7 +211,15 @@ export default function OrdersPage() {
               id: d.id,
               client: d.client_name,
               date: d.event_date,
-              package: d.package_name || "-",
+              package: (() => {
+                  const pkgName = d.package_name || "-";
+                  const foundPkg = packages.find(p => p.name === pkgName);
+                  if (foundPkg && foundPkg.category_id) {
+                      const foundCat = categories.find(c => c.id === foundPkg.category_id);
+                      if (foundCat) return `${foundCat.name} - ${pkgName}`;
+                  }
+                  return pkgName;
+              })(),
               status: d.status,
               paymentStatus: d.payment_status || 'unpaid',
               amount: d.total_amount ? `Rp ${parseInt(String(d.total_amount)).toLocaleString('id-ID')}` : "Rp 0",
@@ -701,16 +708,16 @@ function CardTable({ orders, expandedId, editingOrder, onRowClick, setEditingOrd
             <Table>
             <TableHeader className="sticky top-0 z-10 bg-background border-b">
                 <TableRow>
-                <TableHead className="w-[120px]">ID Pesanan</TableHead>
-                <TableHead>Klien</TableHead>
-                <TableHead>Kontak</TableHead>
-                <TableHead>Tanggal Acara</TableHead>
-                <TableHead>Lokasi</TableHead>
-                <TableHead>Paket</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead>Pembayaran</TableHead>
-                <TableHead className="text-right">Total</TableHead>
-                <TableHead className="w-[50px]"></TableHead>
+                <TableHead className="w-[110px]">ID Pesanan</TableHead>
+                <TableHead className="w-[180px]">Klien</TableHead>
+                <TableHead className="w-[120px]">Kontak</TableHead>
+                <TableHead className="w-[180px]">Tanggal Acara</TableHead>
+                <TableHead className="max-w-[150px]">Lokasi</TableHead>
+                <TableHead className="w-[100px]">Paket</TableHead>
+                <TableHead className="w-[100px]">Status</TableHead>
+                <TableHead className="w-[120px]">Pembayaran</TableHead>
+                <TableHead className="text-right w-[140px]">Total</TableHead>
+                <TableHead className="w-[40px]"></TableHead>
                 </TableRow>
             </TableHeader>
             <TableBody>
@@ -734,35 +741,36 @@ function CardTable({ orders, expandedId, editingOrder, onRowClick, setEditingOrd
                         )}
                         onClick={() => onRowClick(order)}
                     >
-                        <TableCell className="font-medium text-muted-foreground">{order.id}</TableCell>
-                        <TableCell className="font-medium">{order.client}</TableCell>
-                        <TableCell className="text-muted-foreground text-sm">{order.contact || "-"}</TableCell>
-                        <TableCell className="text-muted-foreground w-[200px]">
-                           {new Date(order.date).toLocaleDateString("id-ID", { weekday: "long", day: "numeric", month: "long", year: "numeric" })}
+                        <TableCell className="font-medium text-muted-foreground text-xs">{order.id}</TableCell>
+                        <TableCell className="font-medium truncate max-w-[180px]" title={order.client}>{order.client}</TableCell>
+                        <TableCell className="text-muted-foreground text-xs truncate max-w-[120px]" title={order.contact || ""}>{order.contact || "-"}</TableCell>
+                        <TableCell className="text-muted-foreground text-xs w-[180px]">
+                           {new Date(order.date).toLocaleDateString("id-ID", { day: "numeric", month: "long", year: "numeric" })}
                         </TableCell>
-                        <TableCell onClick={(e) => e.stopPropagation()}>
+                        <TableCell onClick={(e) => e.stopPropagation()} className="max-w-[150px]">
                         {order.location ? (
                             order.mapsUrl ? (
                                 <a 
                                     href={order.mapsUrl} 
                                     target="_blank" 
                                     rel="noreferrer"
-                                    className="flex items-center text-blue-600 hover:text-blue-800 hover:underline"
+                                    className="flex items-center text-blue-600 hover:text-blue-800 hover:underline truncate"
+                                    title={order.location}
                                 >
-                                    <MapPin className="mr-1 h-3 w-3" />
-                                    {order.location}
+                                    <MapPin className="mr-1 h-3 w-3 flex-shrink-0" />
+                                    <span className="truncate">{order.location}</span>
                                 </a>
                             ) : (
-                                    <span className="flex items-center text-muted-foreground">
-                                    <MapPin className="mr-1 h-3 w-3 opacity-50" />
-                                    {order.location}
+                                    <span className="flex items-center text-muted-foreground truncate" title={order.location}>
+                                    <MapPin className="mr-1 h-3 w-3 opacity-50 flex-shrink-0" />
+                                    <span className="truncate">{order.location}</span>
                                     </span>
                             )
                         ) : (
                             "-"
                         )}
                         </TableCell>
-                        <TableCell>{order.package}</TableCell>
+                        <TableCell className="truncate max-w-[100px]" title={order.package}>{order.package}</TableCell>
                         <TableCell>
                         <Badge variant="secondary" className={`${statusConfig[order.status]?.color || "bg-gray-100 text-gray-800"} rounded-full px-2 py-1 text-xs font-semibold border-0`}>
                             <StatusIcon className="mr-1 h-3 w-3" />
@@ -774,11 +782,11 @@ function CardTable({ orders, expandedId, editingOrder, onRowClick, setEditingOrd
                             const total = parseInt(order.amount.replace(/[^0-9]/g, "")) || 0
                             const paid = order.paid_amount || 0
                             if (paid >= total && total > 0) {
-                                return <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200">Sudah Lunas</Badge>
+                                return <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200 dark:bg-green-900/20 dark:text-green-400 dark:border-green-800">Sudah Lunas</Badge>
                             } else if (paid > 0) {
-                                return <Badge variant="outline" className="bg-yellow-50 text-yellow-700 border-yellow-200">Belum Lunas</Badge>
+                                return <Badge variant="outline" className="bg-yellow-50 text-yellow-700 border-yellow-200 dark:bg-yellow-900/20 dark:text-yellow-400 dark:border-yellow-800">Belum Lunas</Badge>
                             } else {
-                                return <Badge variant="outline" className="bg-red-50 text-red-700 border-red-200">Belum Bayar</Badge>
+                                return <Badge variant="outline" className="bg-red-50 text-red-700 border-red-200 dark:bg-red-900/20 dark:text-red-400 dark:border-red-800">Belum Bayar</Badge>
                             }
                         })()}
                         </TableCell>
@@ -889,11 +897,11 @@ function CardTable({ orders, expandedId, editingOrder, onRowClick, setEditingOrd
                                                 const total = parseInt(order.amount.replace(/[^0-9]/g, "")) || 0
                                                 const paid = order.paid_amount || 0
                                                 if (paid >= total && total > 0) {
-                                                    return <span className="text-[10px] text-green-600 font-bold">Sudah Lunas</span>
+                                                    return <span className="text-[10px] text-green-600 dark:text-green-400 font-bold">Sudah Lunas</span>
                                                 } else if (paid > 0) {
-                                                    return <span className="text-[10px] text-yellow-600 font-bold">Belum Lunas</span>
+                                                    return <span className="text-[10px] text-yellow-600 dark:text-yellow-400 font-bold">Belum Lunas</span>
                                                 } else {
-                                                    return <span className="text-[10px] text-red-600 font-bold">Belum Bayar</span>
+                                                    return <span className="text-[10px] text-red-600 dark:text-red-400 font-bold">Belum Bayar</span>
                                                 }
                                             })()}
                                         </div>
