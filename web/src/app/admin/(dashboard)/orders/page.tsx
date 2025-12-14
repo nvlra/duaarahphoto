@@ -227,7 +227,15 @@ export default function OrdersPage() {
   });
 
   const handleRowClick = (order: Order) => {
-    setExpandedId(expandedId === order.id ? null : order.id)
+    if (expandedId === order.id) {
+      // Collapsing - clear both
+      setExpandedId(null)
+      setEditingOrder(null)
+    } else {
+      // Expanding - set both
+      setExpandedId(order.id)
+      setEditingOrder(order)
+    }
   }
 
   const handleDeleteOrder = async (orderId: string) => {
