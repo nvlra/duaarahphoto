@@ -91,7 +91,7 @@ export default function InvoicePrintButton({ orderData }: { orderData: RawOrder 
         </Button>
       </DialogTrigger>
 
-      <DialogContent className="max-w-[95vw] h-[95vh] flex flex-col p-0 bg-slate-100 border-none sm:rounded-xl overflow-hidden">
+      <DialogContent className="max-w-[95vw] h-[90vh] flex flex-col p-0 bg-slate-100 border-none sm:rounded-xl overflow-hidden">
         <DialogHeader className="px-4 py-3 bg-white border-b flex-none z-10 shadow-sm">
            <div className="flex justify-between items-center w-full">
              <div>
@@ -99,7 +99,7 @@ export default function InvoicePrintButton({ orderData }: { orderData: RawOrder 
                 <DialogDescription className="hidden sm:block text-xs text-muted-foreground mt-0.5">Pastikan data sudah benar sebelum dicetak.</DialogDescription>
              </div>
              <div className="flex items-center gap-2">
-                 <Button variant="ghost" className="hidden sm:flex" onClick={() => setIsOpen(false)}>
+                 <Button variant="ghost" className="flex" onClick={() => setIsOpen(false)}>
                      Batal
                  </Button>
                  <Button onClick={() => handlePrint()} className="gap-2 bg-blue-600 hover:bg-blue-700 text-white shadow-sm h-9">
@@ -118,7 +118,7 @@ export default function InvoicePrintButton({ orderData }: { orderData: RawOrder 
             On mobile: Scale down significantly.
             On desktop: Scale down slightly if needed to avoid massive scrolling.
           */}
-          <div className="w-fit h-fit origin-top transform scale-[0.45] sm:scale-[0.55] md:scale-[0.65] lg:scale-[0.75] xl:scale-[0.85] transition-transform duration-200 ease-out">
+          <div className="w-fit h-fit origin-top transform scale-[0.45] sm:scale-[0.55] md:scale-[0.6] lg:scale-[0.65] xl:scale-[0.7] transition-transform duration-200 ease-out">
              <div className="shadow-2xl">
               <InvoiceTemplate
                   ref={componentRef}

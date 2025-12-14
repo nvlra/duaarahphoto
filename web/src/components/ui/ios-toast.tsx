@@ -65,7 +65,7 @@ const ToastItem = memo(({ toast, index, total, onRemove }: { toast: Toast, index
   return (
     <motion.div
       layout
-      initial={{ opacity: 0, y: 50, scale: 0.9 }}
+      initial={{ opacity: 0, y: -50, scale: 0.9 }}
       animate={{ 
         opacity: opacity, 
         y: y, 
@@ -74,7 +74,7 @@ const ToastItem = memo(({ toast, index, total, onRemove }: { toast: Toast, index
       }}
       exit={{ opacity: 0, scale: 0.9, y: y - 20 }}
       transition={{ type: "spring", stiffness: 400, damping: 30 }}
-      className={`absolute bottom-0 w-full max-w-sm flex justify-center pointer-events-none`}
+      className={`absolute top-0 w-full max-w-sm flex justify-center pointer-events-none`}
       style={{
         zIndex: total - index
       }}
@@ -87,7 +87,7 @@ const ToastItem = memo(({ toast, index, total, onRemove }: { toast: Toast, index
         ${blur} transition-all duration-300
       `}>
           {/* Icon Box */}
-          <div className={`flex-shrink-0 w-10 h-10 rounded-xl flex items-center justify-center ${BG_COLORS[toast.type]} shadow-sm`}>
+          <div className={`shrink-0 w-10 h-10 rounded-xl flex items-center justify-center ${BG_COLORS[toast.type]} shadow-sm`}>
              {ICONS[toast.type]}
           </div>
 
@@ -102,7 +102,7 @@ const ToastItem = memo(({ toast, index, total, onRemove }: { toast: Toast, index
           {/* Close Button */}
           <button 
             onClick={() => onRemove(toast.id)}
-            className="flex-shrink-0 p-1 rounded-full hover:bg-black/5 dark:hover:bg-white/10 transition-colors"
+            className="shrink-0 p-1 rounded-full hover:bg-black/5 dark:hover:bg-white/10 transition-colors"
           >
              <CloseIcon className="w-4 h-4 text-muted-foreground" />
           </button>
@@ -125,7 +125,7 @@ export function ToastProvider({ children }: { children: ReactNode }) {
 
     // Auto dismiss
     setTimeout(() => {
-        setToasts((prev) => prev.filter((t) => t.id !== id))
+        setToasts((prev) => !prev.length ? [] : prev.filter((t) => t.id !== id)) // Safety check
     }, 5000)
   }, [])
 
@@ -145,7 +145,7 @@ export function ToastProvider({ children }: { children: ReactNode }) {
       {children}
       
       {/* Toast Container */}
-      <div className="fixed bottom-6 right-0 left-0 flex flex-col items-center justify-end pointer-events-none z-[9999] px-4 h-[200px]">
+      <div className="fixed top-6 right-0 left-0 flex flex-col items-center justify-start pointer-events-none z-9999 px-4 h-[200px]">
          <AnimatePresence mode="popLayout">
            {toasts.map((t, i) => (
              <ToastItem 
