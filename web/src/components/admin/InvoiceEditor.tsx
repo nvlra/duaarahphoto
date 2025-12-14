@@ -1019,7 +1019,8 @@ export function InvoiceEditor({ onBack, orderData, autoPrint = false }: {
               >
                   {/* The Canvas Itself */}
                   <div 
-                     ref={canvasRef}
+                      id="invoice-canvas"
+                      ref={canvasRef}
                      onClick={(e) => { e.stopPropagation(); setSelectedId(null); }}
                      className={`shadow-xl relative flex flex-col ${font} text-zinc-950 bg-white`}
                      style={{ 
