@@ -714,8 +714,8 @@ function CardTable({ orders, expandedId, editingOrder, onRowClick, setEditingOrd
                 <TableHead className="w-[180px]">Tanggal Acara</TableHead>
                 <TableHead className="w-[140px]">Lokasi</TableHead>
                 <TableHead className="w-[160px]">Paket</TableHead>
-                <TableHead className="w-[100px]">Status</TableHead>
-                <TableHead className="w-[120px]">Pembayaran</TableHead>
+                <TableHead className="w-[100px] text-center">Status</TableHead>
+                <TableHead className="w-[120px] text-center">Pembayaran</TableHead>
                 <TableHead className="text-right w-[140px]">Total</TableHead>
                 <TableHead className="w-[40px]"></TableHead>
                 </TableRow>
@@ -771,22 +771,22 @@ function CardTable({ orders, expandedId, editingOrder, onRowClick, setEditingOrd
                         )}
                         </TableCell>
                         <TableCell className="truncate max-w-[160px]" title={order.package}>{order.package}</TableCell>
-                        <TableCell>
-                        <Badge variant="secondary" className={`${statusConfig[order.status]?.color || "bg-gray-100 text-gray-800"} rounded-full px-2 py-1 text-xs font-semibold border-0`}>
+                        <TableCell className="text-center">
+                        <Badge variant="secondary" className={`${statusConfig[order.status]?.color || "bg-gray-100 text-gray-800"} rounded-full px-2 py-1 text-xs font-semibold border-0 inline-flex items-center justify-center`}>
                             <StatusIcon className="mr-1 h-3 w-3" />
                             {statusConfig[order.status]?.label || order.status}
                         </Badge>
                         </TableCell>
-                        <TableCell>
+                        <TableCell className="text-center">
                         {(() => {
                             const total = parseInt(order.amount.replace(/[^0-9]/g, "")) || 0
                             const paid = order.paid_amount || 0
                             if (paid >= total && total > 0) {
-                                return <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200 dark:bg-green-900/20 dark:text-green-400 dark:border-green-800">Sudah Lunas</Badge>
+                                return <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200 dark:bg-green-900/20 dark:text-green-400 dark:border-green-800 inline-flex items-center justify-center">Sudah Lunas</Badge>
                             } else if (paid > 0) {
-                                return <Badge variant="outline" className="bg-yellow-50 text-yellow-700 border-yellow-200 dark:bg-yellow-900/20 dark:text-yellow-400 dark:border-yellow-800">Belum Lunas</Badge>
+                                return <Badge variant="outline" className="bg-yellow-50 text-yellow-700 border-yellow-200 dark:bg-yellow-900/20 dark:text-yellow-400 dark:border-yellow-800 inline-flex items-center justify-center">Belum Lunas</Badge>
                             } else {
-                                return <Badge variant="outline" className="bg-red-50 text-red-700 border-red-200 dark:bg-red-900/20 dark:text-red-400 dark:border-red-800">Belum Bayar</Badge>
+                                return <Badge variant="outline" className="bg-red-50 text-red-700 border-red-200 dark:bg-red-900/20 dark:text-red-400 dark:border-red-800 inline-flex items-center justify-center">Belum Bayar</Badge>
                             }
                         })()}
                         </TableCell>

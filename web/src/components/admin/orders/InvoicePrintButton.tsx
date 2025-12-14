@@ -57,7 +57,7 @@ export default function InvoicePrintButton({ orderData }: { orderData: RawOrder 
 
   const invoiceData: InvoiceOrder = {
       id: orderData.id,
-      invoice_number: `INV-${orderData.id.replace('DA-', '')}`, // DA-2025 -> INV-2025
+      invoice_number: orderData.id, // Use actual DB ID
       created_at: orderData.created_at || new Date().toISOString(),
       client_name: orderData.client,
       client_phone: orderData.contact,
