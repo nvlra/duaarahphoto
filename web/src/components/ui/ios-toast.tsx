@@ -82,8 +82,8 @@ const ToastItem = memo(({ toast, index, total, onRemove }: { toast: Toast, index
       <div className={`
         pointer-events-auto
         relative flex items-center gap-3 w-full p-4 
-        rounded-2xl shadow-lg border border-slate-200/50 dark:border-white/10
-        backdrop-blur-xl bg-white/60 dark:bg-black/90
+        rounded-2xl shadow-lg border border-slate-200/50 dark:border-white/5
+        backdrop-blur-xl bg-white/60 dark:bg-neutral-950/60
         ${blur} transition-all duration-300
       `}>
           {/* Icon Box */}

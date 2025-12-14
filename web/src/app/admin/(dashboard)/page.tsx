@@ -2,9 +2,11 @@
 
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { Calendar } from "@/components/ui/calendar"
-import { DollarSign, ShoppingBag, Users, TrendingUp } from "lucide-react"
+import { DollarSign, ShoppingBag, Users, TrendingUp, MapPin } from "lucide-react"
 import { useState, useEffect } from "react"
 import { Badge } from "@/components/ui/badge"
+import { Button } from "@/components/ui/button"
+import { useToast } from "@/components/ui/ios-toast"
 import { Area, AreaChart, ResponsiveContainer, XAxis, YAxis, Tooltip, CartesianGrid } from "recharts"
 import { supabase } from "@/lib/supabaseClient"
 import { startOfMonth, subMonths, format, parseISO, isSameMonth } from "date-fns"
@@ -13,6 +15,7 @@ import { id as idLocale } from "date-fns/locale"
 
 export default function AdminDashboard() {
   const [date, setDate] = useState<Date | undefined>(new Date())
+  const toast = useToast()
   
   interface ChartData {
      month: string;
@@ -25,6 +28,7 @@ export default function AdminDashboard() {
       package_name: string;
       event_date: string;
       status: string;
+      maps_url?: string; // Added maps_url
   }
 
   const [stats, setStats] = useState({
@@ -47,10 +51,10 @@ export default function AdminDashboard() {
           const lastMonthStart = startOfMonth(subMonths(today, 1))
           
           // FETCH ORDERS
-          // Fixed: Added client_name, package_name, event_date to select
+          // Fixed: Added client_name, package_name, event_date, maps_url to select
           const { data: orders } = await supabase
             .from('orders')
-            .select('id, total_amount, created_at, status, event_date, client_name, package_name')
+            .select('id, total_amount, created_at, status, event_date, client_name, package_name, maps_url')
             .neq('status', 'cancelled')
           
           const ordersSafe = orders || []
@@ -110,7 +114,8 @@ export default function AdminDashboard() {
                 client_name: o.client_name || "Klien",
                 package_name: o.package_name || "-", 
                 event_date: o.event_date,
-                status: o.status
+                status: o.status,
+                maps_url: o.maps_url
             }))
           setRecentBookings(upcoming)
       }
@@ -264,7 +269,8 @@ export default function AdminDashboard() {
                </CardContent>
             </Card>
 
-            <Card className="border shadow-sm dark:bg-zinc-950/50 flex-1">
+            <Card className="border shadow-sm dark:bg-zinc-950/50 flex-1 backdrop-blur-sm bg-white/50 relative overflow-hidden">
+                <div className="absolute inset-0 bg-white/40 dark:bg-black/40 backdrop-blur-md -z-10" />
                 <CardHeader className="pb-3">
                    <CardTitle>Booking Mendatang</CardTitle>
                    <CardDescription>Sesi foto yang akan datang minggu ini.</CardDescription>
@@ -275,16 +281,28 @@ export default function AdminDashboard() {
                           <div className="text-sm text-muted-foreground text-center py-4">Tidak ada booking mendatang.</div>
                       ) : (
                           recentBookings.map((booking) => (
-                             <div key={booking.id} className="flex items-center justify-between border-b pb-4 last:border-0 last:pb-0">
+                             <div key={booking.id} className="flex items-center justify-between border-b pb-4 last:border-0 last:pb-0 border-black/5 dark:border-white/5">
                                 <div className="space-y-1">
                                    <p className="font-medium text-sm leading-none">{booking.client_name}</p>
                                    <p className="text-xs text-muted-foreground">{booking.package_name}</p>
                                 </div>
-                                <div className="text-right">
-                                   <p className="text-sm font-medium">{format(new Date(booking.event_date), "dd MMM")}</p>
-                                   <Badge variant={booking.status === 'completed' ? 'default' : 'secondary'} className="text-[10px] h-5 px-1.5">
-                                      {booking.status}
-                                   </Badge>
+                                <div className="text-right flex flex-col items-end gap-1">
+                                   <p className="text-xs font-medium text-muted-foreground">{format(new Date(booking.event_date), "dd MMM")}</p>
+                                   <Button 
+                                      variant="outline" 
+                                      size="sm" 
+                                      className="h-6 text-[10px] px-2 gap-1 bg-blue-50 text-blue-600 border-blue-200 hover:bg-blue-100 dark:bg-blue-900/20 dark:text-blue-400 dark:border-blue-800 dark:hover:bg-blue-900/30"
+                                      onClick={() => {
+                                          if (booking.maps_url) {
+                                              window.open(booking.maps_url, '_blank')
+                                          } else {
+                                              toast.error("Tidak ada lokasi", "Link Google Maps belum diinput untuk order ini.")
+                                          }
+                                      }}
+                                   >
+                                      <MapPin className="w-3 h-3" />
+                                      Buka Maps
+                                   </Button>
                                 </div>
                              </div>
                           ))
