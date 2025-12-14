@@ -91,29 +91,35 @@ export default function InvoicePrintButton({ orderData }: { orderData: RawOrder 
         </Button>
       </DialogTrigger>
 
-      <DialogContent className="max-w-5xl h-[90vh] flex flex-col p-0 bg-slate-100/50 border-none sm:rounded-xl overflow-hidden">
-        <DialogHeader className="p-4 bg-white border-b flex-none">
+      <DialogContent className="max-w-7xl h-[95vh] flex flex-col p-0 bg-slate-100 border-none sm:rounded-xl overflow-hidden">
+        <DialogHeader className="p-4 bg-white border-b flex-none z-10 shadow-sm">
            <div className="flex justify-between items-center w-full pr-8">
              <div>
                 <DialogTitle>Preview Invoice</DialogTitle>
-                <DialogDescription>Pastikan data sudah benar sebelum dicetak.</DialogDescription>
+                <DialogDescription className="hidden sm:block">Pastikan data sudah benar sebelum dicetak.</DialogDescription>
              </div>
              <Button onClick={() => handlePrint()} className="gap-2 bg-blue-600 hover:bg-blue-700 text-white shadow-md">
                 <Printer className="w-4 h-4" />
-                Print PDF
+                Print / Save PDF
              </Button>
            </div>
         </DialogHeader>
 
         {/* Scrollable Preview Area */}
-        <div className="flex-1 overflow-y-auto p-8 flex justify-center bg-slate-500/10">
-          {/* Scale wrapper for small screens */}
-          <div className="scale-[0.6] sm:scale-[0.7] md:scale-[0.85] lg:scale-100 origin-top shadow-xl transition-all">
-             <InvoiceTemplate
-                ref={componentRef}
-                order={invoiceData}
-                settings={appSettings}
-             />
+        <div className="flex-1 overflow-auto bg-slate-200/50 flex justify-center py-8">
+          {/* 
+            Wrapper Scale Logic: 
+            Original A4 Width = 210mm (~794px).
+            We use CSS scale to fit it in smaller screens.
+          */}
+          <div className="scale-[0.5] sm:scale-[0.6] md:scale-[0.75] lg:scale-[0.85] xl:scale-100 origin-top transition-transform duration-200 ease-out mb-10">
+             <div className="shadow-2xl">
+              <InvoiceTemplate
+                  ref={componentRef}
+                  order={invoiceData}
+                  settings={appSettings}
+              />
+             </div>
           </div>
         </div>
       </DialogContent>

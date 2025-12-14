@@ -126,6 +126,10 @@ export default function OrdersPage() {
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false)
   const [newBookingDate, setNewBookingDate] = useState<Date | undefined>(undefined)
   
+  // New Booking Form State (for live status preview)
+  const [newOrderAmount, setNewOrderAmount] = useState("")
+  const [newOrderDp, setNewOrderDp] = useState("")
+
   // Editing State
   const [editingOrder, setEditingOrder] = useState<Order | null>(null)
 
@@ -553,11 +557,41 @@ export default function OrdersPage() {
                 </div>
                 <div className="space-y-1 md:space-y-2">
                    <Label>Total Harga (Estimasi)</Label>
-                   <Input name="amount" placeholder="Rp 5.000.000" required className="h-9 md:h-10" />
+                   <Input 
+                      name="amount" 
+                      placeholder="Rp 5.000.000" 
+                      required 
+                      className="h-9 md:h-10"
+                      value={newOrderAmount}
+                      onChange={(e) => setNewOrderAmount(e.target.value)}
+                   />
                 </div>
                 <div className="space-y-1 md:space-y-2">
                    <Label>Uang Muka / DP (Opsional)</Label>
-                   <Input name="dp_amount" placeholder="Rp 0" className="h-9 md:h-10" />
+                   <Input 
+                      name="dp_amount" 
+                      placeholder="Rp 0" 
+                      className="h-9 md:h-10"
+                      value={newOrderDp}
+                      onChange={(e) => setNewOrderDp(e.target.value)}
+                   />
+                </div>
+
+                {/* Live Status Preview for New Booking */}
+                <div className="md:col-span-2 bg-slate-50 p-3 rounded-lg border flex items-center justify-between">
+                     <span className="text-xs text-muted-foreground uppercase font-medium">Status Pembayaran:</span>
+                     {(() => {
+                        const total = parseInt(newOrderAmount.replace(/[^0-9]/g, "")) || 0
+                        const paid = parseInt(newOrderDp.replace(/[^0-9]/g, "")) || 0
+                        
+                        if (paid >= total && total > 0) {
+                            return <Badge className="bg-green-600 hover:bg-green-700 text-white border-none flex gap-1"><CheckCircle2 className="w-3 h-3" /> LUNAS</Badge>
+                        } else if (paid > 0) {
+                            return <Badge variant="secondary" className="bg-yellow-100 text-yellow-800 hover:bg-yellow-200 border-yellow-200">PARTIAL / DP</Badge>
+                        } else {
+                            return <Badge variant="outline" className="border-red-200 bg-red-50 text-red-700">BELUM BAYAR</Badge>
+                        }
+                    })()}
                 </div>
              </div>
              <div className="flex justify-end gap-2">
@@ -1192,31 +1226,56 @@ function OrderEditForm({
                 </Dialog>
             </div>
             
-            {/* Payment Status Section */}
-            <div className={`col-span-2 md:col-span-3 flex items-center gap-3 mt-2 pt-2 border-t border-dashed ${isMobile ? 'justify-between' : ''}`}>
-                <Label className={`text-xs text-muted-foreground ${isMobile ? '' : 'min-w-[100px]'}`}>Status Pembayaran:</Label>
-                <Select 
-                    value={editingOrder.paymentStatus || 'unpaid'} 
-                    onValueChange={(val) => onPaymentStatusChange(editingOrder.id, val)}
-                >
-                    <SelectTrigger className={`${isMobile ? 'h-8 text-xs flex-1' : 'h-9 w-[180px]'}`}>
-                        <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                        <SelectItem value="unpaid">
-                            <span className="flex items-center gap-2">
-                                <span className="h-2 w-2 rounded-full bg-red-500"></span>
-                                BELUM LUNAS
-                            </span>
-                        </SelectItem>
-                        <SelectItem value="paid">
-                            <span className="flex items-center gap-2">
-                                <span className="h-2 w-2 rounded-full bg-green-500"></span>
-                                LUNAS
-                            </span>
-                        </SelectItem>
-                    </SelectContent>
-                </Select>
+            {/* Payment Status Section - AUTO CALCULATED */}
+            <div className={`col-span-2 md:col-span-3 bg-slate-50 p-3 rounded-lg border flex flex-col sm:flex-row items-center justify-between gap-4 mt-2`}>
+                 <div className="flex items-center gap-3">
+                    <Label className="text-xs text-muted-foreground uppercase tracking-wide">Status Pembayaran</Label>
+                    {(() => {
+                        const total = parseInt(editingOrder.amount.replace(/[^0-9]/g, "")) || 0
+                        const paid = editingOrder.paid_amount || 0
+                        
+                        let statusNode = <Badge variant="outline" className="border-red-200 bg-red-50 text-red-700">BELUM BAYAR</Badge>
+                        if (paid >= total && total > 0) {
+                            statusNode = <Badge className="bg-green-600 hover:bg-green-700 text-white border-none flex gap-1"><CheckCircle2 className="w-3 h-3" /> LUNAS</Badge>
+                        } else if (paid > 0) {
+                            statusNode = <Badge variant="secondary" className="bg-yellow-100 text-yellow-800 hover:bg-yellow-200 border-yellow-200">PARTIAL / DP</Badge>
+                        }
+                        
+                        return (
+                            <div className="flex items-center gap-2">
+                                {statusNode}
+                                {paid > 0 && paid < total && (
+                                    <span className="text-xs text-muted-foreground font-mono">
+                                        (Kurang: {new Intl.NumberFormat("id-ID", { style: "currency", currency: "IDR", maximumFractionDigits: 0 }).format(total - paid)})
+                                    </span>
+                                )}
+                            </div>
+                        )
+                    })()}
+                 </div>
+
+                 {/* Quick Actions */}
+                 <div className="flex items-center gap-2">
+                    <Button 
+                        size="sm" 
+                        variant="outline" 
+                        className="h-8 text-xs border-green-200 text-green-700 hover:bg-green-50"
+                        onClick={() => {
+                             const total = parseInt(editingOrder.amount.replace(/[^0-9]/g, "")) || 0
+                             setEditingOrder({ ...editingOrder, paid_amount: total })
+                        }}
+                    >
+                        Set Lunas
+                    </Button>
+                    <Button 
+                        size="sm" 
+                        variant="ghost" 
+                        className="h-8 text-xs text-muted-foreground"
+                        onClick={() => setEditingOrder({ ...editingOrder, paid_amount: 0 })}
+                    >
+                        Reset 0
+                    </Button>
+                 </div>
             </div>
 
             {/* Action Buttons */}
