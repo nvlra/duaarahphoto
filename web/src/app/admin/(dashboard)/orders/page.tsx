@@ -1,7 +1,8 @@
 "use client"
 
 import { useState, ElementType, Fragment } from "react"
-import { toast } from "sonner"
+import { useToast } from "@/components/ui/ios-toast"
+import { ConfirmModal } from "@/components/ui/confirm-modal"
 import { 
   Search, 
   Filter, 
@@ -124,8 +125,13 @@ export default function OrdersPage() {
 
   const [expandedId, setExpandedId] = useState<string | null>(null)
   
+  const toast = useToast()
+  
   // Dialog States
   const [isNewBookingOpen, setIsNewBookingOpen] = useState(false)
+  
+  // Delete Confirmation State
+  const [deleteId, setDeleteId] = useState<string | null>(null)
   const [_isEditDialogOpen, setIsEditDialogOpen] = useState(false)
   const [newBookingDate, setNewBookingDate] = useState<Date | undefined>(undefined)
   const [newBookingCategory, setNewBookingCategory] = useState<string>("all")
@@ -393,14 +399,28 @@ export default function OrdersPage() {
       setEditingOrder(null)
   }
 
+  // Trigger Delete Modal
   const handleDelete = (id: string) => {
-    if (confirm("Apakah Anda yakin ingin menghapus pesanan ini?")) {
-        setOrders(orders.filter(o => o.id !== id))
-        if (expandedId === id) {
-            setExpandedId(null)
-            setEditingOrder(null)
-        }
-    }
+      setDeleteId(id)
+  }
+
+  // Actual Delete Logic
+  const confirmDelete = async () => {
+      if (!deleteId) return
+
+      const { error } = await supabase.from('orders').delete().eq('id', deleteId)
+
+      if (error) {
+          toast.error("Gagal menghapus", error.message)
+      } else {
+          toast.success("Order dihapus", "Data berhasil dihapus selamanya")
+          setOrders(orders.filter(o => o.id !== deleteId))
+          if (expandedId === deleteId) {
+             setExpandedId(null)
+             setEditingOrder(null)
+          }
+      }
+      setDeleteId(null)
   }
 
   const handlePaymentStatusChange = async (orderId: string, newStatus: string) => {
@@ -521,6 +541,16 @@ export default function OrdersPage() {
           />
         </TabsContent>
       </Tabs>
+
+      <ConfirmModal 
+        isOpen={!!deleteId}
+        onClose={() => setDeleteId(null)}
+        onConfirm={confirmDelete}
+        title="Hapus Order?"
+        description="Apakah Anda yakin ingin menghapus pesanan ini secara permanen? Aksi ini tidak dapat dibatalkan."
+        confirmText="Hapus"
+        variant="destructive"
+      />
 
       {/* New Booking Dialog */}
       <Dialog open={isNewBookingOpen} onOpenChange={setIsNewBookingOpen}>
