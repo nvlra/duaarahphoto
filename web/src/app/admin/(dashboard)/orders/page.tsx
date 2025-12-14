@@ -708,7 +708,7 @@ export default function OrdersPage() {
                 </div>
 
                 {/* Live Status Preview for New Booking */}
-                <div className="md:col-span-2 bg-slate-50 p-3 rounded-lg border flex items-center justify-between">
+                <div className="md:col-span-2 bg-slate-50 dark:bg-slate-900/50 p-3 rounded-lg border dark:border-slate-800 flex items-center justify-between">
                      <span className="text-xs text-muted-foreground uppercase font-medium">Status Pembayaran:</span>
                      {(() => {
                         const total = parseInt(newOrderAmount.replace(/[^0-9]/g, "")) || 0
@@ -717,9 +717,9 @@ export default function OrdersPage() {
                         if (paid >= total && total > 0) {
                             return <Badge className="bg-green-600 hover:bg-green-700 text-white border-none flex gap-1"><CheckCircle2 className="w-3 h-3" /> LUNAS</Badge>
                         } else if (paid > 0) {
-                            return <Badge variant="secondary" className="bg-yellow-100 text-yellow-800 hover:bg-yellow-200 border-yellow-200">PARTIAL / DP</Badge>
+                            return <Badge variant="secondary" className="bg-yellow-100 text-yellow-800 hover:bg-yellow-200 border-yellow-200 dark:bg-yellow-900/30 dark:text-yellow-400 dark:border-yellow-800">PARTIAL / DP</Badge>
                         } else {
-                            return <Badge variant="outline" className="border-red-200 bg-red-50 text-red-700">BELUM BAYAR</Badge>
+                            return <Badge variant="outline" className="border-red-200 bg-red-50 text-red-700 dark:bg-red-900/20 dark:text-red-400 dark:border-red-800">BELUM BAYAR</Badge>
                         }
                     })()}
                 </div>
