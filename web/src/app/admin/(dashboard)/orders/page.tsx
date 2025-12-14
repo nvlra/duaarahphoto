@@ -781,6 +781,10 @@ function CardTable({ orders, expandedId, editingOrder, onRowClick, setEditingOrd
                                         onDelete={onDelete}
                                         onPaymentStatusChange={onPaymentStatusChange}
                                         teamMembers={teamMembers}
+                                        packages={packages}
+                                        categories={categories}
+                                        editingCategory={editingCategory}
+                                        setEditingCategory={setEditingCategory}
                                     />
                                 </motion.div>
                             </TableCell>
