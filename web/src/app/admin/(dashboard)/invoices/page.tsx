@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect, Suspense } from "react"
+import { useState, useEffect, Suspense, useMemo } from "react"
 import { useSearchParams } from "next/navigation"
 import { supabase } from "@/lib/supabaseClient"
 import { InvoiceEditor } from "@/components/admin/InvoiceEditor"
@@ -20,16 +20,32 @@ import { toast } from "sonner"
 import { format } from "date-fns"
 import { Badge } from "@/components/ui/badge"
 
+// Invoice type definition
+interface Invoice {
+  id: string
+  invoice_number: string
+  client_name?: string
+  issue_date?: string
+  due_date?: string
+  status?: string
+  total_amount?: number
+  created_at?: string
+  clients?: { id: string; name: string; email?: string } | null
+}
+
 function InvoicesPageContent() {
   const searchParams = useSearchParams()
-  const [view, setView] = useState<'list' | 'editor'>('list')
-  const [invoices, setInvoices] = useState<any[]>([])
-  const [_editingInvoice, setEditingInvoice] = useState<any>(null)
+  const orderId = searchParams.get('orderId')
+  
+  // Compute initial view based on URL params - no useEffect needed
+  const initialView = orderId ? 'editor' : 'list'
+  const [view, setView] = useState<'list' | 'editor'>(initialView)
+  const [invoices, setInvoices] = useState<Invoice[]>([])
+  const [_editingInvoice, setEditingInvoice] = useState<Invoice | null>(null)
   const [searchTerm, setSearchTerm] = useState("")
 
-  // Check if we have order data from query params
-  const orderId = searchParams.get('orderId')
-  const orderData = orderId ? {
+  // Memoize orderData to prevent re-creation on every render
+  const orderData = useMemo(() => orderId ? {
     orderId,
     clientName: searchParams.get('clientName') || '',
     contact: searchParams.get('contact') || '',
@@ -37,29 +53,26 @@ function InvoicesPageContent() {
     amount: searchParams.get('amount') || '',
     date: searchParams.get('date') || '',
     status: searchParams.get('status') || ''
-  } : null
-
-  // Auto-open editor if order data present
-  useEffect(() => {
-    if (orderData) {
-      setView('editor')
-    }
-  }, [orderData])
+  } : null, [orderId, searchParams])
 
   const fetchInvoices = async () => {
-    const { data, error } = await supabase
+    const { data } = await supabase
       .from('invoices')
       .select('*, clients(id, name, email)')
       .order('created_at', { ascending: false })
     
     if (data) {
-        setInvoices(data)
+        setInvoices(data as Invoice[])
     }
   }
 
+  // eslint-disable-next-line react-hooks/set-state-in-effect
   useEffect(() => {
-    fetchInvoices()
-  }, [])
+    // Only fetch if we're showing the list view
+    if (view === 'list') {
+      fetchInvoices()
+    }
+  }, [view])
 
   const handleDelete = async (id: string) => {
       if (!confirm("Hapus invoice ini?")) return
@@ -72,7 +85,7 @@ function InvoicesPageContent() {
       }
   }
 
-  const handleEdit = (invoice: any) => {
+  const handleEdit = (invoice: Invoice) => {
       // In a real implementation, we would pass this data to the Editor.
       // For now, the Editor manages its own state, so we might need to implement data loading in Editor later.
       // We'll mostly treat "Edit" as "Open Designer" potentially with loaded data if implemented.
@@ -151,8 +164,8 @@ function InvoicesPageContent() {
                          <TableRow key={inv.id}>
                             <TableCell className="font-medium">{inv.invoice_number}</TableCell>
                             <TableCell>{inv.clients?.name || "Klien Umum"}</TableCell>
-                            <TableCell>{format(new Date(inv.issue_date), "dd MMM yyyy")}</TableCell>
-                            <TableCell>{format(new Date(inv.due_date), "dd MMM yyyy")}</TableCell>
+                            <TableCell>{inv.issue_date ? format(new Date(inv.issue_date), "dd MMM yyyy") : "-"}</TableCell>
+                            <TableCell>{inv.due_date ? format(new Date(inv.due_date), "dd MMM yyyy") : "-"}</TableCell>
                             <TableCell>
                                 <Badge variant={inv.status === 'paid' ? 'default' : inv.status === 'draft' ? 'secondary' : 'destructive'}>
                                    {inv.status}
