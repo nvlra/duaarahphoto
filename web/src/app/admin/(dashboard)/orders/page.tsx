@@ -107,10 +107,10 @@ const statusConfig: Record<string, { label: string, color: string, icon: Element
 
 
 export default function OrdersPage() {
-  const _router = useRouter()
   const [orders, setOrders] = useState<Order[]>([])
   const [teamMembers, setTeamMembers] = useState<TeamMemberSimple[]>([])
-  const [packages, setPackages] = useState<{id: string, name: string, price: number}[]>([])
+  const [packages, setPackages] = useState<{id: string, name: string, price: number, category_id?: string}[]>([])
+  const [categories, setCategories] = useState<{id: string, name: string}[]>([])
   const [searchQuery, setSearchQuery] = useState("")
   const [statusFilter, setStatusFilter] = useState("all")
   const [dateFilter, _setDateFilter] = useState<Date | undefined>(undefined)
@@ -125,6 +125,7 @@ export default function OrdersPage() {
   const [isNewBookingOpen, setIsNewBookingOpen] = useState(false)
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false)
   const [newBookingDate, setNewBookingDate] = useState<Date | undefined>(undefined)
+  const [newBookingCategory, setNewBookingCategory] = useState<string>("all")
   
   // New Booking Form State (for live status preview)
   const [newOrderAmount, setNewOrderAmount] = useState("")
@@ -132,6 +133,7 @@ export default function OrdersPage() {
 
   // Editing State
   const [editingOrder, setEditingOrder] = useState<Order | null>(null)
+  const [editingCategory, setEditingCategory] = useState<string>("all")
 
 
   const handleCreateOrder = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -169,10 +171,13 @@ export default function OrdersPage() {
     setIsLoading(false)
   }
 
-  // Fetch Packages for Dropdown
+  // Fetch Packages & Categories
   const fetchPackages = async () => {
-      const { data } = await supabase.from('packages').select('id, name, price').order('name')
-      if (data) setPackages(data)
+      const { data: catData } = await supabase.from('package_categories').select('id, name').order('name')
+      if (catData) setCategories(catData)
+
+      const { data: pkgData } = await supabase.from('packages').select('id, name, price, category_id').order('name')
+      if (pkgData) setPackages(pkgData)
   }
 
   // Fetch Team for Dropdown
@@ -260,6 +265,14 @@ export default function OrdersPage() {
       // Expanding - set both
       setExpandedId(order.id)
       setEditingOrder(order)
+      
+      // Try to find category from package name
+      const foundPkg = packages.find(p => p.name === order.package)
+      if (foundPkg && foundPkg.category_id) {
+          setEditingCategory(foundPkg.category_id)
+      } else {
+          setEditingCategory("all")
+      }
     }
   }
 
@@ -529,20 +542,36 @@ export default function OrdersPage() {
                    </Popover>
                 </div>
                  <div className="space-y-1 md:space-y-2">
+                    <Label>Kategori Paket</Label>
+                    <Select value={newBookingCategory} onValueChange={setNewBookingCategory}>
+                       <SelectTrigger className="h-9 md:h-10">
+                          <SelectValue placeholder="Pilih Kategori" />
+                       </SelectTrigger>
+                       <SelectContent>
+                          <SelectItem value="all">Semua Kategori</SelectItem>
+                          {categories.map(cat => (
+                              <SelectItem key={cat.id} value={cat.id}>{cat.name}</SelectItem>
+                          ))}
+                       </SelectContent>
+                    </Select>
+                 </div>
+                 <div className="space-y-1 md:space-y-2">
                     <Label>Paket</Label>
                     <Select name="package" required>
                        <SelectTrigger className="h-9 md:h-10">
                           <SelectValue placeholder="Pilih Paket" />
                        </SelectTrigger>
                        <SelectContent>
-                          {packages.length === 0 ? (
-                            <SelectItem value="no-package" disabled>Belum ada paket tersedia</SelectItem>
+                          {packages.filter(p => newBookingCategory === 'all' || p.category_id === newBookingCategory).length === 0 ? (
+                            <SelectItem value="no-package" disabled>Tidak ada paket di kategori ini</SelectItem>
                           ) : (
-                            packages.map(pkg => (
-                              <SelectItem key={pkg.id} value={pkg.name}>
-                                {pkg.name} - Rp {pkg.price.toLocaleString('id-ID')}
-                              </SelectItem>
-                            ))
+                            packages
+                                .filter(p => newBookingCategory === 'all' || p.category_id === newBookingCategory)
+                                .map(pkg => (
+                                  <SelectItem key={pkg.id} value={pkg.name}>
+                                    {pkg.name} - Rp {pkg.price.toLocaleString('id-ID')}
+                                  </SelectItem>
+                                ))
                           )}
                        </SelectContent>
                     </Select>
@@ -960,6 +989,46 @@ function OrderEditForm({
 
     return (
         <div className={containerClass}>
+            {/* Top Status Bar: Project & Payment */}
+            <div className={`col-span-2 md:col-span-3 flex flex-col sm:flex-row gap-4 mb-2 pb-4 border-b border-dashed ${isMobile ? 'col-span-2' : ''}`}>
+                {/* Project Status Dropdown */}
+                <div className="flex-1 space-y-1">
+                    <Label className="text-xs text-muted-foreground uppercase">Status Project</Label>
+                    <Select 
+                        value={editingOrder.status} 
+                        onValueChange={(val) => setEditingOrder({ ...editingOrder, status: val })}
+                    >
+                        <SelectTrigger className="h-9 bg-white border-slate-300">
+                            <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                            <SelectItem value="booked">📅 Booked</SelectItem>
+                            <SelectItem value="on_process">📸 On Process</SelectItem>
+                            <SelectItem value="completed">✅ Selesai (Completed)</SelectItem>
+                            <SelectItem value="cancelled">❌ Cancelled</SelectItem>
+                        </SelectContent>
+                    </Select>
+                </div>
+
+                {/* Payment Status Indicator (Read Only View) */}
+                <div className="flex-1 space-y-1">
+                    <Label className="text-xs text-muted-foreground uppercase">Status Pembayaran</Label>
+                    <div className="h-9 flex items-center">
+                        {(() => {
+                            const total = parseInt(editingOrder.amount.replace(/[^0-9]/g, "")) || 0
+                            const paid = editingOrder.paid_amount || 0
+                            if (paid >= total && total > 0) {
+                                return <Badge className="bg-green-600 text-white hover:bg-green-700 pointer-events-none"><CheckCircle2 className="w-3 h-3 mr-1"/> LUNAS</Badge>
+                            } else if (paid > 0) {
+                                return <Badge variant="secondary" className="bg-yellow-100 text-yellow-800 pointer-events-none">PARTIAL / DP</Badge>
+                            } else {
+                                return <Badge variant="outline" className="border-red-200 text-red-700 bg-red-50 pointer-events-none">BELUM BAYAR</Badge>
+                            }
+                        })()}
+                    </div>
+                </div>
+            </div>
+
             <div className={`${spaceClass} ${fullWidthClass}`}>
                 <Label className={labelClass}>Klien</Label>
                 <Input 
@@ -1004,6 +1073,22 @@ function OrderEditForm({
                 </PopoverContent>
                 </Popover>
             </div>
+            
+            <div className={spaceClass}>
+                <Label className={labelClass}>Kategori Paket</Label>
+                <Select value={editingCategory} onValueChange={setEditingCategory}>
+                    <SelectTrigger className={inputClass}>
+                        <SelectValue placeholder="Semua Kategori" />
+                    </SelectTrigger>
+                    <SelectContent>
+                        <SelectItem value="all">Semua Kategori</SelectItem>
+                        {categories.map(cat => (
+                            <SelectItem key={cat.id} value={cat.id}>{cat.name}</SelectItem>
+                        ))}
+                    </SelectContent>
+                </Select>
+            </div>
+
             <div className={spaceClass}>
                 <Label className={labelClass}>Paket</Label>
                 <Select 
@@ -1014,13 +1099,17 @@ function OrderEditForm({
                     <SelectValue placeholder="Pilih" />
                 </SelectTrigger>
                 <SelectContent>
-                    <SelectItem value="Wedding Silver">Wed Silver</SelectItem>
-                    <SelectItem value="Wedding Gold">Wed Gold</SelectItem>
-                    <SelectItem value="Wedding Platinum">Wed Platinum</SelectItem>
-                    <SelectItem value="Pre-Wedding">Pre-Wed</SelectItem>
-                    <SelectItem value="Graduation">Graduation</SelectItem>
-                    <SelectItem value="Newborn">Newborn</SelectItem>
-                    <SelectItem value="Family">Family</SelectItem>
+                    {packages.filter(p => editingCategory === 'all' || p.category_id === editingCategory).length === 0 ? (
+                        <SelectItem value="no-package" disabled>Tidak ada paket</SelectItem>
+                    ) : (
+                        packages
+                            .filter(p => editingCategory === 'all' || p.category_id === editingCategory)
+                            .map(pkg => (
+                                <SelectItem key={pkg.id} value={pkg.name}>
+                                    {pkg.name}
+                                </SelectItem>
+                            ))
+                    )}
                 </SelectContent>
                 </Select>
             </div>
