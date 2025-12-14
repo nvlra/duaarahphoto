@@ -12,7 +12,8 @@ import {
   Tags,
   X,
   CreditCard,
-  Wallet
+  Wallet,
+  Pencil
 } from "lucide-react"
 import { ConfirmModal } from "@/components/ui/confirm-modal"
 import { useToast } from "@/components/ui/ios-toast"
@@ -72,6 +73,7 @@ interface Expense {
   description: string
   amount: number
   category: string // joined name
+  category_id?: string // joined id
   date: string
   type: string
 }
@@ -80,8 +82,6 @@ interface Category {
   id: string
   name: string
 }
-
-
 
 export default function FinancePage() {
   const toast = useToast()
@@ -92,6 +92,10 @@ export default function FinancePage() {
   const [confirmAction, setConfirmAction] = useState<() => Promise<void> | void>(() => {})
   const [confirmTitle, setConfirmTitle] = useState("")
   const [confirmDescription, setConfirmDescription] = useState("")
+
+  // Edit State
+  const [editingExpense, setEditingExpense] = useState<Expense | null>(null)
+  const [isFormOpen, setIsFormOpen] = useState(false)
 
   const [currentPage, setCurrentPage] = useState(1)
   const ITEMS_PER_PAGE = 8
@@ -125,6 +129,7 @@ export default function FinancePage() {
              id: e.id,
              description: e.description,
              category: e.expense_categories?.name || "Uncategorized",
+             category_id: e.category_id,
              date: format(new Date(e.date), "dd MMM yyyy"), // Display format
              rawDate: e.date, // For calculation
              amount: e.amount,
@@ -235,6 +240,21 @@ export default function FinancePage() {
     setConfirmOpen(true)
   }
 
+  const handleDeleteExpense = (id: string) => {
+      setConfirmTitle("Hapus Pengeluaran")
+      setConfirmDescription("Apakah anda yakin ingin menghapus data pengeluaran ini?")
+      setConfirmAction(() => async () => {
+          const { error } = await supabase.from('expenses').delete().eq('id', id)
+          if (!error) {
+              fetchData()
+              toast.success("Terhapus", "Data pengeluaran berhasil dihapus.")
+          } else {
+              toast.error("Gagal", "Terjadi kesalahan saat menghapus data.")
+          }
+      })
+      setConfirmOpen(true)
+  }
+
   return (
     <div className="space-y-6 pb-20">
       {/* ... Header ... */}
@@ -276,7 +296,25 @@ export default function FinancePage() {
           <Button variant="outline" size="sm" className="h-8 text-xs sm:h-9 sm:text-sm">
             <Download className="mr-2 h-3 w-3 sm:h-4 sm:w-4" /> CSV
           </Button>
-          <AddExpenseDialog categories={categories} onSuccess={fetchData} />
+          
+          <Button 
+            size="sm" 
+            className="h-8 text-xs sm:h-9 sm:text-sm"
+            onClick={() => {
+                setEditingExpense(null)
+                setIsFormOpen(true)
+            }}
+          >
+            <Plus className="mr-2 h-3 w-3 sm:h-4 sm:w-4" /> Catat
+          </Button>
+
+          <ExpenseFormDialog 
+            isOpen={isFormOpen}
+            onOpenChange={setIsFormOpen}
+            categories={categories} 
+            initialData={editingExpense}
+            onSuccess={fetchData} 
+          />
         </div>
       </div>
 
@@ -438,6 +476,7 @@ export default function FinancePage() {
                   <TableHead>Kategori</TableHead>
                   <TableHead>Tanggal</TableHead>
                   <TableHead className="text-right">Jumlah</TableHead>
+                  <TableHead className="w-[80px] text-right">Adj.</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -456,6 +495,26 @@ export default function FinancePage() {
                     </TableCell>
                     <TableCell className="text-muted-foreground text-sm">{expense.date}</TableCell>
                     <TableCell className="text-right font-medium">{parseInt(expense.amount.toString()).toLocaleString('id-ID', { style: 'currency', currency: 'IDR' })}</TableCell>
+                    <TableCell className="text-right">
+                        <div className="flex justify-end gap-1">
+                            {/* PREVENT EDIT FOR AUTO / FEE? Optional, for now allowed */}
+                            <Button 
+                                variant="ghost" size="icon" className="h-7 w-7 text-muted-foreground hover:text-blue-600"
+                                onClick={() => {
+                                    setEditingExpense(expense)
+                                    setIsFormOpen(true)
+                                }}
+                            >
+                                <Pencil className="h-3.5 w-3.5" /> 
+                            </Button>
+                            <Button 
+                                variant="ghost" size="icon" className="h-7 w-7 text-muted-foreground hover:text-red-600"
+                                onClick={() => handleDeleteExpense(expense.id)}
+                            >
+                                <X className="h-3.5 w-3.5" />
+                            </Button>
+                        </div>
+                    </TableCell>
                   </TableRow>
                 ))}
             </TableBody>
@@ -526,45 +585,71 @@ export default function FinancePage() {
   )
 }
 
-function AddExpenseDialog({ categories, onSuccess }: { categories: Category[], onSuccess: () => void }) {
+function ExpenseFormDialog({ categories, onSuccess, initialData, isOpen, onOpenChange }: { categories: Category[], onSuccess: () => void, initialData?: Expense | null, isOpen: boolean, onOpenChange: (open: boolean) => void }) {
   const toast = useToast()
-  const [isOpen, setIsOpen] = useState(false)
+  
+  // Local state for form fields
   const [desc, setDesc] = useState("")
   const [amount, setAmount] = useState("")
   const [catId, setCatId] = useState("")
 
+  // Effect to populate form when initialData changes
+  useEffect(() => {
+    if (initialData) {
+        setDesc(initialData.description)
+        setAmount(initialData.amount.toString())
+        setCatId(initialData.category_id || "")
+    } else {
+        // Reset if opening as new
+        if (isOpen) {
+            setDesc("")
+            setAmount("")
+            setCatId("")
+        }
+    }
+  }, [initialData, isOpen])
+
   const handleSave = async () => {
      if (!desc || !amount) return
      
-     const { error } = await supabase.from('expenses').insert({
-        description: desc,
-        amount: parseFloat(amount),
-        category_id: catId || null
-     })
+     let error = null
+     
+     if (initialData) {
+         // UPDATE
+         const { error: err } = await supabase.from('expenses').update({
+             description: desc,
+             amount: parseFloat(amount),
+             category_id: catId || null
+         }).eq('id', initialData.id)
+         error = err
+     } else {
+         // INSERT
+         const { error: err } = await supabase.from('expenses').insert({
+            description: desc,
+            amount: parseFloat(amount),
+            category_id: catId || null
+         })
+         error = err
+     }
 
      if (!error) {
-        setIsOpen(false)
+        onOpenChange(false)
         setDesc("")
         setAmount("")
         setCatId("")
-        toast.success("Pengeluaran dicatat", "Data pengeluaran berhasil disimpan.")
+        toast.success(initialData ? "Diperbarui" : "Dicatat", initialData ? "Data pengeluaran berhasil diperbarui." : "Data pengeluaran berhasil disimpan.")
         onSuccess()
      } else {
-        toast.error("Gagal mencatat", "Terjadi kesalahan saat menyimpan data.")
+        toast.error("Gagal menyimpan", "Terjadi kesalahan saat menyimpan data.")
      }
   }
 
   return (
-    <Dialog open={isOpen} onOpenChange={setIsOpen}>
-      <DialogTrigger asChild>
-        <Button size="sm" className="h-8 text-xs sm:h-9 sm:text-sm">
-           <Plus className="mr-2 h-3 w-3 sm:h-4 sm:w-4" /> Catat
-        </Button>
-      </DialogTrigger>
+    <Dialog open={isOpen} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
-           <DialogTitle>Tambah Pengeluaran</DialogTitle>
-           <DialogDescription>Catat pengeluaran operasional.</DialogDescription>
+           <DialogTitle>{initialData ? "Edit Pengeluaran" : "Tambah Pengeluaran"}</DialogTitle>
+           <DialogDescription>{initialData ? "Ubah detail pengeluaran ini." : "Catat pengeluaran operasional baru."}</DialogDescription>
         </DialogHeader>
         <div className="grid gap-4 py-4">
            <div className="grid gap-2">
@@ -590,7 +675,7 @@ function AddExpenseDialog({ categories, onSuccess }: { categories: Category[], o
            </div>
         </div>
         <DialogFooter>
-           <Button onClick={handleSave}>Simpan</Button>
+           <Button onClick={handleSave}>{initialData ? "Simpan Perubahan" : "Simpan"}</Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>
