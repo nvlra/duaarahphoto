@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useRef, useEffect } from "react"
+import { useState, useRef, useEffect, useMemo } from "react"
 // Framer Motion removed
 import { 
   Plus, Trash2, Type, Image as ImageIcon, 
@@ -1245,10 +1245,21 @@ export function InvoiceEditor({ onBack, orderData, autoPrint = false }: {
                       >
                         <div className="flex justify-between items-center py-2">
                             <span className="text-xl font-bold">Total</span>
-                            <Input 
-                              defaultValue="Rp 17.500.000"
-                              className="text-right text-2xl font-bold border-none bg-transparent w-48 focus-visible:ring-0 shadow-none px-0"
-                            />
+                            <span 
+                              className="text-right text-2xl font-bold"
+                              style={{ color: invoiceData.totalColor }}
+                            >
+                              {(() => {
+                                // Calculate total from all items
+                                const total = items.reduce((sum, item) => {
+                                  // Parse amount: remove "Rp", spaces, dots for thousands
+                                  const numStr = item.amount.replace(/[^0-9]/g, '')
+                                  return sum + (parseInt(numStr) || 0)
+                                }, 0)
+                                // Format as Indonesian Rupiah
+                                return `Rp ${total.toLocaleString('id-ID')}`
+                              })()}
+                            </span>
                          </div>
                       </DraggableBlock>
                   </div>
