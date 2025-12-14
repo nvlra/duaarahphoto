@@ -590,11 +590,15 @@ export default function OrdersPage() {
                           ) : (
                             packages
                                 .filter(p => newBookingCategory === 'all' || p.category_id === newBookingCategory)
-                                .map(pkg => (
-                                  <SelectItem key={pkg.id} value={pkg.name}>
-                                    {pkg.name} - Rp {pkg.price.toLocaleString('id-ID')}
-                                  </SelectItem>
-                                ))
+                                .map(pkg => {
+                                  const cat = categories.find(c => c.id === pkg.category_id);
+                                  const pkgValue = cat ? `${cat.name} - ${pkg.name}` : pkg.name;
+                                  return (
+                                    <SelectItem key={pkg.id} value={pkgValue}>
+                                      {pkgValue} - Rp {pkg.price.toLocaleString('id-ID')}
+                                    </SelectItem>
+                                  )
+                                })
                           )}
                        </SelectContent>
                     </Select>
@@ -1177,11 +1181,15 @@ function OrderEditForm({
                     ) : (
                         packages
                             .filter(p => editingCategory === 'all' || p.category_id === editingCategory)
-                            .map(pkg => (
-                                <SelectItem key={pkg.id} value={pkg.name}>
-                                    {pkg.name}
-                                </SelectItem>
-                            ))
+                            .map(pkg => {
+                                const cat = categories.find(c => c.id === pkg.category_id);
+                                const pkgValue = cat ? `${cat.name} - ${pkg.name}` : pkg.name;
+                                return (
+                                    <SelectItem key={pkg.id} value={pkgValue}>
+                                        {pkgValue}
+                                    </SelectItem>
+                                )
+                            })
                     )}
                 </SelectContent>
                 </Select>
