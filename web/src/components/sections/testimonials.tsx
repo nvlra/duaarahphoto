@@ -51,7 +51,7 @@ export function Testimonials() {
   ];
 
   return (
-    <section id="stories" className="bg-background py-20 overflow-hidden">
+    <section id="stories" className="bg-background py-20 rounded-b-[3rem] shadow-xl relative z-20 overflow-hidden">
       <div className="container mx-auto px-4">
         <motion.div 
           initial={{ opacity: 0, y: 50, filter: "blur(10px)" }}
