@@ -8,7 +8,7 @@ export function Footer() {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-12">
           {/* Brand */}
           <div className="space-y-4">
-            <h3 className="font-playfair text-2xl font-bold">DUAARAH</h3>
+            <h3 className="font-playfair text-2xl font-bold">ENVIEL</h3>
             <p className="text-zinc-400 text-sm max-w-xs">
               Capturing life&apos;s most precious moments with art and soul. Based in
               Indonesia, available worldwide.
@@ -53,7 +53,7 @@ export function Footer() {
         </div>
 
         <div className="border-t border-white/10 mt-12 pt-8 text-center text-zinc-500 text-sm">
-          &copy; {new Date().getFullYear()} Duaarah Photography. All rights reserved.
+          &copy; {new Date().getFullYear()} Enviel Photography. All rights reserved.
         </div>
       </div>
     </footer>
