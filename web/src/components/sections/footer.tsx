@@ -11,7 +11,7 @@ export function Footer() {
             <h3 className="font-playfair text-2xl font-bold">ENVIEL</h3>
             <p className="text-zinc-400 text-sm max-w-xs">
               Capturing life&apos;s most precious moments with art and soul. Based in
-              Indonesia, available worldwide.
+              Indonesia.
             </p>
           </div>
 
@@ -38,7 +38,7 @@ export function Footer() {
           <div className="space-y-4">
             <h4 className="font-bold text-lg">Contact</h4>
             <div className="text-zinc-400 space-y-2">
-              <p>hello@duaaarahphoto.com</p>
+              <p>hello@envielphoto.com</p>
               <p>+62 812 3456 7890</p>
               <div className="flex gap-4 mt-4">
                 <Link href="#" className="hover:text-white">

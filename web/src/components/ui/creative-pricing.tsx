@@ -1,7 +1,7 @@
 "use client";
 
 import { RippleButton } from "@/components/ui/ripple-button";
-import { Check, Sparkles } from "lucide-react";
+import { Check } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 export interface PricingTier {
@@ -34,9 +34,6 @@ export function CreativePricing({
         <div className="relative inline-block">
           <h2 className="text-4xl md:text-5xl font-bold font-playfair text-foreground tracking-tight">
             {title}
-            <span className="absolute -right-8 -top-4 text-amber-500/50 rotate-12 animate-pulse">
-              <Sparkles className="w-6 h-6" />
-            </span>
           </h2>
         </div>
         <p className="font-sans text-lg text-muted-foreground max-w-2xl mx-auto font-light">

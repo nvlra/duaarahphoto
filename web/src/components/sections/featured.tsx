@@ -21,16 +21,16 @@ export function Featured() {
           >
             <div>
               <h2 className="font-playfair text-4xl md:text-5xl font-bold leading-tight tracking-tight mb-6">
-                Accelerate Gen-AI <br />
-                Tasks on Any Device
+                Capturing Soul <br />
+                In Every Frame
               </h2>
               <p className="text-lg text-muted-foreground font-light leading-relaxed">
-                Build high-performance AI apps on-device without the hassle of model compression or edge deployment.
+                We don&apos;t just take pictures; we craft visual legacies. From intimate elopements to grand celebrations, we ensure every moment is immortalized with elegance and emotion.
               </p>
             </div>
             
             <RippleButton className="rounded-lg px-8 py-6 text-lg shadow-lg hover:shadow-xl transition-all duration-300">
-              Book Now
+              More
             </RippleButton>
           </motion.div>
 

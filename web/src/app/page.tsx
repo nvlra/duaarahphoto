@@ -7,6 +7,7 @@ import { About } from "@/components/sections/about";
 import { Testimonials } from "@/components/sections/testimonials";
 import { Footer } from "@/components/sections/footer";
 import { EntranceTransition } from "@/components/ui/entrance-transition";
+import { FloatingThemeToggle } from "@/components/ui/floating-theme-toggle";
 
 export default function Home() {
   return (
@@ -20,6 +21,7 @@ export default function Home() {
         <About />
         <Testimonials />
         <Footer />
+        <FloatingThemeToggle />
       </main>
     </EntranceTransition>
   );

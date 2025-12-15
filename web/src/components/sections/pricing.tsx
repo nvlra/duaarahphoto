@@ -52,8 +52,8 @@ export function Pricing() {
     <section className="bg-background py-10 md:py-20 relative overflow-hidden">
         {/* Decorative background elements can be added here if needed */}
       <CreativePricing 
-        tag="Investment" 
-        title="Collections" 
+        tag="Enviel Collection" 
+        title="Package" 
         description="We believe in transparency and providing value that lasts a lifetime. Choose a collection or customize your own."
         tiers={packages} 
       />
