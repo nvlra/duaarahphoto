@@ -12,7 +12,7 @@ export const EntranceTransition = ({
   const [isEntered, setIsEntered] = useState(false);
 
   const playSound = () => {
-    const audio = new Audio("https://assets.mixkit.co/active_storage/sfx/2568/2568-preview.mp3");
+    const audio = new Audio("/audio/whoosh.mp3");
     audio.volume = 0.5;
     audio.play().catch((e) => console.log("Audio play failed", e));
   };
