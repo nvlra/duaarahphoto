@@ -16,7 +16,7 @@ export default function Home() {
         <VelocityScroll
           text="Enviel Creative"
           default_velocity={3}
-          className="font-playfair text-center text-4xl font-bold tracking-[-0.02em] text-foreground drop-shadow-sm md:text-7xl md:leading-[5rem]"
+          className="font-playfair text-center text-4xl font-bold tracking-[-0.02em] text-foreground drop-shadow-sm md:text-7xl md:leading-20"
         />
       </div>
       <Featured />

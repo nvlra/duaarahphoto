@@ -18,7 +18,7 @@ export function About() {
             className="w-full md:w-1/2 relative aspect-3/4 md:aspect-4/5 overflow-hidden rounded-lg"
           >
             <Image
-              src="https://images.unsplash.com/photo-1554048612-387768052bf7?q=80&w=2000&auto=format&fit=crop"
+              src="https://images.unsplash.com/photo-1492691527719-9d1e07e534b4?q=80&w=2000&auto=format&fit=crop"
               alt="Photographer"
               fill
               className="object-cover"

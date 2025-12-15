@@ -3,7 +3,8 @@
 import React, { useState } from "react";
 import Link from "next/link";
 import { Menu, X } from "lucide-react";
-import { Button } from "@/components/ui/button";
+
+import { RippleButton } from "@/components/ui/ripple-button";
 import { motion, AnimatePresence } from "framer-motion";
 
 const navLinks = [
@@ -25,19 +26,19 @@ export function Navbar() {
         </Link>
 
         {/* Desktop Menu */}
-        <div className="hidden md:flex items-center gap-8">
-          {navLinks.map((link) => (
+        <div className="hidden md:flex items-center space-x-8">
+          {navLinks.map((item) => (
             <Link
-              key={link.name}
-              href={link.href}
+              key={item.name}
+              href={item.href}
               className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
             >
-              {link.name}
+              {item.name}
             </Link>
           ))}
-          <Button variant="default" size="sm" className="rounded-full px-6">
+          <RippleButton className="rounded-full px-6">
             Book Now
-          </Button>
+          </RippleButton>
         </div>
 
         {/* Mobile Menu Toggle */}
@@ -69,7 +70,7 @@ export function Navbar() {
                   {link.name}
                 </Link>
               ))}
-              <Button className="w-full mt-4 rounded-full">Book Now</Button>
+              <RippleButton className="w-full mt-4 rounded-full">Book Now</RippleButton>
             </div>
           </motion.div>
         )}

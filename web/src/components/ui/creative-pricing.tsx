@@ -1,6 +1,6 @@
 "use client";
 
-import { Button } from "@/components/ui/button";
+import { RippleButton } from "@/components/ui/ripple-button";
 import { Check, Sparkles } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -109,16 +109,17 @@ export function CreativePricing({
               </div>
 
               <div className="mt-auto pt-4">
-                <Button
+                <RippleButton
                   className={cn(
                     "w-full h-12 font-sans tracking-wide text-sm transition-all duration-300",
                     tier.popular
                       ? "bg-foreground text-background hover:bg-foreground/90 shadow-md"
                       : "bg-secondary text-secondary-foreground hover:bg-secondary/80 border border-transparent hover:border-border"
                   )}
+                  rippleColor={tier.popular ? "rgba(255, 255, 255, 0.5)" : "rgba(0, 0, 0, 0.1)"}
                 >
                   Inquire Now
-                </Button>
+                </RippleButton>
               </div>
             </div>
           </div>

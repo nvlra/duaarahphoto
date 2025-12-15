@@ -2,7 +2,7 @@
 
 import React from "react";
 import { InteractiveImageAccordion } from "@/components/ui/interactive-image-accordion";
-import { Button } from "@/components/ui/button";
+import { RippleButton } from "@/components/ui/ripple-button";
 import { motion } from "framer-motion";
 
 export function Featured() {
@@ -29,9 +29,9 @@ export function Featured() {
               </p>
             </div>
             
-            <Button size="lg" className="rounded-lg px-8 py-6 text-lg shadow-lg hover:shadow-xl transition-all duration-300">
+            <RippleButton className="rounded-lg px-8 py-6 text-lg shadow-lg hover:shadow-xl transition-all duration-300">
               Book Now
-            </Button>
+            </RippleButton>
           </motion.div>
 
           {/* Right Side: Accordion */}

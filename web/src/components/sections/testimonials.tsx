@@ -1,58 +1,60 @@
 "use client";
 
 import React from "react";
-import { motion } from "framer-motion";
-import { Quote } from "lucide-react";
-
-const testimonials = [
-  {
-    id: 1,
-    name: "Sarah & James",
-    text: "The photos are absolutely breathtaking. You captured moments we didn't even realize were happening. Truly a magical experience.",
-  },
-  {
-    id: 2,
-    name: "Emily & Michael",
-    text: "Professional, kind, and incredibly talented. Looking through our album feels like reliving the day all over again.",
-  },
-  {
-    id: 3,
-    name: "Jessica & David",
-    text: "We wanted something candid and not stiff, and you delivered exactly that. Every shot feels so natural and full of emotion.",
-  },
-];
+import { AnimatedTestimonials } from "@/components/ui/animated-testimonials";
 
 export function Testimonials() {
+  const testimonials = [
+    {
+      quote:
+        "The most magical day of our lives was captured perfectly. The team made us feel so comfortable, and the photos are just breathtaking.",
+      name: "Sarah & Michael",
+      designation: "Married in Bali, 2024",
+      src: "https://images.unsplash.com/photo-1621621667797-e06afc217fb0?q=80&w=3540&auto=format&fit=crop",
+    },
+    {
+      quote:
+        "Enviel Creative didn't just take photos; they told our story. Every emotion, every glance, every tear was preserved forever.",
+      name: "Jessica & David",
+      designation: "Elopement in Swiss Alps",
+      src: "https://images.unsplash.com/photo-1623162744158-9ff1266db095?q=80&w=3540&auto=format&fit=crop",
+    },
+    {
+      quote:
+        "Professional, artistic, and truly attentive to detail. The album we received is a masterpiece we will cherish for generations.",
+      name: "Emily & James",
+      designation: "Wedding in Tuscany",
+      src: "https://images.unsplash.com/photo-1590337856372-97dc0227289d?q=80&w=3540&auto=format&fit=crop",
+    },
+    {
+      quote:
+        "From the engagement shoot to the final dance, they were amazing. The cinematic video highlight reel still makes us cry happy tears.",
+      name: "Olivia & William",
+      designation: "Destination Wedding, Paris",
+      src: "https://images.unsplash.com/photo-1583939003579-73013917c7ce?q=80&w=3540&auto=format&fit=crop",
+    },
+    {
+      quote:
+        "We couldn't have asked for a better team. They blended in seamlessly and captured candid moments we didn't even know happened.",
+      name: "Sophia & Benjamin",
+      designation: "Intimate Ceremony, Kyoto",
+      src: "https://images.unsplash.com/photo-1606800052052-a08af7148866?q=80&w=3540&auto=format&fit=crop",
+    },
+  ];
+
   return (
-    <section className="py-20 md:py-32 bg-background">
+    <section id="stories" className="bg-background py-20 overflow-hidden">
       <div className="container mx-auto px-4">
-        <div className="text-center mb-16">
-          <h2 className="font-playfair text-3xl md:text-5xl font-bold mb-4">
+        <div className="text-center mb-12">
+          <h2 className="font-playfair text-4xl md:text-5xl font-bold tracking-tight mb-4">
             Love Notes
           </h2>
-          <p className="text-muted-foreground">What our couples say about us</p>
+          <p className="text-muted-foreground max-w-2xl mx-auto">
+            Kind words from the beautiful souls we&apos;ve had the privilege to capture.
+          </p>
         </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-          {testimonials.map((item, index) => (
-            <motion.div
-              key={item.id}
-              initial={{ opacity: 0, y: 30 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ delay: index * 0.2, duration: 0.6 }}
-              className="p-8 rounded-2xl bg-secondary/20 border border-border/50 relative"
-            >
-              <Quote className="text-muted-foreground/20 w-10 h-10 mb-4" />
-              <p className="text-lg font-light italic mb-6 text-foreground/90">
-                &quot;{item.text}&quot;
-              </p>
-              <div className="font-playfair font-bold text-xl">
-                - {item.name}
-              </div>
-            </motion.div>
-          ))}
-        </div>
+        
+        <AnimatedTestimonials testimonials={testimonials} autoplay={true} />
       </div>
     </section>
   );
