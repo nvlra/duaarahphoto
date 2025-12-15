@@ -25,6 +25,6 @@ export const ADMIN_MENU_ITEMS: AdminMenuItem[] = [
     { label: 'Home', href: '/admin', icon: Home, showOnMobile: true },
     { label: 'Galeri', href: '/admin/gallery', icon: Images, showOnMobile: true },
     { label: 'Kategori & Paket', href: '/admin/packages', icon: Package, showOnMobile: true },
-    { label: 'Konten (CMS)', href: '/admin/content', icon: Images, showOnMobile: true }, // Using Images generic icon for now as in old sidebar
+    { label: 'Konten (CMS)', href: '/admin/content', icon: Images, showOnMobile: false }, // Using Images generic icon for now as in old sidebar
     { label: 'Pengaturan', href: '/admin/settings', icon: Settings, showOnMobile: true },
 ];
