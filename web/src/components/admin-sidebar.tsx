@@ -1,60 +1,69 @@
 "use client"
 
+import React from "react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { Menu } from "lucide-react"
 import { 
-  ShoppingBagIcon as ShoppingBag, 
-  BanknoteIcon as Banknote, 
-  ImagesIcon as Images, 
-  SettingsIcon as Settings, 
-  PackageIcon as Package, 
-  UsersIcon as Users,
-  HomeIcon as Home
+  HomeIcon as Home,
+  type AnimatedIconHandle
 } from "@/components/ui/animated-icons"
+
+import { ADMIN_MENU_ITEMS, type AdminMenuItem } from "@/config/admin-menu"
 
 import { Button } from "@/components/ui/button"
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import { motion } from "framer-motion"
+
 import { cn } from "@/lib/utils"
 
-const sidebarItems = [
-  {
-    title: "Pesanan",
-    href: "/admin/orders",
-    icon: ShoppingBag,
-  },
-  {
-    title: "Keuangan",
-    href: "/admin/finance",
-    icon: Banknote,
-  },
-  {
-    title: "Kelola Tim",
-    href: "/admin/team",
-    icon: Users,
-  },
-  {
-    title: "Galeri",
-    href: "/admin/gallery",
-    icon: Images,
-  },
-  {
-    title: "Kategori & Paket",
-    href: "/admin/packages",
-    icon: Package,
-  },
-  {
-    title: "Konten (CMS)",
-    href: "/admin/content",
-    icon: Images,
-  },
-  {
-    title: "Pengaturan",
-    href: "/admin/settings",
-    icon: Settings,
-  },
-]
+interface SidebarMenuItemProps {
+  item: AdminMenuItem;
+  isActive: boolean;
+}
+
+const SidebarMenuItem = ({ item, isActive }: SidebarMenuItemProps) => {
+  const iconRef = React.useRef<AnimatedIconHandle>(null);
+  
+  return (
+    <Button
+      variant={isActive ? "secondary" : "ghost"}
+      className={cn(
+        "w-full justify-start relative overflow-hidden group/btn",
+        isActive ? "bg-secondary" : "hover:bg-transparent"
+      )}
+      asChild
+      onMouseEnter={() => {
+        iconRef.current?.startAnimation?.();
+      }}
+      onMouseLeave={() => {
+        iconRef.current?.stopAnimation?.();
+      }}
+    >
+      <Link href={item.href}>
+        {isActive && (
+           <motion.div
+             layoutId="active-nav-bg"
+             className="absolute inset-0 bg-primary/10 border-l-2 border-primary"
+             initial={{ opacity: 0 }}
+             animate={{ opacity: 1 }}
+             exit={{ opacity: 0 }}
+             transition={{ type: "spring", stiffness: 300, damping: 30 }}
+           />
+        )}
+        {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
+        <item.icon 
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          ref={iconRef as any}
+          className="mr-3 h-4 w-4 opacity-70 group-hover/btn:opacity-100 transition-opacity" 
+          size={16} 
+        />
+        <span className="relative z-10">{item.label}</span>
+      </Link>
+    </Button>
+  );
+};
 
 export function Sidebar({ className }: React.HTMLAttributes<HTMLDivElement>) {
   const pathname = usePathname()
@@ -96,28 +105,19 @@ export function Sidebar({ className }: React.HTMLAttributes<HTMLDivElement>) {
         </div>
 
         {/* Main Menu Section */}
-        <div>
-           <h3 className="mb-2 px-4 text-sm font-medium text-muted-foreground">
-             Main Menu
-           </h3>
-           <div className="space-y-1">
-             {sidebarItems.map((item) => (
-               <Button
-                 key={item.href}
-                 variant="ghost"
-                 className={cn(
-                   "w-full justify-start h-10 px-4 font-medium text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-colors",
-                   pathname.startsWith(item.href) && "text-foreground bg-muted font-medium"
-                 )}
-                 asChild
-               >
-                 <Link href={item.href}>
-                   <item.icon className="mr-3 h-4 w-4 opacity-70" size={16} />
-                   {item.title}
-                 </Link>
-               </Button>
-             ))}
-           </div>
+        <div className="px-3 py-2">
+          <div className="space-y-1">
+            <h2 className="mb-2 px-4 text-xs font-semibold tracking-tight text-muted-foreground uppercase">
+              Main Menu
+            </h2>
+            {ADMIN_MENU_ITEMS.map((item, index) => (
+               <SidebarMenuItem 
+                 key={index} 
+                 item={item} 
+                 isActive={pathname === item.href || pathname.startsWith(item.href + '/')} 
+               />
+            ))}
+          </div>
         </div>
       </div>
     </div>

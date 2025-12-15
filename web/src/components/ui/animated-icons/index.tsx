@@ -7,6 +7,8 @@ import { HomeIcon } from "./home"
 import { SettingsIcon } from "./settings"
 import { UsersIcon } from "./users"
 
+export type { AnimatedIconHandle } from "./generic"
+
 // Specific Wrapper Components mimicking the API of HomeIcon
 // So they can be used interchangeably
 

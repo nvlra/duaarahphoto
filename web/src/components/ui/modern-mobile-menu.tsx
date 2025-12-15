@@ -10,7 +10,44 @@ export interface InteractiveMenuProps {
   accentColor?: string;
 }
 
+import { AnimatedIconHandle } from '@/components/ui/animated-icons';
+
 const defaultAccentColor = 'var(--component-active-color-default)';
+
+interface MobileMenuItemProps {
+  item: AdminMenuItem;
+  isActive: boolean;
+  setItemRef: (el: HTMLAnchorElement | null) => void;
+}
+
+const MobileMenuItem = ({ item, isActive, setItemRef }: MobileMenuItemProps) => {
+    const iconRef = useRef<AnimatedIconHandle>(null);
+    const IconComponent = item.icon;
+
+    return (
+        <Link
+            href={item.href}
+            ref={setItemRef}
+            className={`
+              relative shrink-0 flex items-center justify-center w-10 h-10 rounded-full transition-all duration-300
+              ${isActive ? 'bg-primary text-primary-foreground scale-110 shadow-sm' : 'text-muted-foreground hover:bg-muted hover:scale-105'}
+            `}
+            aria-label={item.label}
+            onMouseEnter={() => iconRef.current?.startAnimation()}
+            onMouseLeave={() => iconRef.current?.stopAnimation()}
+        >
+            {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
+            <IconComponent 
+                ref={iconRef as any} 
+                className="w-5 h-5" 
+                size={20} 
+            />
+            {isActive && (
+               <span className="absolute -bottom-1 w-1 h-1 bg-primary-foreground rounded-full opacity-0 animate-in fade-in zoom-in duration-300"></span>
+            )}
+        </Link>
+    );
+};
 
 const InteractiveMenu: React.FC<InteractiveMenuProps> = ({ items, accentColor }) => {
   const pathname = usePathname();
@@ -65,28 +102,14 @@ const InteractiveMenu: React.FC<InteractiveMenuProps> = ({ items, accentColor })
       role="navigation"
       style={navStyle}
     >
-      {finalItems.map((item, index) => {
-        const isActive = index === activeIndex;
-        const IconComponent = item.icon;
-
-        return (
-          <Link
-            key={item.label}
-            href={item.href}
-            ref={el => { itemsRef.current[index] = el }}
-            className={`
-              relative shrink-0 flex items-center justify-center w-10 h-10 rounded-full transition-all duration-300
-              ${isActive ? 'bg-primary text-primary-foreground scale-110 shadow-sm' : 'text-muted-foreground hover:bg-muted hover:scale-105'}
-            `}
-            aria-label={item.label}
-          >
-            <IconComponent className="w-5 h-5" size={20} />
-            {isActive && (
-               <span className="absolute -bottom-1 w-1 h-1 bg-primary-foreground rounded-full opacity-0 animate-in fade-in zoom-in duration-300"></span>
-            )}
-          </Link>
-        );
-      })}
+      {finalItems.map((item, index) => (
+        <MobileMenuItem 
+          key={item.label} 
+          item={item} 
+          isActive={index === activeIndex} 
+          setItemRef={(el) => { itemsRef.current[index] = el }} 
+        />
+      ))}
     </nav>
   );
 };
