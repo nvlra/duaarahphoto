@@ -40,4 +40,5 @@ export interface OrderItem {
     bank_holder: string;
     footer_note?: string;
     address?: string;
+    user_id?: string;
   }

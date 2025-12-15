@@ -149,7 +149,7 @@ export default function SettingsPage() {
     setSaving(true)
 
     try {
-        const payload: any = {
+        const payload: BusinessSettings = {
             brand_name: settings.brand_name,
             brand_logo_url: settings.brand_logo_url,
             brand_color: settings.brand_color,
@@ -158,10 +158,6 @@ export default function SettingsPage() {
             bank_holder: settings.bank_holder,
             address: settings.address,
             footer_note: settings.footer_note,
-        }
-
-        if (user) {
-            payload.user_id = user.id
         }
 
         if (user) {
