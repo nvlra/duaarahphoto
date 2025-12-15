@@ -1,4 +1,4 @@
-# Duaarah Photography
+# Enviel Photography
 
 Platform fotografi modern "All-in-One" yang berfungsi sebagai portofolio publik yang estetis sekaligus sistem manajemen bisnis (Mini-ERP) yang powerful.
 
@@ -69,8 +69,8 @@ src/
 1.  **Clone Repository**
 
     ```bash
-    git clone https://github.com/username/duaarah-photo.git
-    cd duaarah-photo/web
+    git clone https://github.com/username/Enviel-photo.git
+    cd Enviel-photo/web
     ```
 
 2.  **Install Dependencies**
@@ -98,4 +98,4 @@ src/
 
 ---
 
-© 2025 Duaarah Photography. Made by pal.
+© 2025 Enviel Photography. Made by pal.

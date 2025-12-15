@@ -72,7 +72,7 @@ export function Sidebar({ className }: React.HTMLAttributes<HTMLDivElement>) {
         {/* Brand Title with Logo */}
         <div className="flex items-center gap-3 px-2 mb-6">
             <Avatar className="h-10 w-10 rounded-lg">
-               <AvatarImage src="https://github.com/shadcn.png" alt="Duaarah" />
+               <AvatarImage src="https://github.com/shadcn.png" alt="Enviel" />
                <AvatarFallback className="rounded-lg">DP</AvatarFallback>
             </Avatar>
             <div>
