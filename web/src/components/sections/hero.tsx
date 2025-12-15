@@ -6,7 +6,7 @@ import { ImageAutoSlider } from "@/components/ui/image-auto-slider";
 
 export function Hero() {
   return (
-    <section className="bg-background pt-20 md:pt-0">
+    <section className="bg-background pt-24 md:pt-32">
       <div className="flex flex-col">
         <ContainerScroll
           titleComponent={
