@@ -45,7 +45,8 @@ export default function InvoicePrintButton({ orderData }: { orderData: RawOrder 
             bank_number: data.bank_number || "",
             bank_holder: data.bank_holder || "",
             address: data.address || "",
-            footer_note: data.footer_note || ""
+            footer_note: data.footer_note || "",
+            header_layout: data.header_layout || "vertical"
           });
       } else {
           // Fallback if no settings found

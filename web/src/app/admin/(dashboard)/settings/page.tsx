@@ -345,7 +345,7 @@ export default function SettingsPage() {
                         </div>
 
                         <div className="space-y-2">
-                             <Label>Layout Header Invoice</Label>
+                             <Label>Posisi Logo & Brand</Label>
                              <div className="flex gap-4">
                                  <div 
                                    className={`flex items-center gap-2 p-3 border rounded-lg cursor-pointer transition-all ${settings.header_layout === 'vertical' ? 'border-primary bg-primary/5 ring-1 ring-primary' : 'border-input hover:bg-accent'}`}
