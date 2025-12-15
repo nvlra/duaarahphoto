@@ -22,8 +22,19 @@ export const EntranceTransition = ({
       setIsEntered(true);
   };
 
+  React.useEffect(() => {
+    if (!isEntered) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "unset";
+    }
+    return () => {
+      document.body.style.overflow = "unset";
+    };
+  }, [isEntered]);
+
   return (
-    <div className="bg-black min-h-screen w-full relative overflow-hidden">
+    <div className="bg-background min-h-screen w-full relative overflow-hidden">
       {/* Button Overlay */}
       <AnimatePresence>
         {!isEntered && (
@@ -55,6 +66,11 @@ export const EntranceTransition = ({
                 clipPath: "circle(150% at 50% 50%)",
                 filter: "blur(0px) brightness(1)",
                 scale: 1,
+                transitionEnd: {
+                    filter: "none",
+                    transform: "none",
+                    clipPath: "none"
+                }
               }
             : {}
         }

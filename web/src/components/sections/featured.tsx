@@ -29,8 +29,8 @@ export function Featured() {
               </p>
             </div>
             
-            <RippleButton className="rounded-lg px-8 py-6 text-lg shadow-lg hover:shadow-xl transition-all duration-300">
-              More
+            <RippleButton className="rounded-lg px-8 py-3 text-lg shadow-lg hover:shadow-xl transition-all duration-300">
+              View More
             </RippleButton>
           </motion.div>
 
