@@ -232,7 +232,7 @@ export default function TeamPage() {
         <div>
           <h2 className="text-3xl font-bold tracking-tight">Kelola Tim</h2>
           <p className="text-muted-foreground">
-            Daftar karyawan dan freelancer Duaarah Photo.
+            Daftar karyawan dan freelancer Enviel Photo.
           </p>
         </div>
         <div className="flex gap-2">

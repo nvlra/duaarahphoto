@@ -283,7 +283,7 @@ export default function SettingsPage() {
                                 id="brand_name" 
                                 value={settings.brand_name} 
                                 onChange={(e) => handleChange("brand_name", e.target.value)} 
-                                placeholder="Contoh: Duaarah Photo"
+                                placeholder="Contoh: Enviel Photo"
                                 required
                             />
                         </div>
