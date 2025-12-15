@@ -11,6 +11,17 @@ export const EntranceTransition = ({
 }) => {
   const [isEntered, setIsEntered] = useState(false);
 
+  const playSound = () => {
+    const audio = new Audio("https://assets.mixkit.co/active_storage/sfx/2568/2568-preview.mp3");
+    audio.volume = 0.5;
+    audio.play().catch((e) => console.log("Audio play failed", e));
+  };
+
+  const handleEnter = () => {
+      playSound();
+      setIsEntered(true);
+  };
+
   return (
     <div className="bg-black min-h-screen w-full relative overflow-hidden">
       {/* Button Overlay */}
@@ -32,7 +43,7 @@ export const EntranceTransition = ({
                 ENVIEL
             </motion.h1>
             <RippleButton
-              onClick={() => setIsEntered(true)}
+              onClick={handleEnter}
               className="px-8 py-6 text-lg tracking-widest uppercase bg-white text-black hover:bg-gray-200"
               rippleColor="rgba(0,0,0,0.2)"
             >
@@ -59,7 +70,7 @@ export const EntranceTransition = ({
             : {}
         }
         transition={{
-          duration: 3, // Much slower
+          duration: 2, // Slower but not too slow
           ease: [0.76, 0, 0.24, 1], // Cinematic ease (Quart-like)
         }}
         className="w-full min-h-screen bg-background relative z-10"
