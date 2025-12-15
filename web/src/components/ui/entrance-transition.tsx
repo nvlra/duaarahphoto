@@ -2,7 +2,7 @@
 
 import React, { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { RippleButton } from "@/components/ui/ripple-button";
+import { FlowButton } from "@/components/ui/flow-button";
 
 export const EntranceTransition = ({
   children,
@@ -34,21 +34,10 @@ export const EntranceTransition = ({
             transition={{ duration: 0.5 }}
             className="fixed inset-0 z-50 flex flex-col items-center justify-center gap-6"
           >
-            <motion.h1 
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.2 }}
-                className="text-white font-playfair text-3xl font-light tracking-[0.2em]"
-            >
-                ENVIEL
-            </motion.h1>
-            <RippleButton
-              onClick={handleEnter}
-              className="px-8 py-6 text-lg tracking-widest uppercase bg-white text-black hover:bg-gray-200"
-              rippleColor="rgba(0,0,0,0.2)"
-            >
-              Enter Gallery
-            </RippleButton>
+            <FlowButton
+               text="Open Web"
+               onClick={handleEnter}
+            />
           </motion.div>
         )}
       </AnimatePresence>
