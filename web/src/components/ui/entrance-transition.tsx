@@ -46,21 +46,21 @@ export const EntranceTransition = ({
       <motion.div
         initial={{
           clipPath: "circle(0% at 50% 50%)",
-          filter: "blur(20px)",
-          scale: 1.1,
+          filter: "blur(50px) brightness(1.5)", // High blur and brightness for "warp" feel
+          scale: 1.5, // High scale for "stretch/zoom" feeling
         }}
         animate={
           isEntered
             ? {
                 clipPath: "circle(150% at 50% 50%)",
-                filter: "blur(0px)",
+                filter: "blur(0px) brightness(1)",
                 scale: 1,
               }
             : {}
         }
         transition={{
-          duration: 1.5,
-          ease: [0.22, 1, 0.36, 1], // Custom cubic bezier for smooth "cinematic" feel
+          duration: 3, // Much slower
+          ease: [0.76, 0, 0.24, 1], // Cinematic ease (Quart-like)
         }}
         className="w-full min-h-screen bg-background relative z-10"
       >
