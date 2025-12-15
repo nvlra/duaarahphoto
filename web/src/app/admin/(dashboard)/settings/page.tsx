@@ -117,6 +117,33 @@ export default function SettingsPage() {
       }
   }
 
+  const handleDeleteLogo = async () => {
+    if (!settings.brand_logo_url) return
+
+    try {
+        setUploading(true)
+        // Extract path from URL: .../branding/user_id/filename.ext -> user_id/filename.ext
+        const path = settings.brand_logo_url.split('/branding/').pop()
+        
+        if (path) {
+            const { error } = await supabase.storage.from('branding').remove([path])
+            if (error) {
+                console.error("Storage delete error:", error)
+                 // We continue even if storage delete fails, to clear the UI
+            }
+        }
+
+        handleChange("brand_logo_url", "")
+        toast.success("Logo Dihapus", "Logo berhasil dihapus")
+
+    } catch (error) {
+        console.error(error)
+        toast.error("Gagal", "Gagal menghapus logo")
+    } finally {
+        setUploading(false)
+    }
+  }
+
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault()
     setSaving(true)
@@ -151,9 +178,8 @@ export default function SettingsPage() {
         if (result.data && result.data.length > 0) {
             setSettingsId(result.data[0].id)
         }
-        error = result.error
-
-        if (error) throw error
+        
+        if (result.error) throw result.error
 
         toast.success("Berhasil", "Pengaturan telah disimpan")
     } catch (err) {
@@ -221,7 +247,7 @@ export default function SettingsPage() {
                                          />
                                          <button 
                                             type="button"
-                                            onClick={() => handleChange("brand_logo_url", "")}
+                                            onClick={handleDeleteLogo}
                                             className="absolute -top-2 -right-2 bg-red-100 text-red-600 rounded-full p-1 border border-red-200 hover:bg-red-200"
                                          >
                                             <Trash2 className="w-3 h-3" />
