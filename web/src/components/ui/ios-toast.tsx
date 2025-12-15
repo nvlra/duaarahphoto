@@ -51,32 +51,20 @@ export const useToast = () => {
 }
 
 // --- Component ---
-const ToastItem = memo(({ toast, index, total, onRemove }: { toast: Toast, index: number, total: number, onRemove: (id: string) => void }) => {
-  const inverseIndex = total - 1 - index // 0 = top (newest), 1 = second, ...
+const ToastItem = memo(({ toast, onRemove }: { toast: Toast, onRemove: (id: string) => void }) => {
   
-  // Stacking Logic from User Request (approximate)
-  const scale = 1 - inverseIndex * 0.05
-  const opacity = 1 - (inverseIndex / total) * 0.2
-  const y = inverseIndex * 15 // Offset in pixels instead of % for simpler framer control
-  
-
-
   return (
     <motion.div
       layout
-      initial={{ opacity: 0, y: -50, scale: 0.9 }}
+      initial={{ opacity: 0, y: -20, scale: 0.95 }}
       animate={{ 
-        opacity: opacity, 
-        y: y, 
-        scale: scale,
-        zIndex: total - index
+        opacity: 1, 
+        y: 0, 
+        scale: 1,
       }}
-      exit={{ opacity: 0, scale: 0.9, y: y - 20 }}
+      exit={{ opacity: 0, scale: 0.95, transition: { duration: 0.2 } }}
       transition={{ type: "spring", stiffness: 400, damping: 30 }}
-      className={`absolute top-0 w-full max-w-sm flex justify-center pointer-events-none`}
-      style={{
-        zIndex: total - index
-      }}
+      className={`w-full max-w-sm flex justify-center pointer-events-none`}
     >
       <div className={`
         pointer-events-auto
@@ -144,14 +132,12 @@ export function ToastProvider({ children }: { children: ReactNode }) {
       {children}
       
       {/* Toast Container */}
-      <div className="fixed top-6 right-0 left-0 flex flex-col items-center justify-start pointer-events-none z-9999 px-4 h-[200px]">
-         <AnimatePresence mode="popLayout">
-           {toasts.map((t, i) => (
+      <div className="fixed top-6 right-0 left-0 flex flex-col items-center justify-start pointer-events-none z-[9999] px-4 gap-2">
+         <AnimatePresence mode="popLayout" initial={false}>
+           {toasts.map((t) => (
              <ToastItem 
                key={t.id} 
                toast={t} 
-               index={toasts.length - 1 - i} // Pass index relative to newest (0 = newest)
-               total={toasts.length} 
                onRemove={removeToast} 
              />
            ))}
