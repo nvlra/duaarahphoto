@@ -421,6 +421,7 @@ export default function SettingsPage() {
                                 onChange={(e) => handleChange("brand_font_family", e.target.value)}
                              >
                                  <option value="Inter">Standard (Inter)</option>
+                                 <option value="Poppins">Poppins (Global)</option>
                                  <option value="Playfair Display">Serif (Playfair)</option>
                                  <option value="Roboto Mono">Monospace</option>
                                  <option value="Custom">Custom Font (.TTF/.OTF)</option>
