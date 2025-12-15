@@ -42,5 +42,10 @@ export interface OrderItem {
     address?: string;
     // New field for layout preference
     header_layout?: 'vertical' | 'horizontal';
+    
+    // New fields for font customization
+    brand_font_family?: string; // 'Inter', 'Playfair Display', 'Roboto Mono', 'Custom'
+    brand_custom_font_url?: string;
+
     user_id?: string;
   }
