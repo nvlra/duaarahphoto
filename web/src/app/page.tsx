@@ -12,7 +12,7 @@ export default function Home() {
     <main className="min-h-screen bg-background font-sans selection:bg-primary/20">
       <Navbar />
       <Hero />
-      <div className="py-10">
+      <div className="py-4 md:py-8">
         <VelocityScroll
           text="Enviel Creative"
           default_velocity={3}
