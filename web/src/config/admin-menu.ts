@@ -1,4 +1,4 @@
-import { LucideIcon } from 'lucide-react';
+
 import { 
   ShoppingBagIcon as ShoppingBag, 
   BanknoteIcon as Banknote, 
@@ -9,10 +9,12 @@ import {
   HomeIcon as Home
 } from "@/components/ui/animated-icons"
 
+import type { AnimatedIconHandle } from "@/components/ui/animated-icons"
+
 export interface AdminMenuItem {
   label: string;
   href: string;
-  icon: LucideIcon | React.ComponentType<{ className?: string; size?: number | string } & React.HTMLAttributes<HTMLElement>>;
+  icon: React.ComponentType<{ className?: string; size?: number | string } & React.HTMLAttributes<HTMLElement> & React.RefAttributes<AnimatedIconHandle>>;
   showOnMobile?: boolean; // Control visibility on mobile
 }
 

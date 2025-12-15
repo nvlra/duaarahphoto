@@ -52,10 +52,8 @@ const SidebarMenuItem = ({ item, isActive }: SidebarMenuItemProps) => {
              transition={{ type: "spring", stiffness: 300, damping: 30 }}
            />
         )}
-        {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
         <item.icon 
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          ref={iconRef as any}
+          ref={iconRef}
           className="mr-3 h-4 w-4 opacity-70 group-hover/btn:opacity-100 transition-opacity" 
           size={16} 
         />

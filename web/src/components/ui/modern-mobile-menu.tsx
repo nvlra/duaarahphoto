@@ -36,9 +36,8 @@ const MobileMenuItem = ({ item, isActive, setItemRef }: MobileMenuItemProps) => 
             onMouseEnter={() => iconRef.current?.startAnimation()}
             onMouseLeave={() => iconRef.current?.stopAnimation()}
         >
-            {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
             <IconComponent 
-                ref={iconRef as any} 
+                ref={iconRef} 
                 className="w-5 h-5" 
                 size={20} 
             />
