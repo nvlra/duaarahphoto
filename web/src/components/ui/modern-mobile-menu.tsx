@@ -24,6 +24,12 @@ const MobileMenuItem = ({ item, isActive, setItemRef }: MobileMenuItemProps) => 
     const iconRef = useRef<AnimatedIconHandle>(null);
     const IconComponent = item.icon;
 
+    useEffect(() => {
+        if (isActive) {
+            iconRef.current?.startAnimation();
+        }
+    }, [isActive]);
+
     return (
         <Link
             href={item.href}
@@ -35,6 +41,7 @@ const MobileMenuItem = ({ item, isActive, setItemRef }: MobileMenuItemProps) => 
             aria-label={item.label}
             onMouseEnter={() => iconRef.current?.startAnimation()}
             onMouseLeave={() => iconRef.current?.stopAnimation()}
+            onClick={() => iconRef.current?.startAnimation()}
         >
             <IconComponent 
                 ref={iconRef} 
