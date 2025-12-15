@@ -1,7 +1,6 @@
 "use client";
 
 import React from "react";
-import { InteractiveImageAccordion } from "@/components/ui/interactive-image-accordion";
 import { ImageAutoSlider } from "@/components/ui/image-auto-slider";
 import { motion } from "framer-motion";
 
@@ -43,20 +42,7 @@ export function Hero() {
           <ImageAutoSlider />
         </motion.div>
 
-        {/* Accordion / Featured Categories */}
-        <motion.div
-           initial={{ opacity: 0, scale: 0.95 }}
-           animate={{ opacity: 1, scale: 1 }}
-           transition={{ delay: 0.6, duration: 0.8 }}
-           className="w-full"
-        >
-          <div className="mb-8 text-center md:text-left">
-            <h2 className="text-sm font-bold uppercase tracking-widest text-muted-foreground">
-              Featured Collections
-            </h2>
-          </div>
-          <InteractiveImageAccordion />
-        </motion.div>
+
       </div>
     </section>
   );
