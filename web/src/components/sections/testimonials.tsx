@@ -47,7 +47,7 @@ export function Testimonials() {
       <div className="container mx-auto px-4">
         <div className="text-center mb-12">
           <h2 className="font-playfair text-4xl md:text-5xl font-bold tracking-tight mb-4">
-            Love Notes
+            Testimoni
           </h2>
           <p className="text-muted-foreground max-w-2xl mx-auto">
             Kind words from the beautiful souls we&apos;ve had the privilege to capture.

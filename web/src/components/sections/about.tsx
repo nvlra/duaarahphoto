@@ -34,16 +34,16 @@ export function About() {
             className="w-full md:w-1/2 space-y-6"
           >
             <h2 className="font-playfair text-4xl md:text-5xl font-bold">
-              Capturing Love, <br />
+              Cinematic. Timeless.<br />
               <span className="italic font-light text-muted-foreground">
-                One Frame at a Time
+                Authentically Yours.
               </span>
             </h2>
             <p className="text-lg text-muted-foreground leading-relaxed">
-              We believe that every love story is unique and deserves to be told with authenticity and grace. Our approach combines documentary-style candids with timeless editorial portraits.
+              Enviel Photography stands at the intersection of fine art and documentary storytelling. We are not just photographers; we are visual narrators dedicated to capturing the raw, unscripted beauty of your connection.
             </p>
             <p className="text-lg text-muted-foreground leading-relaxed">
-              From the quiet nervous glances to the tearful vows and the wild dance floor energy, we are there to preserve the feelings, not just the visuals.
+              Our philosophy is simple: authentic moments resonate loudest. We step back to let your love unfold naturally, ensuring every image we craft is a true reflection of who you are—elegant, emotive, and eternally yours.
             </p>
           </motion.div>
         </div>
