@@ -53,7 +53,7 @@ export function Navbar() {
               {item.name}
             </Link>
           ))}
-          <RippleButton className="rounded-full px-6">
+          <RippleButton className="rounded-full h-9 px-6 text-sm">
             Book Now
           </RippleButton>
         </div>
