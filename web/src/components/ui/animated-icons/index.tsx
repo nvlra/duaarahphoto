@@ -6,6 +6,7 @@ import { GenericAnimatedIcon } from "./generic"
 import { HomeIcon } from "./home"
 import { SettingsIcon } from "./settings"
 import { UsersIcon } from "./users"
+import { HandCoinsIcon } from "./hand-coins"
 
 export type { AnimatedIconHandle } from "./generic"
 
@@ -32,4 +33,4 @@ export const PackageIcon = (props: AnimatedIconProps) => (
     <GenericAnimatedIcon icon={Package} animationType="rotate" {...props} />
 )
 
-export { HomeIcon, SettingsIcon, UsersIcon }
+export { HomeIcon, SettingsIcon, UsersIcon, HandCoinsIcon }

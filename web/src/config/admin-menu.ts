@@ -1,7 +1,7 @@
 
 import { 
   ShoppingBagIcon as ShoppingBag, 
-  BanknoteIcon as Banknote, 
+  HandCoinsIcon as HandCoins, 
   ImagesIcon as Images, 
   SettingsIcon as Settings, 
   PackageIcon as Package, 
@@ -20,7 +20,7 @@ export interface AdminMenuItem {
 
 export const ADMIN_MENU_ITEMS: AdminMenuItem[] = [
     { label: 'Pesanan', href: '/admin/orders', icon: ShoppingBag, showOnMobile: true },
-    { label: 'Keuangan', href: '/admin/finance', icon: Banknote, showOnMobile: true },
+    { label: 'Keuangan', href: '/admin/finance', icon: HandCoins, showOnMobile: true },
     { label: 'Kelola Tim', href: '/admin/team', icon: Users, showOnMobile: true },
     { label: 'Home', href: '/admin', icon: Home, showOnMobile: true },
     { label: 'Galeri', href: '/admin/gallery', icon: Images, showOnMobile: true },
