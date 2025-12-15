@@ -19,12 +19,12 @@ export interface AdminMenuItem {
 }
 
 export const ADMIN_MENU_ITEMS: AdminMenuItem[] = [
-    { label: 'Order', href: '/admin/orders', icon: ShoppingBag, showOnMobile: true },
+    { label: 'Pesanan', href: '/admin/orders', icon: ShoppingBag, showOnMobile: true },
     { label: 'Keuangan', href: '/admin/finance', icon: Banknote, showOnMobile: true },
-    { label: 'Tim', href: '/admin/team', icon: Users, showOnMobile: true },
+    { label: 'Kelola Tim', href: '/admin/team', icon: Users, showOnMobile: true },
     { label: 'Home', href: '/admin', icon: Home, showOnMobile: true },
     { label: 'Galeri', href: '/admin/gallery', icon: Images, showOnMobile: true },
-    { label: 'Paket', href: '/admin/packages', icon: Package, showOnMobile: true },
-
-    { label: 'Konten', href: '/admin/content', icon: Settings, showOnMobile: true },
+    { label: 'Kategori & Paket', href: '/admin/packages', icon: Package, showOnMobile: true },
+    { label: 'Konten (CMS)', href: '/admin/content', icon: Images, showOnMobile: true }, // Using Images generic icon for now as in old sidebar
+    { label: 'Pengaturan', href: '/admin/settings', icon: Settings, showOnMobile: true },
 ];

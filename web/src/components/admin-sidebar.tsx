@@ -108,7 +108,7 @@ export function Sidebar({ className }: React.HTMLAttributes<HTMLDivElement>) {
             <h2 className="mb-2 px-4 text-xs font-semibold tracking-tight text-muted-foreground uppercase">
               Main Menu
             </h2>
-            {ADMIN_MENU_ITEMS.map((item, index) => (
+            {ADMIN_MENU_ITEMS.filter(item => item.label !== 'Home').map((item, index) => (
                <SidebarMenuItem 
                  key={index} 
                  item={item} 
