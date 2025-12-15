@@ -46,7 +46,9 @@ export default function InvoicePrintButton({ orderData }: { orderData: RawOrder 
             bank_holder: data.bank_holder || "",
             address: data.address || "",
             footer_note: data.footer_note || "",
-            header_layout: data.header_layout || "vertical"
+            header_layout: data.header_layout || "vertical",
+            brand_font_family: data.brand_font_family || "Inter",
+            brand_custom_font_url: data.brand_custom_font_url || ""
           });
       } else {
           // Fallback if no settings found

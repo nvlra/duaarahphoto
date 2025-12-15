@@ -24,8 +24,11 @@ export default function SettingsPage() {
     bank_name: "",
     bank_number: "",
     bank_holder: "",
+    address: "",
     footer_note: "",
-    header_layout: "vertical"
+    header_layout: "vertical",
+    brand_font_family: "Inter",
+    brand_custom_font_url: ""
   })
 
   const [settingsId, setSettingsId] = useState<string | null>(null)
@@ -79,7 +82,9 @@ export default function SettingsPage() {
             bank_holder: data.bank_holder || "",
             address: data.address || "",
             footer_note: data.footer_note || "",
-            header_layout: data.header_layout || "vertical"
+            header_layout: data.header_layout || "vertical",
+            brand_font_family: data.brand_font_family || "Inter",
+            brand_custom_font_url: data.brand_custom_font_url || ""
         })
       }
     } catch (err) {
@@ -203,6 +208,40 @@ export default function SettingsPage() {
     }
   }
 
+  const handleFontUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+      if (!e.target.files || e.target.files.length === 0) return
+
+      const file = e.target.files[0]
+      // Validate font file type if needed, but for now generic check
+      const fileExt = file.name.split('.').pop()?.toLowerCase()
+      if (!['ttf', 'otf', 'woff', 'woff2'].includes(fileExt || '')) {
+          toast.error("Invalid File", "Harap upload file font (.ttf, .otf, .woff)")
+          return
+      }
+
+      const fileName = `font-${Math.random()}.${fileExt}`
+      const filePath = user ? `${user.id}/${fileName}` : `${fileName}`
+
+      try {
+          setUploading(true)
+          const { error: uploadError } = await supabase.storage.from('branding').upload(filePath, file)
+          
+          if (uploadError) throw uploadError
+
+          const { data } = supabase.storage.from('branding').getPublicUrl(filePath)
+          
+          if (data) {
+              handleChange("brand_custom_font_url", data.publicUrl)
+              toast.success("Upload Berhasil", "Font berhasil diunggah")
+          }
+      } catch (error) {
+          console.error(error)
+          toast.error("Gagal Upload", "Gagal mengunggah font")
+      } finally {
+          setUploading(false)
+      }
+  }
+
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault()
     setSaving(true)
@@ -218,6 +257,8 @@ export default function SettingsPage() {
             address: settings.address,
             footer_note: settings.footer_note,
             header_layout: settings.header_layout,
+            brand_font_family: settings.brand_font_family,
+            brand_custom_font_url: settings.brand_custom_font_url,
         }
 
         if (user) {
@@ -369,6 +410,42 @@ export default function SettingsPage() {
                                      <span className="text-sm font-medium">Logo Kiri</span>
                                  </div>
                              </div>
+                        </div>
+
+                        <div className="space-y-2">
+                             <Label htmlFor="brand_font">Jenis Font Brand</Label>
+                             <select
+                                id="brand_font"
+                                className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                                value={settings.brand_font_family}
+                                onChange={(e) => handleChange("brand_font_family", e.target.value)}
+                             >
+                                 <option value="Inter">Standard (Inter)</option>
+                                 <option value="Playfair Display">Serif (Playfair)</option>
+                                 <option value="Roboto Mono">Monospace</option>
+                                 <option value="Custom">Custom Font (.TTF/.OTF)</option>
+                             </select>
+
+                             {settings.brand_font_family === 'Custom' && (
+                                 <div className="mt-2 space-y-2 p-3 border rounded-md bg-muted/20">
+                                     <Label className="text-xs">Upload Font File</Label>
+                                     <div className="flex items-center gap-2">
+                                         <Input 
+                                            type="file" 
+                                            accept=".ttf,.otf,.woff,.woff2"
+                                            onChange={handleFontUpload}
+                                            disabled={uploading}
+                                            className="text-xs"
+                                         />
+                                         {uploading && <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />}
+                                     </div>
+                                     {settings.brand_custom_font_url && (
+                                         <p className="text-[10px] text-green-600 flex items-center gap-1">
+                                             <FileText className="w-3 h-3" /> Font active
+                                         </p>
+                                     )}
+                                 </div>
+                             )}
                         </div>
                     </div>
                     <div className="space-y-2">

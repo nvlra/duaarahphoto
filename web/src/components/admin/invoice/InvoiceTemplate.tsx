@@ -69,8 +69,30 @@ export const InvoiceTemplate = React.forwardRef<HTMLDivElement, InvoiceProps>(
                   />
                 </div>
               )}
-              <h1 className="text-2xl font-bold tracking-widest uppercase leading-none">{settings.brand_name}</h1>
+              <h1 
+                className="text-2xl font-bold tracking-widest uppercase leading-none"
+                style={{ 
+                  fontFamily: settings.brand_font_family === 'Custom' 
+                    ? '"CustomBrandFont", sans-serif' 
+                    : settings.brand_font_family 
+                }}
+              >
+                {settings.brand_name}
+              </h1>
             </div>
+            {/* Custom Font Injection */}
+            {settings.brand_font_family === 'Custom' && settings.brand_custom_font_url && (
+                <style dangerouslySetInnerHTML={{
+                  __html: `
+                    @font-face {
+                      font-family: 'CustomBrandFont';
+                      src: url('${settings.brand_custom_font_url}') format('truetype');
+                      font-weight: normal;
+                      font-style: normal;
+                    }
+                  `
+                }} />
+            )}
             <p className="text-sm text-slate-500 font-medium">Professional Photography Services</p>
             <p className="text-sm text-slate-500">{settings.address || "Jakarta, Indonesia"}</p>
           </div>
