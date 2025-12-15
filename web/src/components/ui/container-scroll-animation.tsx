@@ -54,6 +54,7 @@ export const ContainerScroll = ({
   );
 };
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export const Header = ({ translate, titleComponent }: any) => {
   return (
     <motion.div
@@ -83,7 +84,7 @@ export const Card = ({
         rotateX: rotate,
         scale,
       }}
-      className="max-w-5xl -mt-12 mx-auto h-[30rem] md:h-[40rem] w-full p-2 md:p-6"
+      className="max-w-5xl -mt-12 mx-auto h-120 md:h-160 w-full p-2 md:p-6"
     >
       <div className="h-full w-full overflow-hidden rounded-2xl md:rounded-2xl md:p-4">
         {children}

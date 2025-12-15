@@ -11,10 +11,10 @@ export function About() {
         <div className="flex flex-col md:flex-row items-center gap-12 md:gap-20">
           {/* Image Side */}
           <motion.div
-            initial={{ opacity: 0, x: -50 }}
-            whileInView={{ opacity: 1, x: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.8 }}
+            initial={{ opacity: 0, y: 50, filter: "blur(10px)" }}
+            whileInView={{ opacity: 1, y: 0, filter: "blur(0px)" }}
+            viewport={{ once: true, margin: "-100px" }}
+            transition={{ duration: 1, ease: "easeOut" }}
             className="w-full md:w-1/2 relative aspect-3/4 md:aspect-4/5 overflow-hidden rounded-lg"
           >
             <Image
@@ -27,10 +27,10 @@ export function About() {
 
           {/* Text Side */}
           <motion.div
-            initial={{ opacity: 0, x: 50 }}
-            whileInView={{ opacity: 1, x: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.8 }}
+            initial={{ opacity: 0, y: 50, filter: "blur(10px)" }}
+            whileInView={{ opacity: 1, y: 0, filter: "blur(0px)" }}
+            viewport={{ once: true, margin: "-100px" }}
+            transition={{ duration: 1, ease: "easeOut", delay: 0.2 }}
             className="w-full md:w-1/2 space-y-6"
           >
             <h2 className="font-playfair text-4xl md:text-5xl font-bold">

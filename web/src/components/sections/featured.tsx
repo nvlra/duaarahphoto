@@ -13,10 +13,10 @@ export function Featured() {
           
           {/* Left Side: Text Content */}
           <motion.div 
-            initial={{ opacity: 0, x: -50 }}
-            whileInView={{ opacity: 1, x: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.8 }}
+            initial={{ opacity: 0, y: 50, filter: "blur(10px)" }}
+            whileInView={{ opacity: 1, y: 0, filter: "blur(0px)" }}
+            viewport={{ once: true, margin: "-100px" }}
+            transition={{ duration: 1, ease: "easeOut" }}
             className="w-full lg:w-1/3 text-center lg:text-left space-y-8"
           >
             <div>
@@ -36,10 +36,10 @@ export function Featured() {
 
           {/* Right Side: Accordion */}
           <motion.div 
-            initial={{ opacity: 0, x: 50 }}
-            whileInView={{ opacity: 1, x: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.8 }}
+            initial={{ opacity: 0, x: 50, filter: "blur(10px)" }}
+            whileInView={{ opacity: 1, x: 0, filter: "blur(0px)" }}
+            viewport={{ once: true, margin: "-100px" }}
+            transition={{ duration: 1, ease: "easeOut", delay: 0.2 }}
             className="w-full lg:w-2/3"
           >
              <div className="flex items-center justify-center lg:justify-end">

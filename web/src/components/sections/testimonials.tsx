@@ -2,6 +2,7 @@
 
 import React from "react";
 import { AnimatedTestimonials } from "@/components/ui/animated-testimonials";
+import { motion } from "framer-motion";
 
 export function Testimonials() {
   const testimonials = [
@@ -52,14 +53,20 @@ export function Testimonials() {
   return (
     <section id="stories" className="bg-background py-20 overflow-hidden">
       <div className="container mx-auto px-4">
-        <div className="text-center mb-12">
+        <motion.div 
+          initial={{ opacity: 0, y: 50, filter: "blur(10px)" }}
+          whileInView={{ opacity: 1, y: 0, filter: "blur(0px)" }}
+          viewport={{ once: true, margin: "-100px" }}
+          transition={{ duration: 1, ease: "easeOut" }}
+          className="text-center mb-12"
+        >
           <h2 className="font-playfair text-4xl md:text-5xl font-bold tracking-tight mb-4">
             Testimoni
           </h2>
           <p className="text-muted-foreground max-w-2xl mx-auto">
             Kind words from the beautiful souls we&apos;ve had the privilege to capture.
           </p>
-        </div>
+        </motion.div>
         
         <AnimatedTestimonials testimonials={testimonials} autoplay={true} />
       </div>

@@ -3,6 +3,7 @@
 import React from "react";
 import { CreativePricing, PricingTier } from "@/components/ui/creative-pricing";
 import { Camera, Film, Aperture } from "lucide-react";
+import { motion } from "framer-motion";
 
 const packages: PricingTier[] = [
   {
@@ -51,12 +52,19 @@ export function Pricing() {
   return (
     <section className="bg-background py-10 md:py-20 relative overflow-hidden">
         {/* Decorative background elements can be added here if needed */}
-      <CreativePricing 
-        tag="Enviel Collection" 
-        title="Package" 
-        description="We believe in transparency and providing value that lasts a lifetime. Choose a collection or customize your own."
-        tiers={packages} 
-      />
+      <motion.div
+        initial={{ opacity: 0, y: 50, filter: "blur(10px)" }}
+        whileInView={{ opacity: 1, y: 0, filter: "blur(0px)" }}
+        viewport={{ once: true, margin: "-100px" }}
+        transition={{ duration: 1, ease: "easeOut" }}
+      >
+        <CreativePricing 
+          tag="Enviel Collection" 
+          title="Package" 
+          description="We believe in transparency and providing value that lasts a lifetime. Choose a collection or customize your own."
+          tiers={packages} 
+        />
+      </motion.div>
     </section>
   );
 }
