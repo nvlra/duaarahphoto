@@ -24,8 +24,8 @@ export default function SettingsPage() {
     bank_name: "",
     bank_number: "",
     bank_holder: "",
-    address: "",
-    footer_note: ""
+    footer_note: "",
+    header_layout: "vertical"
   })
 
   const [settingsId, setSettingsId] = useState<string | null>(null)
@@ -78,7 +78,8 @@ export default function SettingsPage() {
             bank_number: data.bank_number || "",
             bank_holder: data.bank_holder || "",
             address: data.address || "",
-            footer_note: data.footer_note || ""
+            footer_note: data.footer_note || "",
+            header_layout: data.header_layout || "vertical"
         })
       }
     } catch (err) {
@@ -216,6 +217,7 @@ export default function SettingsPage() {
             bank_holder: settings.bank_holder,
             address: settings.address,
             footer_note: settings.footer_note,
+            header_layout: settings.header_layout,
         }
 
         if (user) {
@@ -340,6 +342,33 @@ export default function SettingsPage() {
                                     className="flex-1 font-mono"
                                 />
                             </div>
+                        </div>
+
+                        <div className="space-y-2">
+                             <Label>Layout Header Invoice</Label>
+                             <div className="flex gap-4">
+                                 <div 
+                                   className={`flex items-center gap-2 p-3 border rounded-lg cursor-pointer transition-all ${settings.header_layout === 'vertical' ? 'border-primary bg-primary/5 ring-1 ring-primary' : 'border-input hover:bg-accent'}`}
+                                   onClick={() => handleChange("header_layout", "vertical")}
+                                 >
+                                     <div className="space-y-1">
+                                         <div className="w-8 h-4 bg-slate-300 rounded-sm mx-auto mb-1"></div>
+                                         <div className="w-12 h-2 bg-slate-200 rounded-sm mx-auto"></div>
+                                     </div>
+                                     <span className="text-sm font-medium">Logo Atas</span>
+                                 </div>
+
+                                 <div 
+                                   className={`flex items-center gap-2 p-3 border rounded-lg cursor-pointer transition-all ${settings.header_layout === 'horizontal' ? 'border-primary bg-primary/5 ring-1 ring-primary' : 'border-input hover:bg-accent'}`}
+                                   onClick={() => handleChange("header_layout", "horizontal")}
+                                 >
+                                     <div className="flex items-center gap-1">
+                                         <div className="w-4 h-4 bg-slate-300 rounded-sm"></div>
+                                         <div className="w-8 h-2 bg-slate-200 rounded-sm"></div>
+                                     </div>
+                                     <span className="text-sm font-medium">Logo Kiri</span>
+                                 </div>
+                             </div>
                         </div>
                     </div>
                     <div className="space-y-2">

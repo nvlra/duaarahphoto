@@ -57,9 +57,9 @@ export const InvoiceTemplate = React.forwardRef<HTMLDivElement, InvoiceProps>(
         {/* === HEADER === */}
         <div className="flex justify-between items-start mb-8">
           <div className="w-1/2 pr-4 flex flex-col gap-1">
-            <div className="flex flex-col gap-2 mb-2">
+            <div className={`flex ${settings.header_layout === 'horizontal' ? 'flex-row items-center gap-4' : 'flex-col items-start gap-2'} mb-2`}>
               {settings.brand_logo_url && (
-                <div className="relative w-full max-w-[200px] h-20">
+                <div className={`relative w-full ${settings.header_layout === 'horizontal' ? 'max-w-[80px] h-16' : 'max-w-[200px] h-20'}`}>
                   <Image
                     src={settings.brand_logo_url}
                     alt="Logo"

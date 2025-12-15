@@ -40,5 +40,7 @@ export interface OrderItem {
     bank_holder: string;
     footer_note?: string;
     address?: string;
+    // New field for layout preference
+    header_layout?: 'vertical' | 'horizontal';
     user_id?: string;
   }
