@@ -2,7 +2,7 @@
 
 import React, { createContext, useContext, useState, useCallback, ReactNode, memo } from "react"
 import { AnimatePresence, motion } from "framer-motion"
-import { Check, X, Info, AlertTriangle, X as CloseIcon } from "lucide-react"
+import { Check, X, Info, AlertTriangle } from "lucide-react"
 
 // --- Types ---
 type ToastType = "success" | "error" | "info" | "warning"
@@ -52,7 +52,6 @@ export const useToast = () => {
 
 // --- Component ---
 const ToastItem = memo(({ toast, onRemove }: { toast: Toast, onRemove: (id: string) => void }) => {
-  
   return (
     <motion.div
       layout
@@ -64,35 +63,36 @@ const ToastItem = memo(({ toast, onRemove }: { toast: Toast, onRemove: (id: stri
       }}
       exit={{ opacity: 0, scale: 0.95, transition: { duration: 0.2 } }}
       transition={{ type: "spring", stiffness: 400, damping: 30 }}
-      className={`w-full max-w-sm flex justify-center pointer-events-none`}
+      className="w-full max-w-[400px] flex justify-center pointer-events-auto cursor-pointer"
+      onClick={() => onRemove(toast.id)}
     >
-      <div className={`
-        pointer-events-auto
-        relative flex items-center gap-3 w-full p-4 
-        rounded-2xl shadow-lg border border-slate-200 dark:border-white/10
-        backdrop-blur-md bg-white/95 dark:bg-zinc-950/95
-        transition-all duration-300
-      `}>
-          {/* Icon Box */}
-          <div className={`shrink-0 w-10 h-10 rounded-xl flex items-center justify-center ${BG_COLORS[toast.type]} shadow-sm`}>
-             {ICONS[toast.type]}
-          </div>
-
-          {/* Text */}
-          <div className="flex-1 min-w-0">
-             <h3 className="text-sm font-semibold text-foreground leading-tight">{toast.title}</h3>
-             {toast.description && (
-                <p className="text-xs text-muted-foreground mt-0.5 line-clamp-2">{toast.description}</p>
-             )}
-          </div>
-
-          {/* Close Button */}
-          <button 
-            onClick={() => onRemove(toast.id)}
-            className="shrink-0 p-1 rounded-full hover:bg-black/5 dark:hover:bg-white/10 transition-colors"
+      <div 
+        className={`
+            relative mx-auto min-h-fit w-full overflow-hidden rounded-2xl p-4
+            transition-all duration-200 ease-in-out hover:scale-[103%]
+            bg-white [box-shadow:0_0_0_1px_rgba(0,0,0,.03),0_2px_4px_rgba(0,0,0,.05),0_12px_24px_rgba(0,0,0,.05)]
+            dark:bg-transparent dark:backdrop-blur-md dark:[border:1px_solid_rgba(255,255,255,.1)] dark:[box-shadow:0_-20px_80px_-20px_#ffffff1f_inset]
+        `}
+      >
+        <div className="flex flex-row items-center gap-3">
+          <div
+            className={`flex size-10 items-center justify-center rounded-2xl ${BG_COLORS[toast.type]}`}
           >
-             <CloseIcon className="w-4 h-4 text-muted-foreground" />
-          </button>
+            {ICONS[toast.type]}
+          </div>
+          <div className="flex flex-col overflow-hidden">
+            <figcaption className="flex flex-row items-center whitespace-pre text-lg font-medium dark:text-white">
+              <span className="text-sm sm:text-lg">{toast.title}</span>
+              <span className="mx-1">·</span>
+              <span className="text-xs text-gray-500">Baru saja</span>
+            </figcaption>
+            {toast.description && (
+                <p className="text-sm font-normal dark:text-white/60">
+                    {toast.description}
+                </p>
+            )}
+          </div>
+        </div>
       </div>
     </motion.div>
   )
