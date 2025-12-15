@@ -93,7 +93,7 @@ const AccordionItem: React.FC<AccordionItemProps> = ({
 
 // --- Main Component ---
 export function InteractiveImageAccordion() {
-  const [activeIndex, setActiveIndex] = useState<number>(2); // Default to middle item
+  const [activeIndex, setActiveIndex] = useState<number>(0); // Default to first item
 
   return (
     <div className="flex flex-row items-center justify-center gap-4 overflow-x-auto p-4 py-8 no-scrollbar scroll-smooth">
