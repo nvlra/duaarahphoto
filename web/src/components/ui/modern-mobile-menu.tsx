@@ -1,7 +1,8 @@
 "use client"
 
 import React, { useEffect, useMemo, useRef } from 'react';
-import { useRouter, usePathname } from 'next/navigation';
+import { usePathname } from 'next/navigation';
+import Link from 'next/link';
 import { ADMIN_MENU_ITEMS, AdminMenuItem } from '@/config/admin-menu';
 
 export interface InteractiveMenuProps {
@@ -12,10 +13,9 @@ export interface InteractiveMenuProps {
 const defaultAccentColor = 'var(--component-active-color-default)';
 
 const InteractiveMenu: React.FC<InteractiveMenuProps> = ({ items, accentColor }) => {
-  const router = useRouter();
   const pathname = usePathname();
   const navRef = useRef<HTMLElement>(null);
-  const itemsRef = useRef<(HTMLButtonElement | null)[]>([]);
+  const itemsRef = useRef<(HTMLAnchorElement | null)[]>([]);
 
   const finalItems = useMemo(() => {
      if (items && Array.isArray(items) && items.length > 0) return items;
@@ -53,10 +53,6 @@ const InteractiveMenu: React.FC<InteractiveMenuProps> = ({ items, accentColor })
     }
   }, [activeIndex]);
 
-  const handleItemClick = (href: string) => {
-    router.push(href);
-  };
-
   const navStyle = useMemo(() => {
       const activeColor = accentColor || defaultAccentColor;
       return { '--component-active-color': activeColor } as React.CSSProperties;
@@ -74,21 +70,21 @@ const InteractiveMenu: React.FC<InteractiveMenuProps> = ({ items, accentColor })
         const IconComponent = item.icon;
 
         return (
-          <button
+          <Link
             key={item.label}
+            href={item.href}
             ref={el => { itemsRef.current[index] = el }}
             className={`
               relative shrink-0 flex items-center justify-center w-10 h-10 rounded-full transition-all duration-300
               ${isActive ? 'bg-primary text-primary-foreground scale-110 shadow-sm' : 'text-muted-foreground hover:bg-muted hover:scale-105'}
             `}
-            onClick={() => handleItemClick(item.href)}
             aria-label={item.label}
           >
-            <IconComponent className="w-5 h-5" />
+            <IconComponent className="w-5 h-5" size={20} />
             {isActive && (
                <span className="absolute -bottom-1 w-1 h-1 bg-primary-foreground rounded-full opacity-0 animate-in fade-in zoom-in duration-300"></span>
             )}
-          </button>
+          </Link>
         );
       })}
     </nav>

@@ -2,7 +2,16 @@
 
 import Link from "next/link"
 import { usePathname } from "next/navigation"
-import { LayoutDashboard, Images, ShoppingBag, Banknote, Settings, Menu, Package, Users } from "lucide-react"
+import { Menu } from "lucide-react"
+import { 
+  ShoppingBagIcon as ShoppingBag, 
+  BanknoteIcon as Banknote, 
+  ImagesIcon as Images, 
+  SettingsIcon as Settings, 
+  PackageIcon as Package, 
+  UsersIcon as Users,
+  HomeIcon as Home
+} from "@/components/ui/animated-icons"
 
 import { Button } from "@/components/ui/button"
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
@@ -80,7 +89,7 @@ export function Sidebar({ className }: React.HTMLAttributes<HTMLDivElement>) {
               asChild
            >
               <Link href="/admin">
-                <LayoutDashboard className="mr-3 h-4 w-4" />
+                <Home className="mr-3 h-4 w-4" size={16} />
                 Home
               </Link>
            </Button>
@@ -103,7 +112,7 @@ export function Sidebar({ className }: React.HTMLAttributes<HTMLDivElement>) {
                  asChild
                >
                  <Link href={item.href}>
-                   <item.icon className="mr-3 h-4 w-4 opacity-70" />
+                   <item.icon className="mr-3 h-4 w-4 opacity-70" size={16} />
                    {item.title}
                  </Link>
                </Button>
