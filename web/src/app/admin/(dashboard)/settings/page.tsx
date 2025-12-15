@@ -135,24 +135,52 @@ export default function SettingsPage() {
 
     try {
         setUploading(true)
-        // Extract path from URL: .../branding/user_id/filename.ext -> user_id/filename.ext
-        const path = settings.brand_logo_url.split('/branding/').pop()
-        
-        if (path) {
-            // Decode path to handle spaces or special chars
-            const cleanPath = decodeURIComponent(path)
-            console.log("Attempting to delete:", cleanPath)
+        if (!user) return
 
-            const { data, error } = await supabase.storage.from('branding').remove([cleanPath])
+        // Approach 2: List files in the user's folder to be sure we have the right path
+        // and to verify RLS allows us to see the files.
+        const folderPath = user.id
+        const listResult = await supabase.storage.from('branding').list(folderPath)
+        
+        if (listResult.error) {
+             console.error("List error:", listResult.error)
+             // Fallback to URL parsing if list fails (though if list fails, delete likely will too)
+        }
+
+        console.log("Files related to user:", listResult.data)
+
+        // Find the file that matches our current settings URL
+        // We assume the URL ends with the filename
+        const currentFileName = settings.brand_logo_url.split('/').pop()
+        
+        let fileToDelete = null
+        if (currentFileName && listResult.data) {
+             const found = listResult.data.find(f => f.name === currentFileName || decodeURIComponent(f.name) === currentFileName)
+             if (found) {
+                 fileToDelete = `${folderPath}/${found.name}`
+             }
+        }
+
+        // If we couldn't match via list (maybe empty list due to RLS), try the parsed path
+        if (!fileToDelete) {
+             fileToDelete = settings.brand_logo_url.split('/branding/').pop()
+             if (fileToDelete) fileToDelete = decodeURIComponent(fileToDelete)
+        }
+
+        if (fileToDelete) {
+            console.log("Deleting file at path:", fileToDelete)
+            const { data, error } = await supabase.storage.from('branding').remove([fileToDelete])
             
             if (error) {
                 console.error("Storage delete error:", error)
-            } else if (data && data.length === 0) {
-                 console.warn("File was not deleted (File not found or RLS blocked)")
-                 // Consider treating this as success for UI purposes (clearing the field)
-                 // but log it for debugging
+                toast.error("Gagal", "Gagal menghapus file dari storage")
             } else {
-                 console.log("File deleted successfully:", data)
+                 console.log("Delete result:", data)
+                 if (data && data.length > 0) {
+                     toast.success("Berhasil", "File dihapus dari storage")
+                 } else {
+                     console.warn("Delete returned no data - likely RLS blocked or file not found")
+                 }
             }
         }
 
