@@ -137,18 +137,21 @@ export default function SettingsPage() {
             payload.user_id = user.id
         }
 
-        let error;
-        
-        if (settingsId) {
-            const result = await supabase.from('invoice_settings').update(payload).eq('id', settingsId)
-            error = result.error
-        } else {
-            const result = await supabase.from('invoice_settings').insert(payload).select()
-            if (result.data && result.data.length > 0) {
-                setSettingsId(result.data[0].id)
-            }
-            error = result.error
+        if (user) {
+            payload.user_id = user.id
         }
+
+        // Use upsert to handle both insert and update scenarios
+        // onConflict: 'user_id' ensures we update if the record exists
+        const result = await supabase
+            .from('invoice_settings')
+            .upsert(payload, { onConflict: 'user_id' })
+            .select()
+        
+        if (result.data && result.data.length > 0) {
+            setSettingsId(result.data[0].id)
+        }
+        error = result.error
 
         if (error) throw error
 

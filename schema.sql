@@ -2,7 +2,7 @@
 create extension if not exists "uuid-ossp";
 
 -- ENUMS
-create type order_status as enum ('pending', 'confirmed', 'completed', 'cancelled');
+create type order_status as enum ('pending', 'confirmed', 'on_process', 'completed', 'cancelled');
 create type invoice_status as enum ('paid', 'pending', 'overdue', 'draft');
 create type member_status as enum ('active', 'inactive');
 create type media_type as enum ('image', 'video');
@@ -79,6 +79,7 @@ create table orders (
   status order_status default 'pending',
   payment_status text default 'unpaid', -- 'paid' or 'unpaid'
   total_amount numeric(15, 2) default 0,
+  paid_amount numeric(15, 2) default 0,
   notes text,
   created_at timestamptz default now(),
   updated_at timestamptz default now()
@@ -185,3 +186,50 @@ insert into site_settings (id, about_headline) values (1, 'Welcome to Enviel Adm
 
 -- NOTE: Admin authentication is now handled by Supabase Auth (Authentication > Users in Dashboard)
 -- The previously defined `admin_users` table is no longer needed and has been removed.
+
+-- 13. STORAGE & BUCKETS
+-- Create the bucket if it doesn't exist
+INSERT INTO storage.buckets (id, name, public)
+VALUES ('branding', 'branding', true)
+ON CONFLICT (id) DO NOTHING;
+
+-- Policy to allow authenticated users to upload files to their own folder in 'branding' bucket
+CREATE POLICY "Allow authenticated uploads to branding bucket"
+ON storage.objects
+FOR INSERT
+TO authenticated
+WITH CHECK (
+  bucket_id = 'branding' AND
+  (storage.foldername(name))[1] = auth.uid()::text
+);
+
+-- Policy to allow authenticated users to update their own files
+CREATE POLICY "Allow authenticated updates to branding bucket"
+ON storage.objects
+FOR UPDATE
+TO authenticated
+USING (
+  bucket_id = 'branding' AND
+  (storage.foldername(name))[1] = auth.uid()::text
+)
+WITH CHECK (
+  bucket_id = 'branding' AND
+  (storage.foldername(name))[1] = auth.uid()::text
+);
+
+-- Policy to allow public read access to branding bucket
+CREATE POLICY "Allow public read access to branding bucket"
+ON storage.objects
+FOR SELECT
+TO public
+USING (bucket_id = 'branding');
+
+-- Policy to allow authenticated users to delete their own files
+CREATE POLICY "Allow authenticated delete in branding bucket"
+ON storage.objects
+FOR DELETE
+TO authenticated
+USING (
+  bucket_id = 'branding' AND
+  (storage.foldername(name))[1] = auth.uid()::text
+);
