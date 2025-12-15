@@ -173,20 +173,27 @@ export default function SettingsPage() {
             
             if (error) {
                 console.error("Storage delete error:", error)
-                toast.error("Gagal", "Gagal menghapus file dari storage")
+                // We don't stop here, we still want to remove the reference from the DB
             } else {
                  console.log("Delete result:", data)
-                 if (data && data.length > 0) {
-                     toast.success("Berhasil", "File dihapus dari storage")
-                 } else {
-                     console.warn("Delete returned no data - likely RLS blocked or file not found")
-                 }
             }
         }
 
-        handleChange("brand_logo_url", "")
-        toast.success("Logo Dihapus", "Logo berhasil dihapus")
+        // AUTO-SAVE: Update the database immediately to remove the URL reference
+        const { error: dbError } = await supabase
+            .from('invoice_settings')
+            .update({ brand_logo_url: null }) // Set to null
+            .eq('user_id', user.id)
 
+        if (dbError) {
+            console.error("DB Update error:", dbError)
+            toast.error("Gagal", "Gagal menyimpan perubahan ke database")
+            return
+        }
+
+        // Update local state and notify
+        handleChange("brand_logo_url", "")
+        toast.success("Logo Dihapus", "Logo berhasil dihapus dari sistem")
     } catch (error) {
         console.error(error)
         toast.error("Gagal", "Gagal menghapus logo")
