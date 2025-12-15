@@ -2,6 +2,7 @@
 
 import React from "react";
 import { InteractiveImageAccordion } from "@/components/ui/interactive-image-accordion";
+import { ImageAutoSlider } from "@/components/ui/image-auto-slider";
 import { motion } from "framer-motion";
 
 export function Hero() {
@@ -31,6 +32,16 @@ export function Hero() {
             Capturing the essence of your most beautiful moments with a touch of elegance and cinematic flair.
           </motion.p>
         </div>
+
+        {/* Auto Slider */}
+        <motion.div
+           initial={{ opacity: 0 }}
+           animate={{ opacity: 1 }}
+           transition={{ delay: 0.5, duration: 0.8 }}
+           className="mb-16 -mx-4 md:mx-0"
+        >
+          <ImageAutoSlider />
+        </motion.div>
 
         {/* Accordion / Featured Categories */}
         <motion.div
