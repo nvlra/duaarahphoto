@@ -10,6 +10,7 @@ import { Textarea } from "@/components/ui/textarea"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { useToast } from "@/components/ui/ios-toast"
 import { supabase } from "@/lib/supabaseClient"
+import { compressImage } from "@/lib/utils"
 import { BusinessSettings } from "@/types/invoice"
 
 export default function SettingsPage() {
@@ -89,7 +90,20 @@ export default function SettingsPage() {
       if (!e.target.files || e.target.files.length === 0) {
           return
       }
-      const file = e.target.files[0]
+      let file = e.target.files[0]
+
+      // Compress if > 500kb
+      try {
+        if (file.size > 0.5 * 1024 * 1024) {
+            toast.success("Mengompresi...", "Ukuran gambar > 500KB, sedang dikompres...")
+            file = await compressImage(file, 0.5) // Max 0.5 MB
+        }
+      } catch (err) {
+        console.error("Compression failed:", err)
+        // Check if error is 'Canvas to Blob failed' or similar specific errors if needed
+        toast.error("Warning", "Gagal kompresi, mencoba upload original...")
+      }
+
       const fileExt = file.name.split('.').pop()
       const fileName = `${Math.random()}.${fileExt}`
       const filePath = user ? `${user.id}/${fileName}` : `${fileName}`

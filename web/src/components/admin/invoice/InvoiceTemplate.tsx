@@ -58,8 +58,8 @@ export const InvoiceTemplate = React.forwardRef<HTMLDivElement, InvoiceProps>(
         <div className="flex justify-between items-start mb-8">
           {/* Logo Section */}
           <div className="w-1/2 pr-4">
-            {settings.brand_logo_url ? (
-              <div className="relative w-40 h-20 mb-4">
+            {settings.brand_logo_url && (
+              <div className="relative w-full max-w-[240px] h-24 mb-6">
                 <Image
                   src={settings.brand_logo_url}
                   alt="Logo"
@@ -68,9 +68,9 @@ export const InvoiceTemplate = React.forwardRef<HTMLDivElement, InvoiceProps>(
                   unoptimized
                 />
               </div>
-            ) : (
-              <h1 className="text-3xl font-bold tracking-widest uppercase mb-2">{settings.brand_name}</h1>
             )}
+            
+            <h1 className="text-3xl font-bold tracking-widest uppercase mb-2">{settings.brand_name}</h1>
             <p className="text-sm text-slate-500 font-medium">Professional Photography Services</p>
             <p className="text-sm text-slate-500">{settings.address || "Jakarta, Indonesia"}</p>
           </div>
