@@ -56,21 +56,21 @@ export const InvoiceTemplate = React.forwardRef<HTMLDivElement, InvoiceProps>(
 
         {/* === HEADER === */}
         <div className="flex justify-between items-start mb-8">
-          {/* Logo Section */}
-          <div className="w-1/2 pr-4">
-            {settings.brand_logo_url && (
-              <div className="relative w-full max-w-[240px] h-24 mb-6">
-                <Image
-                  src={settings.brand_logo_url}
-                  alt="Logo"
-                  fill
-                  className="object-contain object-left"
-                  unoptimized
-                />
-              </div>
-            )}
-            
-            <h1 className="text-3xl font-bold tracking-widest uppercase mb-2">{settings.brand_name}</h1>
+          <div className="w-1/2 pr-4 flex flex-col gap-1">
+            <div className="flex flex-col gap-2 mb-2">
+              {settings.brand_logo_url && (
+                <div className="relative w-full max-w-[200px] h-20">
+                  <Image
+                    src={settings.brand_logo_url}
+                    alt="Logo"
+                    fill
+                    className="object-contain object-left"
+                    unoptimized
+                  />
+                </div>
+              )}
+              <h1 className="text-2xl font-bold tracking-widest uppercase leading-none">{settings.brand_name}</h1>
+            </div>
             <p className="text-sm text-slate-500 font-medium">Professional Photography Services</p>
             <p className="text-sm text-slate-500">{settings.address || "Jakarta, Indonesia"}</p>
           </div>

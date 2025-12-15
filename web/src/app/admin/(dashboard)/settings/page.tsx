@@ -95,7 +95,6 @@ export default function SettingsPage() {
       // Compress if > 500kb
       try {
         if (file.size > 0.5 * 1024 * 1024) {
-            toast.success("Mengompresi...", "Ukuran gambar > 500KB, sedang dikompres...")
             file = await compressImage(file, 0.5) // Max 0.5 MB
         }
       } catch (err) {
@@ -140,10 +139,20 @@ export default function SettingsPage() {
         const path = settings.brand_logo_url.split('/branding/').pop()
         
         if (path) {
-            const { error } = await supabase.storage.from('branding').remove([path])
+            // Decode path to handle spaces or special chars
+            const cleanPath = decodeURIComponent(path)
+            console.log("Attempting to delete:", cleanPath)
+
+            const { data, error } = await supabase.storage.from('branding').remove([cleanPath])
+            
             if (error) {
                 console.error("Storage delete error:", error)
-                 // We continue even if storage delete fails, to clear the UI
+            } else if (data && data.length === 0) {
+                 console.warn("File was not deleted (File not found or RLS blocked)")
+                 // Consider treating this as success for UI purposes (clearing the field)
+                 // but log it for debugging
+            } else {
+                 console.log("File deleted successfully:", data)
             }
         }
 
