@@ -22,6 +22,14 @@ export const EntranceTransition = ({
       setIsEntered(true);
   };
 
+  // Force scroll to top on mount (refresh)
+  React.useEffect(() => {
+    window.scrollTo(0, 0);
+    if ("scrollRestoration" in history) {
+      history.scrollRestoration = "manual";
+    }
+  }, []);
+
   React.useEffect(() => {
     if (!isEntered) {
       document.body.style.overflow = "hidden";
