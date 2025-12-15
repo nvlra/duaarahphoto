@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
+import { User } from "@supabase/supabase-js"
 import { Save, Loader2, Building2, CreditCard, FileText, Trash2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -27,19 +28,36 @@ export default function SettingsPage() {
   })
 
   const [settingsId, setSettingsId] = useState<string | null>(null)
+  const [user, setUser] = useState<User | null>(null)
   
   const [uploading, setUploading] = useState(false)
 
   useEffect(() => {
-    fetchSettings()
+    fetchUserAndSettings()
   }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
-  const fetchSettings = async () => {
+  const fetchUserAndSettings = async () => {
     try {
-      setLoading(true)
+        setLoading(true)
+        const { data: { user } } = await supabase.auth.getUser()
+        setUser(user)
+        
+        if (user) {
+            await fetchSettings(user.id)
+        }
+    } catch (error) {
+        console.error("Error fetching user:", error)
+    } finally {
+        setLoading(false)
+    }
+  }
+
+  const fetchSettings = async (userId: string) => {
+    try {
       const { data, error } = await supabase
         .from('invoice_settings')
         .select('*')
+        .eq('user_id', userId)
         .limit(1)
         .single()
 
@@ -64,8 +82,6 @@ export default function SettingsPage() {
       }
     } catch (err) {
        console.error(err)
-    } finally {
-       setLoading(false)
     }
   }
   
@@ -76,7 +92,7 @@ export default function SettingsPage() {
       const file = e.target.files[0]
       const fileExt = file.name.split('.').pop()
       const fileName = `${Math.random()}.${fileExt}`
-      const filePath = `${fileName}`
+      const filePath = user ? `${user.id}/${fileName}` : `${fileName}`
 
       try {
           setUploading(true)
@@ -106,7 +122,7 @@ export default function SettingsPage() {
     setSaving(true)
 
     try {
-        const payload = {
+        const payload: any = {
             brand_name: settings.brand_name,
             brand_logo_url: settings.brand_logo_url,
             brand_color: settings.brand_color,
@@ -115,6 +131,10 @@ export default function SettingsPage() {
             bank_holder: settings.bank_holder,
             address: settings.address,
             footer_note: settings.footer_note,
+        }
+
+        if (user) {
+            payload.user_id = user.id
         }
 
         let error;

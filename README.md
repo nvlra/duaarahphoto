@@ -37,7 +37,6 @@ Pusat kontrol untuk fotografer/admin.
   - **Orders Management:** Melacak status pesanan dari _Inquiry_ hingga _Completed_.
   - **Schedule:** Kalender visual untuk jadwal pemotretan.
 - **Finance (Mini-ERP):**
-  - **Invoice Designer:** Tools Drag & Drop untuk membuat invoice custom.
   - **Income & Expense:** Pencatatan arus kas dan chart profitabilitas.
 - **Content Management:**
   - **Gallery Manager:** Upload dan kelola foto portofolio.
@@ -51,7 +50,6 @@ src/
 │   ├── (dashboard)/       # Route Group untuk Admin Dashboard
 │   │   ├── admin/         # Main Admin Entry
 │   │   ├── orders/        # Manajemen Pesanan
-│   │   ├── invoices/      # Invoice Designer & List
 │   │   ├── finance/       # Laporan Keuangan
 │   │   └── gallery/       # Manajemen Galeri
 │   ├── login/             # Halaman Login Admin
