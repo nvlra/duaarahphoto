@@ -33,12 +33,13 @@ export const compressImage = async (file: File, maxSizeMB: number = 0.5): Promis
                 // Helper to convert blob to file
                 const blobToFile = (blob: Blob): File => {
                     return new File([blob], file.name, {
-                        type: 'image/jpeg', // Convert to JPEG for better compression
+                        type: file.type, // Preserve original type (e.g. image/png for transparency)
                         lastModified: Date.now(),
                     });
                 }
 
                 // Try converting to blob
+                // Use original file type for export to preserve transparency if PNG
                 canvas.toBlob(
                     (blob) => {
                         if (blob) {
@@ -46,26 +47,21 @@ export const compressImage = async (file: File, maxSizeMB: number = 0.5): Promis
                             if (blob.size <= maxSizeMB * 1024 * 1024) {
                                 resolve(blobToFile(blob));
                             } else {
-                                // If still too big, force a lower quality (e.g. 0.7)
-                                // Retrying iteratively is better, but for this request "auto compress", 
-                                // a safe aggressive compression like 0.6 usually works for >500kb files that aren't huge.
-                                // Let's try 0.7 explicitly if the first 0.9 failed to check size.
-                                // NOTE: recursive compression can be complex. simpler approach: 
-                                // Just export as JPEG at 0.7 quality which usually slashes size significantly w/o resizing.
+                                // If still too big, try slightly lower quality
                                 canvas.toBlob(
                                     (blob2) => {
                                         if (blob2) resolve(blobToFile(blob2));
                                         else resolve(file); // Fallback
                                     },
-                                    'image/jpeg',
-                                    0.7
+                                    file.type,
+                                    0.8 // Slightly lower quality but keep format
                                 );
                             }
                         } else {
                             reject(new Error("Canvas to Blob failed"));
                         }
                     },
-                    'image/jpeg',
+                    file.type,
                     quality
                 );
             };
