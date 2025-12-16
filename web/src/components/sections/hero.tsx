@@ -6,7 +6,7 @@ import { motion } from "framer-motion";
 
 export function Hero() {
   return (
-    <section className="bg-background pt-24 pb-10 px-6 md:px-12">
+    <section className="bg-background pt-4 pb-10 px-4 md:px-8">
       <div className="w-full relative group">
         
         {/* Rounded Image Container */}
