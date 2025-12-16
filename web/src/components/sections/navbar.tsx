@@ -17,23 +17,12 @@ const navLinks = [
 
 export function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
-  const [isScrolled, setIsScrolled] = useState(false);
-
-  React.useEffect(() => {
-    const handleScroll = () => {
-      setIsScrolled(window.scrollY > 50);
-    };
-    window.addEventListener("scroll", handleScroll);
-    return () => window.removeEventListener("scroll", handleScroll);
-  }, []);
 
   return (
     <nav
       className={cn(
-        "fixed top-0 left-0 right-0 z-50 transition-all duration-300",
-        isScrolled
-          ? "bg-background/80 backdrop-blur-md border-b shadow-sm"
-          : "bg-transparent border-transparent"
+        "fixed top-4 md:top-6 inset-x-4 md:inset-x-0 md:max-w-5xl md:mx-auto z-50 transition-all duration-300",
+        "bg-background/80 backdrop-blur-md border border-white/20 shadow-lg rounded-full"
       )}
     >
       <div className="container mx-auto px-4 h-16 flex items-center justify-between">
