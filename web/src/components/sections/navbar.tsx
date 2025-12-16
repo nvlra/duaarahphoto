@@ -9,10 +9,10 @@ import { RippleButton } from "@/components/ui/ripple-button";
 import { motion, AnimatePresence } from "framer-motion";
 
 const navLinks = [
-  { name: "Portfolio", href: "#portfolio" },
   { name: "About", href: "#about" },
+  { name: "Portfolio", href: "#featured" },
+  { name: "Services", href: "#services" },
   { name: "Testimoni", href: "#stories" },
-  { name: "Contact", href: "#contact" },
 ];
 
 export function Navbar() {
@@ -21,28 +21,28 @@ export function Navbar() {
   return (
     <nav
       className={cn(
-        "fixed top-4 md:top-6 inset-x-4 md:inset-x-0 md:max-w-5xl md:mx-auto z-50 transition-all duration-300",
-        "bg-background/80 backdrop-blur-md border border-white/20 shadow-lg rounded-full"
+        "fixed top-6 md:top-10 left-1/2 -translate-x-1/2 z-50 w-[calc(100%-2rem)] max-w-7xl",
+        "bg-white/90 backdrop-blur-md border border-neutral-200 shadow-lg rounded-full dark:bg-neutral-900/90 dark:border-neutral-800"
       )}
     >
-      <div className="container mx-auto px-4 h-16 flex items-center justify-between">
+      <div className="w-full px-4 md:px-8 h-16 flex items-center justify-between">
         {/* Logo */}
-        <Link href="/" className="text-xl font-bold font-playfair tracking-tight">
-          ENVIEL
+        <Link href="#" className="text-xl font-bold font-playfair tracking-tight text-neutral-900 uppercase dark:text-white">
+          ENVIEL PHOTO
         </Link>
-
+        
         {/* Desktop Menu */}
-        <div className="hidden md:flex items-center space-x-8">
+        <div className="hidden md:flex items-center space-x-6 lg:space-x-8">
           {navLinks.map((item) => (
             <Link
               key={item.name}
               href={item.href}
-              className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
+              className="text-sm font-medium text-neutral-600 hover:text-black transition-colors dark:text-neutral-300 dark:hover:text-white"
             >
-              {item.name}
+              {item.name === "Portfolio" ? "Portofolio" : item.name}
             </Link>
           ))}
-          <RippleButton className="rounded-full h-9 px-6 text-sm">
+          <RippleButton className="rounded-full h-10 px-6 text-xs font-bold uppercase tracking-wider bg-neutral-900 text-white hover:bg-neutral-800 shadow-sm border-none dark:bg-white dark:text-neutral-900 dark:hover:bg-neutral-200">
             Book Now
           </RippleButton>
         </div>

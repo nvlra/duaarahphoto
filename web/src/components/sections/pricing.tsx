@@ -1,13 +1,13 @@
 "use client";
 
-import React from "react";
+import React, { useRef } from "react";
 import { CreativePricing, PricingTier } from "@/components/ui/creative-pricing";
 import { Camera, Film, Aperture } from "lucide-react";
-import { motion } from "framer-motion";
+import { motion, useScroll, useTransform } from "framer-motion";
 
 const packages: PricingTier[] = [
   {
-    name: "Essence",
+    name: "Silver",
     icon: <Camera className="w-6 h-6" />,
     description: "Perfect for intimate ceremonies and elopements.",
     features: [
@@ -19,7 +19,7 @@ const packages: PricingTier[] = [
     ],
   },
   {
-    name: "Timeless",
+    name: "Gold",
     icon: <Aperture className="w-6 h-6" />,
     description: "Our signature collection for complete wedding day stories.",
     popular: true,
@@ -33,7 +33,7 @@ const packages: PricingTier[] = [
     ],
   },
   {
-    name: "Cinematic",
+    name: "Diamond",
     icon: <Film className="w-6 h-6" />,
     description: "The ultimate luxury experience for grand celebrations.",
     features: [
@@ -49,18 +49,28 @@ const packages: PricingTier[] = [
 ];
 
 export function Pricing() {
+  const containerRef = useRef(null);
+  const { scrollYProgress } = useScroll({
+    target: containerRef,
+    offset: ["start end", "end start"],
+  });
+  
+  // Parallax: Content moves slightly slower than scroll to create depth
+  const y = useTransform(scrollYProgress, [0, 1], [0, 100]);
+
   return (
-    <section className="bg-background py-10 md:py-20 relative overflow-hidden">
+    <section id="services" ref={containerRef} className="bg-background py-10 md:py-20 relative overflow-hidden">
         {/* Decorative background elements can be added here if needed */}
       <motion.div
+        style={{ y }}
         initial={{ opacity: 0, y: 50, filter: "blur(10px)" }}
         whileInView={{ opacity: 1, y: 0, filter: "blur(0px)" }}
-        viewport={{ once: true, margin: "-100px" }}
+        viewport={{ once: false, margin: "-100px" }}
         transition={{ duration: 1, ease: "easeOut" }}
       >
         <CreativePricing 
           tag="Enviel Collection" 
-          title="Package" 
+          title="Services" 
           description="We believe in transparency and providing value that lasts a lifetime. Choose a collection or customize your own."
           tiers={packages} 
         />

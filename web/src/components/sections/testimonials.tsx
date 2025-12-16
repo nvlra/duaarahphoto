@@ -51,12 +51,12 @@ export function Testimonials() {
   ];
 
   return (
-    <section id="stories" className="bg-background py-20 rounded-b-[5rem] shadow-[0_10px_40px_-10px_rgba(0,0,0,0.5)] relative z-20 overflow-hidden">
-      <div className="container mx-auto px-4">
+    <section id="stories" className="bg-background py-20 rounded-b-[3rem] shadow-[0_30px_20px_-20px_rgba(0,0,0,0.1)] relative z-20 overflow-hidden">
+      <div className="mx-auto max-w-7xl px-4">
         <motion.div 
           initial={{ opacity: 0, y: 50, filter: "blur(10px)" }}
           whileInView={{ opacity: 1, y: 0, filter: "blur(0px)" }}
-          viewport={{ once: true, margin: "-100px" }}
+          viewport={{ once: false, margin: "-100px" }}
           transition={{ duration: 1, ease: "easeOut" }}
           className="text-center mb-12"
         >

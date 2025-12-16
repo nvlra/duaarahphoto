@@ -42,7 +42,7 @@ export const EntranceTransition = ({
   }, [isEntered]);
 
   return (
-    <div className="bg-background min-h-screen w-full relative overflow-hidden">
+    <div className={`bg-background min-h-screen w-full relative ${!isEntered ? "overflow-hidden" : ""}`}>
       {/* Button Overlay */}
       <AnimatePresence>
         {!isEntered && (
@@ -50,7 +50,7 @@ export const EntranceTransition = ({
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0, scale: 0.9 }}
-            transition={{ duration: 0.5 }}
+            transition={{ duration: 0.3 }}
             className="fixed inset-0 z-50 flex flex-col items-center justify-center gap-6"
           >
             <FlowButton
@@ -65,15 +65,15 @@ export const EntranceTransition = ({
       <motion.div
         initial={{
           clipPath: "circle(0% at 50% 50%)",
-          filter: "blur(50px) brightness(1.5)", // High blur and brightness for "warp" feel
-          scale: 1.5, // High scale for "stretch/zoom" feeling
+          scale: 1.6, 
+          filter: "blur(20px) brightness(1.2)", 
         }}
         animate={
           isEntered
             ? {
                 clipPath: "circle(150% at 50% 50%)",
-                filter: "blur(0px) brightness(1)",
                 scale: 1,
+                filter: "blur(0px) brightness(1)",
                 transitionEnd: {
                     filter: "none",
                     transform: "none",
@@ -83,8 +83,8 @@ export const EntranceTransition = ({
             : {}
         }
         transition={{
-          duration: 2, // Slower but not too slow
-          ease: [0.76, 0, 0.24, 1], // Cinematic ease (Quart-like)
+          duration: 1.5, // Faster to match whoosh
+          ease: [0.22, 1, 0.36, 1], 
         }}
         className="w-full min-h-screen bg-background relative z-10"
       >
