@@ -2,7 +2,7 @@
 
 import React, { useRef } from "react";
 import Image from "next/image";
-import { motion, useScroll, useTransform } from "framer-motion";
+import { motion, useScroll, useTransform, useSpring } from "framer-motion";
 
 export function About() {
   const containerRef = useRef(null);
@@ -11,21 +11,24 @@ export function About() {
     offset: ["start end", "end start"],
   });
 
+  // Smooth spring config for buttery transitions
+  const springConfig = { stiffness: 100, damping: 30, restDelta: 0.001 };
+  const smoothProgress = useSpring(scrollYProgress, springConfig);
+
   // Animation: Smoother transition synchronized with scroll velocity
-  // Animation: Smoother transition synchronized with scroll velocity
-  const width = useTransform(scrollYProgress, [0, 0.3, 0.7, 1], ["100%", "48%", "48%", "100%"]);
+  const width = useTransform(smoothProgress, [0, 0.3, 0.7, 1], ["100%", "48%", "48%", "100%"]);
   // Text Fades In -> Hold -> Fades Out
-  const opacityText = useTransform(scrollYProgress, [0.3, 0.45, 0.55, 0.7], [0, 1, 1, 0]);
+  const opacityText = useTransform(smoothProgress, [0.3, 0.45, 0.55, 0.7], [0, 1, 1, 0]);
   
-  const yImage = useTransform(scrollYProgress, [0, 1], [0, 50]);
-  const yText = useTransform(scrollYProgress, [0, 1], [0, -50]);
+  const yImage = useTransform(smoothProgress, [0, 1], [0, 50]);
+  const yText = useTransform(smoothProgress, [0, 1], [0, -50]);
 
   return (
     <section id="about" ref={containerRef} className="py-32 md:py-40 bg-secondary/30">
       <div className="mx-auto max-w-7xl px-4">
         <div className="flex flex-col md:flex-row items-start gap-12 md:gap-20 relative">
           {/* Image Side - Animated Width (Wrapped for Stability) */}
-          <div className="w-full aspect-square md:aspect-[2/1] relative">
+          <div className="w-full aspect-video md:aspect-[2/1] relative">
             <motion.div
               style={{ width, y: yImage }}
               viewport={{ once: false, margin: "-100px" }}

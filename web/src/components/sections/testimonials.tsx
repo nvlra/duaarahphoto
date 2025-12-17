@@ -1,10 +1,24 @@
 "use client";
 
-import React from "react";
+import React, { useRef } from "react";
 import { AnimatedTestimonials } from "@/components/ui/animated-testimonials";
-import { motion } from "framer-motion";
+import { motion, useScroll, useTransform, useSpring } from "framer-motion";
 
 export function Testimonials() {
+  const containerRef = useRef(null);
+  const { scrollYProgress } = useScroll({
+    target: containerRef,
+    offset: ["start end", "end start"],
+  });
+
+  // Smooth spring config for buttery transitions
+  const springConfig = { stiffness: 100, damping: 30, restDelta: 0.001 };
+  const smoothProgress = useSpring(scrollYProgress, springConfig);
+
+  // Parallax effects
+  const yTitle = useTransform(smoothProgress, [0, 1], [0, -30]);
+  const yContent = useTransform(smoothProgress, [0, 1], [0, 50]);
+
   const testimonials = [
     {
       quote:
@@ -51,16 +65,17 @@ export function Testimonials() {
   ];
 
   return (
-    <section id="stories" className="bg-background py-20 rounded-b-[3rem] shadow-[0_30px_20px_-20px_rgba(0,0,0,0.1)] relative z-20 overflow-hidden">
+    <section id="stories" ref={containerRef} className="bg-background pt-2 pb-24 md:pt-16 md:pb-32 rounded-b-[3rem] shadow-[0_40px_100px_-20px_rgba(0,0,0,0.2)] dark:shadow-[0_40px_100px_-20px_rgba(255,255,255,0.1)] relative z-20 overflow-hidden scroll-mt-32">
       <div className="mx-auto max-w-7xl px-4">
         <motion.div 
-          initial={{ opacity: 0, y: 50, filter: "blur(10px)" }}
+          style={{ y: yTitle }}
+          initial={{ opacity: 0, y: 50, filter: "blur(0px)" }}
           whileInView={{ opacity: 1, y: 0, filter: "blur(0px)" }}
           viewport={{ once: false, margin: "-100px" }}
           transition={{ duration: 1, ease: "easeOut" }}
           className="text-center mb-12"
         >
-          <h2 className="font-playfair text-4xl md:text-5xl font-bold tracking-tight mb-4">
+          <h2 className="font-playfair text-3xl md:text-5xl font-bold tracking-tight mb-4">
             Testimoni
           </h2>
           <p className="text-muted-foreground max-w-2xl mx-auto">
@@ -68,7 +83,9 @@ export function Testimonials() {
           </p>
         </motion.div>
         
-        <AnimatedTestimonials testimonials={testimonials} autoplay={true} />
+        <motion.div style={{ y: yContent }}>
+          <AnimatedTestimonials testimonials={testimonials} autoplay={true} />
+        </motion.div>
       </div>
     </section>
   );

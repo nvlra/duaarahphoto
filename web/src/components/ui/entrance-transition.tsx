@@ -31,10 +31,19 @@ export const EntranceTransition = ({
   }, []);
 
   React.useEffect(() => {
-    if (!isEntered) {
-      document.body.style.overflow = "hidden";
+    // Check session storage on mount
+    const hasEntered = sessionStorage.getItem("hasEntered");
+    if (hasEntered === "true") {
+      setIsEntered(true);
     } else {
+      document.body.style.overflow = "hidden";
+    }
+  }, []);
+
+  React.useEffect(() => {
+    if (isEntered) {
       document.body.style.overflow = "unset";
+      sessionStorage.setItem("hasEntered", "true");
     }
     return () => {
       document.body.style.overflow = "unset";

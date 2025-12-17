@@ -2,6 +2,7 @@
 
 import React, { useState } from "react";
 import Image from "next/image";
+import Link from "next/link";
 import { cn } from "@/lib/utils";
 
 // --- Data for the image accordion ---
@@ -49,45 +50,64 @@ interface AccordionItemProps {
   item: AccordionItemData;
   isActive: boolean;
   onMouseEnter: () => void;
+  onClick: () => void;
 }
 
 const AccordionItem: React.FC<AccordionItemProps> = ({
   item,
   isActive,
   onMouseEnter,
+  onClick,
 }) => {
   return (
-    <div
-      className={cn(
-        "relative h-[450px] rounded-2xl overflow-hidden cursor-pointer transition-all duration-700 ease-in-out",
-        isActive ? "w-[400px]" : "w-[60px]"
-      )}
-      onMouseEnter={onMouseEnter}
-    >
-      {/* Background Image */}
-      <Image
-        src={item.imageUrl}
-        alt={item.title}
-        fill
-        className="object-cover"
-        sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-        priority
-      />
-      {/* Dark overlay for better text readability */}
-      <div className="absolute inset-0 bg-black/40 transition-colors duration-500 hover:bg-black/20"></div>
-
-      {/* Caption Text */}
-      <span
+      <div
+        onClick={onClick}
+        onMouseEnter={onMouseEnter}
         className={cn(
-          "absolute text-white text-lg font-semibold whitespace-nowrap transition-all duration-300 ease-in-out",
-          isActive
-            ? "bottom-6 left-1/2 -translate-x-1/2 rotate-0 opacity-100"
-            : "w-auto text-left bottom-24 left-1/2 -translate-x-1/2 rotate-90 opacity-80"
+          "relative rounded-2xl overflow-hidden cursor-pointer transition-all duration-700 ease-in-out",
+          // Mobile: Vertical Stack
+          "w-full", 
+          isActive ? "h-[300px]" : "h-[80px]",
+          // Desktop: Horizontal Accordion
+          "md:h-[450px]",
+          isActive ? "md:w-[400px]" : "md:w-[60px]"
         )}
       >
-        {item.title}
-      </span>
-    </div>
+        {/* Background Image */}
+        <Image
+          src={item.imageUrl}
+          alt={item.title}
+          fill
+          className="object-cover"
+          sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+          priority
+        />
+        {/* Dark overlay */}
+        <div className={cn(
+            "absolute inset-0 bg-black/40 transition-colors duration-500 hover:bg-black/20",
+            isActive ? "bg-black/0" : "bg-black/50" // Darker on inactive for text contrast
+        )}></div>
+
+        {/* Caption Text */}
+        <span
+          className={cn(
+            "absolute text-white text-lg font-semibold whitespace-nowrap transition-all duration-300 ease-in-out",
+            // Mobile Text Position
+            "left-6",
+            isActive 
+              ? "bottom-6 translate-y-0" // Active Mobile: Bottom Left
+              : "top-1/2 -translate-y-1/2", // Inactive Mobile: Centered Vertically on Left
+            
+            // Desktop Text Position overrides
+            "md:left-1/2 md:-translate-x-1/2 md:translate-y-0", // Reset mobile transforms
+            isActive 
+              ? "md:bottom-6 md:rotate-0 md:opacity-100" 
+              : "md:bottom-24 md:w-auto md:rotate-90 md:opacity-80"
+          )}
+        >
+          {item.title}
+        </span>
+      </div>
   );
 };
 
@@ -96,13 +116,19 @@ export function InteractiveImageAccordion() {
   const [activeIndex, setActiveIndex] = useState<number>(0); // Default to first item
 
   return (
-    <div className="flex flex-row items-center justify-center gap-4 overflow-x-auto p-4 py-8 no-scrollbar scroll-smooth">
+    <div className="flex flex-col md:flex-row items-center justify-center gap-2 md:gap-4 w-full">
       {accordionItems.map((item, index) => (
         <AccordionItem
           key={item.id}
           item={item}
           isActive={index === activeIndex}
-          onMouseEnter={() => setActiveIndex(index)}
+          onMouseEnter={() => {
+             // Optional: Keep hover for desktop if desired, or remove to be purely click/tap consistent
+             if (window.innerWidth >= 768) {
+                 setActiveIndex(index);
+             }
+          }}
+          onClick={() => setActiveIndex(index)}
         />
       ))}
     </div>

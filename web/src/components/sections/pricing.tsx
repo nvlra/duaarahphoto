@@ -3,7 +3,7 @@
 import React, { useRef } from "react";
 import { CreativePricing, PricingTier } from "@/components/ui/creative-pricing";
 import { Camera, Film, Aperture } from "lucide-react";
-import { motion, useScroll, useTransform } from "framer-motion";
+import { motion, useScroll, useTransform, useSpring } from "framer-motion";
 
 const packages: PricingTier[] = [
   {
@@ -55,21 +55,24 @@ export function Pricing() {
     offset: ["start end", "end start"],
   });
   
+  // Smooth spring config for buttery transitions
+  const springConfig = { stiffness: 100, damping: 30, restDelta: 0.001 };
+  const smoothProgress = useSpring(scrollYProgress, springConfig);
+  
   // Parallax: Content moves slightly slower than scroll to create depth
-  const y = useTransform(scrollYProgress, [0, 1], [0, 100]);
+  const y = useTransform(smoothProgress, [0, 1], [0, 80]);
 
   return (
-    <section id="services" ref={containerRef} className="bg-background py-10 md:py-20 relative overflow-hidden">
+    <section id="services" ref={containerRef} className="bg-background pt-4 pb-16 md:pt-16 md:pb-32 relative overflow-hidden scroll-mt-32">
         {/* Decorative background elements can be added here if needed */}
       <motion.div
         style={{ y }}
-        initial={{ opacity: 0, y: 50, filter: "blur(10px)" }}
+        initial={{ opacity: 0, y: 50, filter: "blur(0px)" }}
         whileInView={{ opacity: 1, y: 0, filter: "blur(0px)" }}
         viewport={{ once: false, margin: "-100px" }}
         transition={{ duration: 1, ease: "easeOut" }}
       >
         <CreativePricing 
-          tag="Enviel Collection" 
           title="Services" 
           description="We believe in transparency and providing value that lasts a lifetime. Choose a collection or customize your own."
           tiers={packages} 

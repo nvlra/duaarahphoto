@@ -20,7 +20,7 @@ interface CreativePricingProps {
 }
 
 export function CreativePricing({
-  tag = "Our Packages",
+  tag,
   title = "Invest in Memories",
   description = "Choose the collection that best fits your special day",
   tiers,
@@ -28,20 +28,22 @@ export function CreativePricing({
   return (
     <div className="w-full max-w-7xl mx-auto px-4 py-16">
       <div className="text-center space-y-6 mb-16">
-        <div className="font-playfair text-xl text-primary/80 italic">
-          {tag}
-        </div>
+        {tag && (
+          <div className="font-playfair text-xl text-primary/80 italic">
+            {tag}
+          </div>
+        )}
         <div className="relative inline-block">
-          <h2 className="text-4xl md:text-5xl font-bold font-playfair text-foreground tracking-tight">
+          <h2 className="text-3xl md:text-5xl font-bold font-playfair text-foreground tracking-tight">
             {title}
           </h2>
         </div>
-        <p className="font-sans text-lg text-muted-foreground max-w-2xl mx-auto font-light">
+        <p className="font-sans text-base md:text-lg text-muted-foreground max-w-2xl mx-auto font-light">
           {description}
         </p>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-8">
         {tiers.map((tier, index) => (
           <div
             key={tier.name}
@@ -106,17 +108,24 @@ export function CreativePricing({
               </div>
 
               <div className="mt-auto pt-4">
-                <RippleButton
-                  className={cn(
-                    "w-full h-12 font-sans tracking-wide text-sm transition-all duration-300",
-                    tier.popular
-                      ? "bg-foreground text-background hover:bg-foreground/90 shadow-md"
-                      : "bg-secondary text-secondary-foreground hover:bg-secondary/80 border border-transparent hover:border-border"
-                  )}
-                  rippleColor={tier.popular ? "rgba(255, 255, 255, 0.5)" : "rgba(0, 0, 0, 0.1)"}
+                <a
+                  href={`https://wa.me/628123456789?text=Hello%20Enviel%2C%20I%20am%20interested%20in%20the%20${tier.name}%20package.`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="block w-full"
                 >
-                  Inquire Now
-                </RippleButton>
+                  <RippleButton
+                    className={cn(
+                      "w-full h-12 font-sans tracking-wide text-sm transition-all duration-300",
+                      tier.popular
+                        ? "bg-foreground text-background hover:bg-foreground/90 shadow-md"
+                        : "bg-secondary text-secondary-foreground hover:bg-secondary/80 border border-transparent hover:border-border"
+                    )}
+                    rippleColor={tier.popular ? "rgba(255, 255, 255, 0.5)" : "rgba(0, 0, 0, 0.1)"}
+                  >
+                    Inquire Now
+                  </RippleButton>
+                </a>
               </div>
             </div>
           </div>

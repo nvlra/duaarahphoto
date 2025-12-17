@@ -25,6 +25,7 @@ export const metadata: Metadata = {
 };
 
 import { ToastProvider } from "@/components/ui/ios-toast";
+import { ThemeProvider } from "@/components/theme-provider";
 
 export default function RootLayout({
   children,
@@ -36,9 +37,17 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} ${poppins.variable} antialiased`}
       >
+        <ThemeProvider
+          attribute="class"
+          defaultTheme="system"
+          enableSystem
+          disableTransitionOnChange
+          storageKey="landing-theme"
+        >
             <ToastProvider>
               {children}
             </ToastProvider>
+        </ThemeProvider>
       </body>
     </html>
   );

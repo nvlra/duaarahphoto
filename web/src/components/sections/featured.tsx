@@ -4,6 +4,7 @@ import React, { useRef } from "react";
 import { InteractiveImageAccordion } from "@/components/ui/interactive-image-accordion";
 import { RippleButton } from "@/components/ui/ripple-button";
 import { motion, useScroll, useTransform } from "framer-motion";
+import Link from "next/link";
 
 export function Featured() {
   const containerRef = useRef(null);
@@ -26,12 +27,12 @@ export function Featured() {
             style={{ y: yText }}
             initial={{ opacity: 0, x: -100, filter: "blur(10px)" }}
             whileInView={{ opacity: 1, x: 0, filter: "blur(0px)" }}
-            viewport={{ once: false, amount: 0.5, margin: "-100px" }}
+            viewport={{ once: true, amount: 0.5, margin: "-100px" }}
             transition={{ duration: 0.35, ease: "easeOut" }}
             className="w-full lg:w-1/3 text-center lg:text-left space-y-8"
           >
             <div>
-              <h2 className="font-playfair text-4xl md:text-5xl font-bold leading-tight tracking-tight mb-6">
+              <h2 className="font-playfair text-3xl md:text-5xl font-bold leading-tight tracking-tight mb-6">
                 Capturing Soul <br />
                 In Every Frame
               </h2>
@@ -40,9 +41,13 @@ export function Featured() {
               </p>
             </div>
             
-            <RippleButton className="rounded-lg px-8 py-3 text-lg shadow-lg hover:shadow-xl transition-all duration-300">
-              View More
-            </RippleButton>
+            <div className="flex justify-center lg:justify-start">
+              <Link href="/portfolio">
+                <RippleButton className="rounded-lg px-8 py-3 text-lg shadow-lg hover:shadow-xl transition-all duration-300">
+                  View Portfolio
+                </RippleButton>
+              </Link>
+            </div>
           </motion.div>
 
           {/* Right Side: Accordion */}
