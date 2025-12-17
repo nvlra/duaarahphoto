@@ -2,7 +2,6 @@
 
 import React, { useState } from "react";
 import Image from "next/image";
-import Link from "next/link";
 import { cn } from "@/lib/utils";
 
 // --- Data for the image accordion ---
@@ -53,6 +52,7 @@ interface AccordionItemProps {
   onClick: () => void;
 }
 
+// ... (imports)
 const AccordionItem: React.FC<AccordionItemProps> = ({
   item,
   isActive,
@@ -64,7 +64,7 @@ const AccordionItem: React.FC<AccordionItemProps> = ({
         onClick={onClick}
         onMouseEnter={onMouseEnter}
         className={cn(
-          "relative rounded-2xl overflow-hidden cursor-pointer transition-all duration-700 ease-in-out",
+          "relative rounded-2xl overflow-hidden cursor-pointer transition-all duration-700 ease-in-out isolate", // Added isolate
           // Mobile: Vertical Stack
           "w-full", 
           isActive ? "h-[300px]" : "h-[80px]",
@@ -84,24 +84,24 @@ const AccordionItem: React.FC<AccordionItemProps> = ({
         />
         {/* Dark overlay for contrast */}
         <div className={cn(
-            "absolute inset-0 transition-all duration-500",
+            "absolute inset-0 transition-all duration-500 z-10", // Added z-10
             isActive 
-              ? "bg-gradient-to-t from-black/90 from-10% via-black/30 via-30% to-transparent" // Gradient from bottom for text
-              : "bg-black/50" // Dark uniform overlay for inactive
+              ? "bg-gradient-to-t from-black/90 from-10% via-black/30 via-30% to-transparent" 
+              : "bg-black/50" 
         )}></div>
 
         {/* Caption Text */}
         <span
           className={cn(
-            "absolute text-white text-lg font-semibold whitespace-nowrap transition-all duration-300 ease-in-out",
+            "absolute text-white text-lg font-semibold whitespace-nowrap transition-all duration-300 ease-in-out z-20 transform-gpu", // Added z-20 and transform-gpu
             // Mobile Text Position
             "left-6",
             isActive 
-              ? "bottom-6 translate-y-0" // Active Mobile: Bottom Left
-              : "top-1/2 -translate-y-1/2", // Inactive Mobile: Centered Vertically on Left
+              ? "bottom-6 translate-y-0" 
+              : "top-1/2 -translate-y-1/2", 
             
             // Desktop Text Position overrides
-            "md:left-1/2 md:-translate-x-1/2 md:translate-y-0", // Reset mobile transforms
+            "md:left-1/2 md:-translate-x-1/2 md:translate-y-0", 
             isActive 
               ? "md:bottom-6 md:rotate-0 md:opacity-100" 
               : "md:bottom-24 md:w-auto md:rotate-90 md:opacity-80"
