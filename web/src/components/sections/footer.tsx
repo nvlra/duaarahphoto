@@ -10,7 +10,7 @@ export function Footer() {
         <div className="text-center md:text-left">
           <h3 className="font-playfair text-xl font-bold">ENVIEL</h3>
           <p className="text-muted-foreground text-sm mt-1">
-             © {new Date().getFullYear()} Enviel Photography.
+             © {new Date().getFullYear()} Enviel Phoject.
           </p>
         </div>
 

@@ -98,8 +98,8 @@ export function Navbar() {
     >
       <div className="relative w-full px-4 md:px-8 h-16 flex items-center justify-center md:justify-between text-center md:text-left">
         {/* Logo */}
-        <Link href="/" className="text-lg md:text-xl font-bold font-playfair tracking-tight text-neutral-900 uppercase dark:text-white">
-          ENVIEL PHOTO
+        <Link href="/" className="text-xl md:text-2xl font-bold font-sans tracking-tight text-neutral-900 dark:text-white">
+          Enviel Project
         </Link>
         
         {/* Desktop Menu */}

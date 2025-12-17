@@ -3,6 +3,7 @@
 import { RippleButton } from "@/components/ui/ripple-button";
 import { Check } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { MessageCircleMoreIcon } from "@/components/ui/message-circle-more-icon";
 
 export interface PricingTier {
   name: string;
@@ -123,7 +124,10 @@ export function CreativePricing({
                     )}
                     rippleColor={tier.popular ? "rgba(255, 255, 255, 0.5)" : "rgba(0, 0, 0, 0.1)"}
                   >
-                    Inquire Now
+                    <span className="flex items-center justify-center gap-2">
+                      Inquire Now
+                      <MessageCircleMoreIcon className="w-4 h-4" />
+                    </span>
                   </RippleButton>
                 </a>
               </div>
