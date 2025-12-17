@@ -15,8 +15,8 @@ export function Featured() {
     offset: ["start end", "end start"],
   });
 
-  const yText = useTransform(scrollYProgress, [0, 1], [0, 100]);
-  const yAccordion = useTransform(scrollYProgress, [0, 1], [0, -50]);
+  const yText = useTransform(scrollYProgress, [0, 1], [0, 0]); // Disabled parallax
+  const yAccordion = useTransform(scrollYProgress, [0, 1], [0, 0]); // Disabled parallax to keep alignment fixed
   const scaleAccordion = useTransform(scrollYProgress, [0, 1], [0.8, 1]);
 
   return (
@@ -31,7 +31,7 @@ export function Featured() {
             whileInView={isDesktop ? { opacity: 1, x: 0, filter: "blur(0px)" } : { opacity: 1, x: 0, filter: "blur(0px)" }}
             viewport={{ once: true, amount: 0.5, margin: "-100px" }}
             transition={{ duration: 0.35, ease: "easeOut" }}
-            className="w-full lg:w-1/3 text-center lg:text-left space-y-8"
+            className="w-full lg:w-1/3 text-center lg:text-left space-y-8 lg: mt-4"
           >
             <div>
               <h2 className="font-playfair text-3xl md:text-5xl font-bold leading-tight tracking-tight mb-6">

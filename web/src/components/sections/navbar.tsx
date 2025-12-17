@@ -1,7 +1,10 @@
-import React, { useState } from "react";
+"use client";
+
+import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, Moon, Sun } from "lucide-react";
+import { useTheme } from "next-themes";
 import { cn } from "@/lib/utils";
 
 import { RippleButton } from "@/components/ui/ripple-button";
@@ -12,6 +15,7 @@ import { GalleryVerticalEndIcon } from "@/components/ui/gallery-vertical-end-ico
 import { FileStackIcon } from "@/components/ui/file-stack-icon";
 import { HomeIcon } from "@/components/ui/home-icon";
 import { CircleChevronLeftIcon } from "@/components/ui/circle-chevron-left-icon";
+import { AnimatedThemeToggler } from "@/components/ui/animated-theme-toggler";
 
 const navLinks = [
   { name: "About", href: "/#about" },
@@ -46,6 +50,13 @@ export function Navbar() {
     }
   };
 
+  const { setTheme, resolvedTheme } = useTheme();
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
   const standardDockItems: NavItem[] = [
     { 
         id: 'home', 
@@ -58,6 +69,22 @@ export function Navbar() {
         icon: <UserIcon />, 
         label: 'About', 
         onClick: () => handleNavClick('/#about') 
+    },
+    {
+        id: 'theme',
+        icon: mounted ? (
+          <motion.div
+            key={resolvedTheme}
+            initial={{ rotate: -90, opacity: 0 }}
+            animate={{ rotate: 0, opacity: 1 }}
+            transition={{ duration: 0.3, ease: "easeOut" }}
+          >
+            {resolvedTheme === "dark" ? <Sun /> : <Moon />}
+          </motion.div>
+        ) : <Sun />,
+        label: 'Theme',
+        onClick: () => setTheme(resolvedTheme === 'dark' ? 'light' : 'dark'),
+        selectable: false
     },
     { 
         id: 'featured', 
@@ -98,7 +125,7 @@ export function Navbar() {
     >
       <div className="relative w-full px-4 md:px-8 h-16 flex items-center justify-center md:justify-between text-center md:text-left">
         {/* Logo */}
-        <Link href="/" className="text-xl md:text-2xl font-bold font-sans tracking-tight text-neutral-900 dark:text-white">
+        <Link href="/" className="text-xl md:text-2xl font-bold font-poppins tracking-tight text-neutral-900 dark:text-white">
           Enviel Project
         </Link>
         
@@ -126,18 +153,24 @@ export function Navbar() {
               key={item.name}
               href={item.href}
               onClick={(e) => { e.preventDefault(); handleNavClick(item.href); }}
-              className="text-sm font-medium text-neutral-600 hover:text-black transition-colors dark:text-neutral-300 dark:hover:text-white"
+              className="text-sm font-semibold font-poppins text-neutral-600 hover:text-black transition-colors dark:text-neutral-300 dark:hover:text-white"
             >
               {item.name === "Portfolio" ? "Portofolio" : item.name}
             </Link>
             ))
           )}
+          
+          {/* Theme Toggle for Desktop */}
+          <div className="hidden md:block">
+            <AnimatedThemeToggler />
+          </div>
+
           <a 
-            href="https://wa.me/628123456789?text=Hello%20Enviel%2C%20I%20would%20like%20to%20book%20a%20session."
+            href="https://wa.me/628123456789?text=Hello%20Envi%2C%20I%20would%20like%20to%20book%20a%20session."
             target="_blank"
             rel="noopener noreferrer"
           >
-            <RippleButton className="rounded-full h-10 px-6 text-xs font-bold uppercase tracking-wider bg-neutral-900 text-white hover:bg-neutral-800 shadow-sm border-none dark:bg-white dark:text-neutral-900 dark:hover:bg-neutral-200">
+            <RippleButton className="rounded-full h-10 px-6 text-xs font-bold font-poppins uppercase tracking-wider bg-neutral-900 text-white hover:bg-neutral-800 shadow-sm border-none dark:bg-white dark:text-neutral-900 dark:hover:bg-neutral-200">
               Book Now
             </RippleButton>
           </a>

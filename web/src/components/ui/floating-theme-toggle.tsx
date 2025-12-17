@@ -66,7 +66,7 @@ export function FloatingThemeToggle() {
         target="_blank"
         rel="noopener noreferrer"
         className={cn(
-            "h-12 rounded-full shadow-xl flex items-center justify-center transition-all duration-500",
+            "h-12 rounded-full shadow-xl flex items-center justify-center transition-all duration-500 md:hidden",
             "bg-neutral-900 text-white dark:bg-white dark:text-neutral-900", // High contrast
             isBookActive ? "w-36 px-4" : "w-12 px-0"
         )}
@@ -79,8 +79,6 @@ export function FloatingThemeToggle() {
         </span>
         <MessageCircleMoreIcon size={20} className="shrink-0" />
       </a>
-
-      <AnimatedThemeToggler className="h-12 w-12 rounded-full border bg-background shadow-lg hover:bg-muted" />
     </div>
   );
 }

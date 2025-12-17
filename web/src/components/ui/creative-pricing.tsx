@@ -168,6 +168,7 @@ export function CreativePricing({
                     rippleColor={tier.popular ? "rgba(255, 255, 255, 0.5)" : "rgba(0, 0, 0, 0.1)"}
                   >
                     <span className="flex items-center justify-center gap-2">
+                      <div className="w-4" /> {/* Spacer for optical centering */}
                       Inquire Now
                       <MessageCircleMoreIcon className="w-4 h-4" />
                     </span>

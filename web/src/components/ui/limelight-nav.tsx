@@ -14,6 +14,7 @@ export type NavItem = {
   label?: string;
   onClick?: () => void;
   showLabel?: boolean;
+  selectable?: boolean;
 };
 
 const defaultNavItems: NavItem[] = [
@@ -52,8 +53,10 @@ export const LimelightNav = ({
   }
 
   const handleItemClick = (index: number, itemOnClick?: () => void) => {
-    setActiveIndex(index);
-    onTabChange?.(index);
+    if (items[index].selectable !== false) {
+      setActiveIndex(index);
+      onTabChange?.(index);
+    }
     itemOnClick?.();
   };
 
