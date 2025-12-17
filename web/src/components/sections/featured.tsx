@@ -26,9 +26,9 @@ export function Featured() {
           
           {/* Left Side: Text Content */}
           <motion.div 
-            style={{ y: isDesktop ? yText : 0 }} // Also disable yText on mobile if desired, but user Scale was the main point. I'll keep yText unless requested, but safer to disable parallax too if "effect" meant movement. Let's stick to scale first as "membesar".
-            initial={{ opacity: 0, x: -100, filter: "blur(10px)" }}
-            whileInView={{ opacity: 1, x: 0, filter: "blur(0px)" }}
+            style={{ y: isDesktop ? yText : 0 }} 
+            initial={isDesktop ? { opacity: 0, x: -100, filter: "blur(10px)" } : { opacity: 1, x: 0, filter: "blur(0px)" }}
+            whileInView={isDesktop ? { opacity: 1, x: 0, filter: "blur(0px)" } : { opacity: 1, x: 0, filter: "blur(0px)" }}
             viewport={{ once: true, amount: 0.5, margin: "-100px" }}
             transition={{ duration: 0.35, ease: "easeOut" }}
             className="w-full lg:w-1/3 text-center lg:text-left space-y-8"
@@ -55,9 +55,9 @@ export function Featured() {
           {/* Right Side: Accordion */}
           <motion.div 
             style={{ y: yAccordion, scale: isDesktop ? scaleAccordion : 1 }}
-            initial={{ opacity: 0, x: 50, filter: "blur(10px)" }}
-            whileInView={{ opacity: 1, x: 0, filter: "blur(0px)" }}
-            viewport={{ once: false, amount: 0.1 }}
+            initial={isDesktop ? { opacity: 0, x: 50, filter: "blur(10px)" } : { opacity: 1, x: 0, filter: "blur(0px)" }}
+            whileInView={isDesktop ? { opacity: 1, x: 0, filter: "blur(0px)" } : { opacity: 1, x: 0, filter: "blur(0px)" }}
+            viewport={{ once: true, amount: 0.1 }}
             transition={{ duration: 1, ease: "easeOut", delay: 0.2 }}
             className="w-full lg:w-2/3"
           >
