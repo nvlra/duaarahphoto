@@ -5,9 +5,11 @@ import { InteractiveImageAccordion } from "@/components/ui/interactive-image-acc
 import { RippleButton } from "@/components/ui/ripple-button";
 import { motion, useScroll, useTransform } from "framer-motion";
 import Link from "next/link";
+import { useMediaQuery } from "@/hooks/use-media-query";
 
 export function Featured() {
   const containerRef = useRef(null);
+  const isDesktop = useMediaQuery("(min-width: 768px)");
   const { scrollYProgress } = useScroll({
     target: containerRef,
     offset: ["start end", "end start"],
@@ -24,7 +26,7 @@ export function Featured() {
           
           {/* Left Side: Text Content */}
           <motion.div 
-            style={{ y: yText }}
+            style={{ y: isDesktop ? yText : 0 }} // Also disable yText on mobile if desired, but user Scale was the main point. I'll keep yText unless requested, but safer to disable parallax too if "effect" meant movement. Let's stick to scale first as "membesar".
             initial={{ opacity: 0, x: -100, filter: "blur(10px)" }}
             whileInView={{ opacity: 1, x: 0, filter: "blur(0px)" }}
             viewport={{ once: true, amount: 0.5, margin: "-100px" }}
@@ -52,7 +54,7 @@ export function Featured() {
 
           {/* Right Side: Accordion */}
           <motion.div 
-            style={{ y: yAccordion, scale: scaleAccordion }}
+            style={{ y: yAccordion, scale: isDesktop ? scaleAccordion : 1 }}
             initial={{ opacity: 0, x: 50, filter: "blur(10px)" }}
             whileInView={{ opacity: 1, x: 0, filter: "blur(0px)" }}
             viewport={{ once: false, amount: 0.1 }}

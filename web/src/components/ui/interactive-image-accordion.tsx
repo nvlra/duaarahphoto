@@ -98,10 +98,14 @@ const AccordionItem: React.FC<AccordionItemProps> = ({
             "left-6",
             isActive 
               ? "bottom-6 translate-y-0" 
-              : "top-1/2 -translate-y-1/2", 
+              : "bottom-1/2 translate-y-1/2", // Inactive Mobile: Centered using bottom
             
             // Desktop Text Position overrides
             "md:left-1/2 md:-translate-x-1/2 md:translate-y-0", 
+            // Reset "bottom" from mobile if needed? 
+            // Wait, desktop uses `md:bottom-24` and `md:bottom-6`.
+            // md sets its own bottom, so that's fine.
+            // But we need to ensure md unsets translate-y-1/2 from mobile inactive state.
             isActive 
               ? "md:bottom-6 md:rotate-0 md:opacity-100" 
               : "md:bottom-24 md:w-auto md:rotate-90 md:opacity-80"
