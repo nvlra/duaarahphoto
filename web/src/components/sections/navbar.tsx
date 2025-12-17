@@ -1,14 +1,16 @@
-"use client";
-
 import React, { useState } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { ArrowLeft, Home, LayoutGrid, Sparkles, MessageSquareQuote, CalendarCheck } from "lucide-react";
+import { ArrowLeft } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 import { RippleButton } from "@/components/ui/ripple-button";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion } from "framer-motion";
 import { LimelightNav, NavItem } from "@/components/ui/limelight-nav";
+import { UserIcon } from "@/components/ui/user-icon";
+import { GalleryVerticalEndIcon } from "@/components/ui/gallery-vertical-end-icon";
+import { FileStackIcon } from "@/components/ui/file-stack-icon";
+import { HomeIcon } from "@/components/ui/home-icon";
 
 const navLinks = [
   { name: "About", href: "/#about" },
@@ -46,27 +48,27 @@ export function Navbar() {
   const dockItems: NavItem[] = [
     { 
         id: 'home', 
-        icon: <Home />, 
+        icon: <HomeIcon />, 
         label: 'Home', 
-        onClick: () => handleNavClick('/#about') // Using About as "Home" anchor or just top? Let's use #about or scroll top logic. Actually, Home usually means Top.
+        onClick: () => handleNavClick('/') 
     },
     { 
-        id: 'portfolio', 
-        icon: <LayoutGrid />, 
-        label: 'Portfolio', 
+        id: 'about', 
+        icon: <UserIcon />, 
+        label: 'About', 
+        onClick: () => handleNavClick('/#about') 
+    },
+    { 
+        id: 'featured', 
+        icon: <GalleryVerticalEndIcon />, 
+        label: 'Featured', 
         onClick: () => handleNavClick('/#featured') 
     },
     { 
         id: 'services', 
-        icon: <Sparkles />, 
+        icon: <FileStackIcon />, 
         label: 'Services', 
         onClick: () => handleNavClick('/#services') 
-    },
-    { 
-        id: 'testimoni', 
-        icon: <MessageSquareQuote />, 
-        label: 'Stories', 
-        onClick: () => handleNavClick('/#stories') 
     },
   ];
 
