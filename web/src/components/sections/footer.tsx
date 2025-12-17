@@ -15,10 +15,10 @@ export function Footer() {
         </div>
 
         <div className="flex gap-4 items-center">
-          <Link href="https://instagram.com/envielphoto" target="_blank" rel="noopener noreferrer" aria-label="Instagram">
+          <Link href="https://instagram.com/nvlra" target="_blank" rel="noopener noreferrer" aria-label="Instagram">
              <InstagramIcon className="text-muted-foreground hover:text-foreground hover:bg-transparent" size={24} />
           </Link>
-          <Link href="https://wa.me/6281234567890" target="_blank" rel="noopener noreferrer" aria-label="WhatsApp">
+          <Link href="https://wa.me/6281200000000" target="_blank" rel="noopener noreferrer" aria-label="WhatsApp">
              <MessageCircleMoreIcon className="text-muted-foreground hover:text-foreground hover:bg-transparent" size={24} />
           </Link>
         </div>

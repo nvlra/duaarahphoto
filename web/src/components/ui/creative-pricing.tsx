@@ -153,7 +153,7 @@ export function CreativePricing({
 
               <div className="mt-auto pt-4">
                 <a
-                  href={`https://wa.me/628123456789?text=Hello%20Enviel%2C%20I%20am%20interested%20in%20the%20${tier.name}%20package.`}
+                  href={`https://wa.me/62812000000000?text=Hello%20Enviel%2C%20I%20am%20interested%20in%20the%20${tier.name}%20package.`}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="block w-full"

@@ -15,7 +15,7 @@ interface ContactModalProps {
 export function ContactModal({ isOpen, onClose }: ContactModalProps) {
   // Dummy Data
   const whatsappNumber = "628123456789";
-  const instagramUrl = "https://instagram.com/envielphoto"; // Dummy URL
+  const instagramUrl = "https://instagram.com/nvlra"; // Dummy URL
   
   const whatsappUrl = `https://wa.me/${whatsappNumber}`;
 

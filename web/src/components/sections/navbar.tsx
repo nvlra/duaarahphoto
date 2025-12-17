@@ -216,7 +216,7 @@ export function Navbar() {
           </div>
 
           <a 
-            href="https://wa.me/628123456789?text=Hello%20Envi%2C%20I%20would%20like%20to%20book%20a%20session."
+            href="https://wa.me/628123000000000?text=Hello%20Envi%2C%20I%20would%20like%20to%20book%20a%20session."
             target="_blank"
             rel="noopener noreferrer"
           >
