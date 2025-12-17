@@ -4,21 +4,9 @@ import { RippleButton } from "@/components/ui/ripple-button";
 import { Check } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { MessageCircleMoreIcon } from "@/components/ui/message-circle-more-icon";
+import { useState, useRef, useEffect } from "react";
 
-export interface PricingTier {
-  name: string;
-  icon: React.ReactNode;
-  description: string;
-  features: string[];
-  popular?: boolean;
-}
-
-interface CreativePricingProps {
-  tag?: string;
-  title?: string;
-  description?: string;
-  tiers: PricingTier[];
-}
+// ... existing interfaces ...
 
 export function CreativePricing({
   tag,
@@ -26,6 +14,41 @@ export function CreativePricing({
   description = "Choose the collection that best fits your special day",
   tiers,
 }: CreativePricingProps) {
+  const [activeIndex, setActiveIndex] = useState(0);
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
+
+  // Set default active index to the popular tier
+  useEffect(() => {
+    const popularIndex = tiers.findIndex((tier) => tier.popular);
+    if (popularIndex !== -1) {
+      setActiveIndex(popularIndex);
+      // Scroll to popular item on mount after a short delay to ensure layout
+      setTimeout(() => {
+        if (scrollContainerRef.current) {
+           const totalWidth = scrollContainerRef.current.scrollWidth - 32;
+           const itemWidth = totalWidth / tiers.length;
+           // Center the item
+           const containerWidth = scrollContainerRef.current.clientWidth;
+           const scrollPos = (itemWidth * popularIndex) - (containerWidth / 2) + (itemWidth / 2);
+           
+           scrollContainerRef.current.scrollTo({
+             left: scrollPos,
+             behavior: "instant"
+           });
+        }
+      }, 100);
+    }
+  }, [tiers]);
+
+  const handleScroll = () => {
+    if (scrollContainerRef.current) {
+      const totalWidth = scrollContainerRef.current.scrollWidth - 32; 
+      const itemWidth = totalWidth / tiers.length;
+      const newIndex = Math.round(scrollContainerRef.current.scrollLeft / itemWidth);
+      setActiveIndex(Math.min(Math.max(newIndex, 0), tiers.length - 1));
+    }
+  };
+
   return (
     <div className="w-full max-w-7xl mx-auto px-4 py-16">
       <div className="text-center space-y-6 mb-16">
@@ -44,12 +67,16 @@ export function CreativePricing({
         </p>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-8">
+      <div 
+        ref={scrollContainerRef}
+        onScroll={handleScroll}
+        className="flex md:grid md:grid-cols-3 gap-6 md:gap-8 overflow-x-auto md:overflow-visible snap-x snap-mandatory pb-12 pt-12 -mx-4 px-4 md:mx-0 md:px-0 scrollbar-hide"
+      >
         {tiers.map((tier, index) => (
           <div
             key={tier.name}
             className={cn(
-              "relative group flex flex-col h-full",
+              "relative group flex flex-col h-full min-w-[80vw] md:min-w-0 snap-center",
               "transition-all duration-500 hover:-translate-y-2",
               index === 1 ? "md:-mt-8 md:mb-8 z-10" : "" // Elevate middle card
             )}
@@ -133,6 +160,19 @@ export function CreativePricing({
               </div>
             </div>
           </div>
+        ))}
+      </div>
+      
+      {/* Mobile Pagination Dots */}
+      <div className="flex md:hidden justify-center gap-2 mt-0">
+        {tiers.map((_, index) => (
+            <div
+                key={index}
+                className={cn(
+                    "h-2 rounded-full transition-all duration-300",
+                    index === activeIndex ? "w-6 bg-foreground" : "w-2 bg-border"
+                )}
+            />
         ))}
       </div>
     </div>

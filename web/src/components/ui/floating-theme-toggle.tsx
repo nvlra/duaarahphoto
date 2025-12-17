@@ -28,7 +28,7 @@ export function FloatingThemeToggle() {
   useEffect(() => {
     const interval = setInterval(() => {
         setIsBookActive(true);
-        setTimeout(() => setIsBookActive(false), 5000); // Show for 3 seconds
+        setTimeout(() => setIsBookActive(false), 20000); // Show for 3 seconds
     }, 8000); // Every 8 seconds
 
     return () => clearInterval(interval);
