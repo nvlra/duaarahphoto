@@ -71,7 +71,7 @@ export const EntranceTransition = ({
           <motion.div
             initial={{ opacity: 1 }}
             animate={{ opacity: 1 }}
-            exit={{ y: "-100%", transition: { duration: 0.8, ease: [0.16, 1, 0.3, 1] } }} // Smooth slide up
+            exit={{ y: "-100%", transition: { duration: 0.2, ease: [0.16, 1, 0.3, 1] } }} // Smooth slide up
             className="fixed inset-0 z-[9999] bg-white dark:bg-neutral-950 flex flex-col items-center justify-center gap-4 cursor-grab active:cursor-grabbing"
             drag="y"
             dragConstraints={{ top: 0, bottom: 0 }}
@@ -91,9 +91,14 @@ export const EntranceTransition = ({
       </AnimatePresence>
 
       {/* Main Content */}
-      <div className="w-full min-h-screen bg-background relative z-10">
+      <motion.div
+        className="w-full min-h-screen bg-background relative z-10"
+        initial={initialEntered ? false : { scale: 0.92, y: 30, opacity: 0.5, filter: "blur(10px)" }}
+        animate={isEntered ? { scale: 1, y: 0, opacity: 1, filter: "blur(0px)" } : { scale: 0.92, y: 30, opacity: 0.5, filter: "blur(10px)" }}
+        transition={{ duration: 1.5, ease: [0.16, 1, 0.3, 1], delay: 0.2 }}
+      >
         {children}
-      </div>
+      </motion.div>
     </div>
   );
 };
