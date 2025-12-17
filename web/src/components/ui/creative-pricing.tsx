@@ -6,7 +6,20 @@ import { cn } from "@/lib/utils";
 import { MessageCircleMoreIcon } from "@/components/ui/message-circle-more-icon";
 import { useState, useRef, useEffect } from "react";
 
-// ... existing interfaces ...
+export interface PricingTier {
+  name: string;
+  icon: React.ReactNode;
+  description: string;
+  features: string[];
+  popular?: boolean;
+}
+
+interface CreativePricingProps {
+  tag?: string;
+  title?: string;
+  description?: string;
+  tiers: PricingTier[];
+}
 
 export function CreativePricing({
   tag,
@@ -14,14 +27,16 @@ export function CreativePricing({
   description = "Choose the collection that best fits your special day",
   tiers,
 }: CreativePricingProps) {
-  const [activeIndex, setActiveIndex] = useState(0);
+  const [activeIndex, setActiveIndex] = useState(() => {
+    const popularIndex = tiers.findIndex((tier) => tier.popular);
+    return popularIndex !== -1 ? popularIndex : 0;
+  });
   const scrollContainerRef = useRef<HTMLDivElement>(null);
 
   // Set default active index to the popular tier
   useEffect(() => {
     const popularIndex = tiers.findIndex((tier) => tier.popular);
     if (popularIndex !== -1) {
-      setActiveIndex(popularIndex);
       // Scroll to popular item on mount after a short delay to ensure layout
       setTimeout(() => {
         if (scrollContainerRef.current) {
@@ -70,7 +85,7 @@ export function CreativePricing({
       <div 
         ref={scrollContainerRef}
         onScroll={handleScroll}
-        className="flex md:grid md:grid-cols-3 gap-6 md:gap-8 overflow-x-auto md:overflow-visible snap-x snap-mandatory pb-12 pt-12 -mx-4 px-4 md:mx-0 md:px-0 scrollbar-hide"
+        className="flex md:grid md:grid-cols-3 gap-6 md:gap-8 overflow-x-auto md:overflow-visible snap-x snap-mandatory pb-4 pt-12 -mx-4 px-4 md:mx-0 md:px-0 scrollbar-hide"
       >
         {tiers.map((tier, index) => (
           <div
