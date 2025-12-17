@@ -26,12 +26,12 @@ export const portfolioData: CategoryData[] = [
         name: "Arthur & Martha",
         location: "Bali, Indonesia",
         date: "September 2024",
-        coverImage: "https://images.unsplash.com/photo-1519741497674-611481863552?q=80&w=2070",
+        coverImage: "https://images.unsplash.com/photo-1542036813441-fc9a620d539d?q=80&w=1171&auto=format&fit=crop",
         images: [
-          "https://images.unsplash.com/photo-1511285560982-1351cdeb9821?q=80&w=800",
-          "https://images.unsplash.com/photo-1522673607200-1645062cd958?q=80&w=800",
+          "https://images.unsplash.com/photo-1583939003579-730e3918a45a?q=80&w=2070&auto=format&fit=crop",
+          "https://images.unsplash.com/photo-1583939411023-14783179e581?q=80&w=1170&auto=format&fit=crop",
           "https://images.unsplash.com/photo-1606216794074-735e91aa2c92?q=80&w=800",
-          "https://images.unsplash.com/photo-1519741497674-611481863552?q=80&w=2070",
+          "https://images.unsplash.com/photo-1542036813441-fc9a620d539d?q=80&w=1171&auto=format&fit=crop",
           "https://images.unsplash.com/photo-1529636798458-92182e662485?q=80&w=800",
           "https://images.unsplash.com/photo-1469334031218-e382a71b716b?q=80&w=800",
         ]
@@ -41,12 +41,12 @@ export const portfolioData: CategoryData[] = [
         name: "Thomas & Grace",
         location: "Lake Como, Italy",
         date: "August 2024",
-        coverImage: "https://images.unsplash.com/photo-1519225468063-5078d22103e5?q=80&w=2070",
+        coverImage: "https://images.unsplash.com/photo-1481980235850-66e47651e431?q=80&w=688&auto=format&fit=crop",
         images: [
            "https://images.unsplash.com/photo-1529636798458-92182e662485?q=80&w=800",
            "https://images.unsplash.com/photo-1515934751635-c81c6bc9a2d8?q=80&w=800",
            "https://images.unsplash.com/photo-1532712938310-34cb3982ef74?q=80&w=800",
-           "https://images.unsplash.com/photo-1519225468063-5078d22103e5?q=80&w=2070",
+           "https://images.unsplash.com/photo-1481980235850-66e47651e431?q=80&w=688&auto=format&fit=crop",
         ]
       },
       {

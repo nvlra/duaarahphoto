@@ -52,9 +52,55 @@ export function Navbar() {
 
   const { setTheme, resolvedTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
+  const [activeSection, setActiveSection] = useState('home');
+  const [isIdle, setIsIdle] = useState(false);
 
   useEffect(() => {
-    setMounted(true);
+    // Defer setMounted to avoid synchronous state update in effect warning
+    // and ensure hydration matches.
+    const timer = setTimeout(() => setMounted(true), 0);
+    
+    let idleTimer: NodeJS.Timeout;
+
+    const resetIdle = () => {
+      setIsIdle(false);
+      clearTimeout(idleTimer);
+      idleTimer = setTimeout(() => {
+        setIsIdle(true);
+      }, 1000); 
+    };
+
+    const handleScroll = () => {
+      resetIdle();
+
+      const sections = ['about', 'featured', 'services'];
+      const scrollPosition = window.scrollY + window.innerHeight / 3;
+
+      let current = 'home';
+      // Find the furthest down section that is above the scroll line
+      for (const section of sections) {
+        const element = document.getElementById(section);
+        if (element && element.offsetTop <= scrollPosition) {
+          current = section;
+        }
+      }
+      setActiveSection(current);
+    };
+
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    window.addEventListener('touchstart', resetIdle);
+    window.addEventListener('click', resetIdle);
+    window.addEventListener('mousemove', resetIdle);
+
+    resetIdle(); // Start timer
+
+    return () => {
+        window.removeEventListener('scroll', handleScroll);
+        window.removeEventListener('touchstart', resetIdle);
+        window.removeEventListener('click', resetIdle);
+        window.removeEventListener('mousemove', resetIdle);
+        clearTimeout(idleTimer);
+    };
   }, []);
 
   const standardDockItems: NavItem[] = [
@@ -119,14 +165,19 @@ export function Navbar() {
     <>
     <nav
       className={cn(
-        "fixed top-6 md:top-10 left-1/2 -translate-x-1/2 z-50 w-[calc(100%-2rem)] max-w-7xl",
+        "fixed top-6 md:top-10 left-1/2 -translate-x-1/2 z-50 transition-all duration-700 ease-[cubic-bezier(0.32,0.72,0,1)]",
+        isIdle ? "w-[120px]" : "w-[calc(100%-2rem)]", // Mobile idle Width
+        "md:w-[calc(100%-2rem)] max-w-7xl", // Desktop fixed Width overrides mobile
         "bg-white/90 backdrop-blur-md border border-neutral-200 shadow-lg rounded-full dark:bg-neutral-900/90 dark:border-neutral-800 dark:shadow-[0_4px_30px_rgba(255,255,255,0.1)]"
       )}
     >
-      <div className="relative w-full px-4 md:px-8 h-16 flex items-center justify-center md:justify-between text-center md:text-left">
+      <div className="relative w-full px-4 md:px-8 h-12 md:h-16 flex items-center justify-center md:justify-between text-center md:text-left transition-all duration-500">
         {/* Logo */}
-        <Link href="/" className="text-xl md:text-2xl font-bold font-poppins tracking-tight text-neutral-900 dark:text-white">
-          Enviel Project
+        <Link href="/" className={cn(
+            "text-lg md:text-2xl font-bold font-poppins tracking-tight text-neutral-900 dark:text-white transition-all duration-500 whitespace-nowrap",
+            isIdle ? "scale-100" : "scale-100" // Reset scale, as we are changing text length instead
+        )}>
+          {isIdle ? "Enviel" : "Enviel Project"}
         </Link>
         
         {/* Desktop Menu */}
@@ -181,7 +232,8 @@ export function Navbar() {
     {/* Mobile Bottom Dock */}
     <div className="md:hidden fixed bottom-6 left-1/2 -translate-x-1/2 z-50 w-[95%]">
         <LimelightNav 
-            items={dockItems} 
+            items={dockItems}
+            activeId={activeSection} 
             className={cn(
                 "w-full bg-white/90 backdrop-blur-md border-neutral-200 dark:bg-neutral-900/90 dark:border-neutral-800 shadow-2xl rounded-full px-4",
                 (isPortfolioPage || isProjectPage) ? "justify-center" : "justify-between" // Center if single item, spread if regular

@@ -32,14 +32,14 @@ export function Testimonials() {
       "Enviel Creative didn't just take photos; they told our story. Every emotion, every glance, every tear was preserved forever.",
     name: "Jessica & David",
     designation: "Elopement in Swiss Alps",
-    src: "https://images.unsplash.com/photo-1623770857664-913b77209930?q=80&w=2070&auto=format&fit=crop",
+    src: "https://images.unsplash.com/photo-1550784718-990c6de52adf?q=80&w=684&auto=format&fit=crop",
   },
   {
     quote:
       "The cinematic quality of their work is unmatched. Looking at our wedding album feels like watching a high-end romantic film.",
     name: "Michael & Sarah",
     designation: "Wedding in Bali",
-    src: "https://images.unsplash.com/photo-1511285560982-1351cdeb9821?q=80&w=1974&auto=format&fit=crop",
+    src: "https://images.unsplash.com/photo-1606800052052-a08af7148866?q=80&w=2070&auto=format&fit=crop",
   },
   {
     quote:

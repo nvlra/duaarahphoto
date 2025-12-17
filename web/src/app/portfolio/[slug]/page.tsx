@@ -8,7 +8,7 @@ import { notFound } from "next/navigation";
 import { motion } from "framer-motion";
 import { Navbar } from "@/components/sections/navbar";
 import { Footer } from "@/components/sections/footer";
-import { EntranceTransition } from "@/components/ui/entrance-transition";
+// import { EntranceTransition } from "@/components/ui/entrance-transition";
 import { FloatingThemeToggle } from "@/components/ui/floating-theme-toggle";
 import { portfolioData } from "@/data/portfolio";
 import { ScrollBasedVelocity } from "@/components/ui/scroll-based-velocity";
@@ -37,7 +37,7 @@ export default function ProjectPage({ params }: Props) {
   return (
     <>
       <Navbar />
-      <EntranceTransition>
+      {/* EntranceTransition removed */}
       <main className="min-h-screen bg-neutral-100 dark:bg-neutral-900 font-sans selection:bg-primary/20">
         <div className="bg-background rounded-b-[3rem] shadow-[0_40px_100px_-20px_rgba(0,0,0,0.2)] dark:shadow-[0_40px_100px_-20px_rgba(255,255,255,0.1)] relative z-20 pb-24 overflow-hidden min-h-screen">
 
@@ -119,7 +119,7 @@ export default function ProjectPage({ params }: Props) {
            <Footer />
         </div>
       </main>
-      </EntranceTransition>
+      {/* EntranceTransition removed */}
       <FloatingThemeToggle />
     </>
   );

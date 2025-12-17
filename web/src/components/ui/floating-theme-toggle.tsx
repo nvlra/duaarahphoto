@@ -51,7 +51,7 @@ export function FloatingThemeToggle() {
             exit={{ opacity: 0, y: 20 }}
             onClick={scrollToTop}
             className={cn(
-              "h-12 w-12 rounded-full border bg-background shadow-lg hover:bg-muted flex items-center justify-center transition-colors"
+              "h-12 w-12 rounded-full border bg-background shadow-lg hover:bg-muted flex items-center justify-center transition-colors hidden md:flex"
             )}
             title="Scroll to Top"
           >

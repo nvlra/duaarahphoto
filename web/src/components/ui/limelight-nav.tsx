@@ -26,6 +26,7 @@ const defaultNavItems: NavItem[] = [
 type LimelightNavProps = {
   items?: NavItem[];
   defaultActiveIndex?: number;
+  activeId?: string | number;
   onTabChange?: (index: number) => void;
   className?: string;
   limelightClassName?: string;
@@ -39,6 +40,7 @@ type LimelightNavProps = {
 export const LimelightNav = ({
   items = defaultNavItems,
   defaultActiveIndex = 0,
+  activeId,
   onTabChange,
   className,
   limelightClassName,
@@ -64,7 +66,7 @@ export const LimelightNav = ({
     <nav className={`relative inline-flex items-center h-16 rounded-full bg-card text-foreground border px-2 overflow-hidden ${className}`}>
       {items.map(({ id, icon, label, onClick, showLabel }, index) => {
         const Icon = icon as React.ReactElement<{ className?: string }>;
-        const isActive = activeIndex === index;
+        const isActive = activeId !== undefined ? activeId === id : activeIndex === index;
         return (
           <a
             key={id}

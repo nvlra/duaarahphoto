@@ -22,13 +22,13 @@ const accordionItems: AccordionItemData[] = [
     id: 2,
     title: "Pre-Wedding",
     imageUrl:
-      "https://images.unsplash.com/photo-1511285560982-1351cdeb9821?q=80&w=1974&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1573676048035-9c2a72b6a12a?q=80&w=1171&auto=format&fit=crop",
   },
   {
     id: 3,
     title: "Candid Moments",
     imageUrl:
-      "https://images.unsplash.com/photo-1522673607200-1645062cd958?q=80&w=2070&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1520854221256-17451cc331bf?q=80&w=2070&auto=format&fit=crop",
   },
   {
     id: 4,
