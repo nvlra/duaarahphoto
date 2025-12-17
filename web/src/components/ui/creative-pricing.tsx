@@ -66,7 +66,7 @@ export function CreativePricing({
 
   return (
     <div className="w-full max-w-7xl mx-auto px-4 py-16">
-      <div className="text-center space-y-6 mb-16">
+      <div className="text-center space-y-6 mb-8 md:mb-16">
         {tag && (
           <div className="font-playfair text-xl text-primary/80 italic">
             {tag}
@@ -85,13 +85,14 @@ export function CreativePricing({
       <div 
         ref={scrollContainerRef}
         onScroll={handleScroll}
-        className="flex md:grid md:grid-cols-3 gap-6 md:gap-8 overflow-x-auto md:overflow-visible snap-x snap-mandatory pb-4 pt-12 -mx-4 px-4 md:mx-0 md:px-0 scrollbar-hide"
+        className="flex md:grid md:grid-cols-3 gap-0 md:gap-8 overflow-x-auto md:overflow-visible snap-x snap-mandatory pb-4 pt-6 -mx-4 md:mx-0 md:px-0 [&::-webkit-scrollbar]:hidden"
+        style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
       >
         {tiers.map((tier, index) => (
           <div
             key={tier.name}
             className={cn(
-              "relative group flex flex-col h-full min-w-[80vw] md:min-w-0 snap-center",
+              "relative group flex flex-col h-full w-full md:w-auto md:min-w-0 flex-shrink-0 snap-center px-4 md:px-0",
               "transition-all duration-500 hover:-translate-y-2",
               index === 1 ? "md:-mt-8 md:mb-8 z-10" : "" // Elevate middle card
             )}
@@ -137,7 +138,7 @@ export function CreativePricing({
               {/* Divider */}
               <div className="w-12 h-px bg-border mx-auto mb-8" />
 
-              <div className="space-y-4 mb-8 grow">
+              <div className="space-y-4 mb-8 h-[280px] overflow-y-auto scrollbar-hide">
                 {tier.features.map((feature) => (
                   <div key={feature} className="flex items-start gap-3">
                     <div className="mt-1 min-w-[16px]">
@@ -179,7 +180,7 @@ export function CreativePricing({
       </div>
       
       {/* Mobile Pagination Dots */}
-      <div className="flex md:hidden justify-center gap-2 mt-0">
+      <div className="flex md:hidden justify-center gap-2 mt-2 relative z-10">
         {tiers.map((_, index) => (
             <div
                 key={index}

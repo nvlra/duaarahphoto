@@ -28,8 +28,8 @@ export function FloatingThemeToggle() {
   useEffect(() => {
     const interval = setInterval(() => {
         setIsBookActive(true);
-        setTimeout(() => setIsBookActive(false), 20000); // Show for 3 seconds
-    }, 8000); // Every 8 seconds
+        setTimeout(() => setIsBookActive(false), 2000); // Show for 2 seconds
+    }, 30000); // Every 1 minute
 
     return () => clearInterval(interval);
   }, []);
@@ -42,7 +42,7 @@ export function FloatingThemeToggle() {
   };
 
   return (
-    <div className="fixed bottom-28 md:bottom-6 right-6 z-[999] flex flex-col gap-3 items-end md:items-center">
+    <div className="fixed bottom-28 md:bottom-6 right-6 z-999 flex flex-col gap-3 items-end md:items-center">
       <AnimatePresence>
         {showScrollTop && (
           <motion.button
@@ -66,7 +66,7 @@ export function FloatingThemeToggle() {
         target="_blank"
         rel="noopener noreferrer"
         className={cn(
-            "h-12 rounded-full border border-neutral-200 dark:border-neutral-800 shadow-xl flex items-center justify-center transition-all duration-500",
+            "h-12 rounded-full shadow-xl flex items-center justify-center transition-all duration-500",
             "bg-neutral-900 text-white dark:bg-white dark:text-neutral-900", // High contrast
             isBookActive ? "w-36 px-4" : "w-12 px-0"
         )}
