@@ -33,7 +33,7 @@ export function About() {
               style={{ width, y: yImage }}
               viewport={{ once: false, margin: "-100px" }}
               transition={{ duration: 1, ease: "easeOut" }}
-              className="absolute left-0 top-0 h-full overflow-hidden rounded-lg z-20"
+              className="absolute left-1/2 -translate-x-1/2 top-0 h-full overflow-hidden rounded-xl z-20 shadow-2xl border border-white/10 md:left-0 md:translate-x-0"
             >
               <Image
                 src="https://images.unsplash.com/photo-1492691527719-9d1e07e534b4?q=80&w=2000&auto=format&fit=crop"
@@ -49,9 +49,9 @@ export function About() {
             style={{ y: yText, opacity: opacityText }}
             viewport={{ once: false, margin: "-100px" }}
             transition={{ duration: 1, ease: "easeOut", delay: 0.2 }}
-            className="w-full md:w-1/2 space-y-6 md:absolute md:right-0 md:top-0 md:mt-10"
+            className="w-full md:w-1/2 space-y-6 md:absolute md:right-0 md:top-0 md:mt-10 text-center md:text-left"
           >
-            <h2 className="font-playfair text-4xl md:text-5xl font-bold leading-tight tracking-tight">
+            <h2 className="font-playfair text-3xl md:text-5xl font-bold leading-tight tracking-tight">
               Cinematic. Timeless.<br />
               <span className="italic font-light text-muted-foreground">
                 Authentically Yours.

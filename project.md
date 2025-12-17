@@ -1,4 +1,4 @@
-Project Website Duaarah Photography
+Project Website Enviel Photography
 
 - NextJS 15
 - Landing Page
@@ -40,7 +40,7 @@ Alur Project
 - Statement Monthly/Yearly
 - Support Export CSV
 
-# Project Design Document: Duaarah Photography
+# Project Design Document: Enviel Photography
 
 ## 1. Project Overview
 
@@ -70,7 +70,7 @@ _Fokus: Estetika Visual & Konversi._
 ### A. Halaman Utama
 
 1.  **Home:** Hero section (Carousel/Video), USP, CTA "Book Now".
-2.  **About:** Profil fotografer, visi "Duaarah".
+2.  **About:** Profil fotografer, visi "Enviel".
 3.  **Gallery (Portfolio):**
     - Layout Masonry Grid (Pinterest style).
     - Filter: Wedding, Engagement, Birth, Graduation, Portrait, Family, Event.

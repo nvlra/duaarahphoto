@@ -278,12 +278,12 @@ import { Order, BusinessSettings } from "@/types/invoice";
 
 // === CONTOH DATA SETTINGS (Nanti ambil dari Database Supabase) ===
 const dummySettings: BusinessSettings = {
-brand_name: "Duaarah Photography",
+brand_name: "Enviel Photography",
 brand_color: "#c29b40", // Warna Gold/Emas estetik
 brand_logo_url: "/images/logo-placeholder.png", // Ganti kalau ada
 bank_name: "BCA (Bank Central Asia)",
 bank_number: "8820-1234-5678",
-bank_holder: "PT Duaarah Kreatif",
+bank_holder: "PT Enviel Kreatif",
 footer_note: "1. DP tidak dapat dikembalikan.\n2. Pelunasan H-7 sebelum acara.\n3. File diedit max 14 hari kerja.",
 };
 
@@ -299,6 +299,7 @@ onAfterPrint: () => console.log("Printed successfully"),
 });
 
 return (
+
 <Dialog open={isOpen} onOpenChange={setIsOpen}>
 <DialogTrigger asChild>
 <Button variant="outline" className="gap-2">

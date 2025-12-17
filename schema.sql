@@ -187,7 +187,40 @@ insert into site_settings (id, about_headline) values (1, 'Welcome to Enviel Adm
 -- NOTE: Admin authentication is now handled by Supabase Auth (Authentication > Users in Dashboard)
 -- The previously defined `admin_users` table is no longer needed and has been removed.
 
--- 13. STORAGE & BUCKETS
+-- 13. INVOICE SETTINGS
+create table invoice_settings (
+  id uuid primary key default uuid_generate_v4(),
+  user_id uuid references auth.users(id) on delete cascade unique,
+  brand_name text,
+  brand_logo_url text,
+  brand_color text default '#1e293b',
+  bank_name text,
+  bank_number text,
+  bank_holder text,
+  address text,
+  footer_note text,
+  created_at timestamptz default now()
+);
+
+alter table invoice_settings enable row level security;
+
+create policy "Users can view their own invoice settings"
+  on invoice_settings for select
+  using (auth.uid() = user_id);
+
+create policy "Users can insert their own invoice settings"
+  on invoice_settings for insert
+  with check (auth.uid() = user_id);
+
+create policy "Users can update their own invoice settings"
+  on invoice_settings for update
+  using (auth.uid() = user_id);
+
+create policy "Users can delete their own invoice settings"
+  on invoice_settings for delete
+  using (auth.uid() = user_id);
+
+-- 14. STORAGE & BUCKETS
 -- Create the bucket if it doesn't exist
 INSERT INTO storage.buckets (id, name, public)
 VALUES ('branding', 'branding', true)
@@ -225,11 +258,41 @@ TO public
 USING (bucket_id = 'branding');
 
 -- Policy to allow authenticated users to delete their own files
+-- Policy to allow authenticated users to delete their own files
+-- (Updated for robustness)
 CREATE POLICY "Allow authenticated delete in branding bucket"
 ON storage.objects
 FOR DELETE
 TO authenticated
 USING (
-  bucket_id = 'branding' AND
-  (storage.foldername(name))[1] = auth.uid()::text
+  bucket_id = 'branding' AND (
+    (storage.foldername(name))[1] = auth.uid()::text 
+    OR 
+    name LIKE (auth.uid() || '/%')
+  )
 );
+
+-- MIGRATION: Add Header Layout
+-- Add header_layout column to invoice_settings
+-- Values: 'vertical' (default, logo top), 'horizontal' (logo left)
+
+DO $$ 
+BEGIN 
+    IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'invoice_settings' AND column_name = 'header_layout') THEN
+        ALTER TABLE invoice_settings ADD COLUMN header_layout text DEFAULT 'vertical';
+    END IF;
+END $$;
+
+-- MIGRATION: Add Font Settings
+-- Add font columns to invoice_settings
+
+DO $$ 
+BEGIN 
+    IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'invoice_settings' AND column_name = 'brand_font_family') THEN
+        ALTER TABLE invoice_settings ADD COLUMN brand_font_family text DEFAULT 'Inter'; -- 'Inter', 'Serif', 'Mono', 'Custom'
+    END IF;
+
+    IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'invoice_settings' AND column_name = 'brand_custom_font_url') THEN
+        ALTER TABLE invoice_settings ADD COLUMN brand_custom_font_url text;
+    END IF;
+END $$;
