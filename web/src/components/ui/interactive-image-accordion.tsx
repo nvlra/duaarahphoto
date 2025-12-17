@@ -90,29 +90,28 @@ const AccordionItem: React.FC<AccordionItemProps> = ({
               : "bg-black/50" 
         )}></div>
 
-        {/* Caption Text */}
-        <span
-          className={cn(
-            "absolute text-white text-lg font-semibold whitespace-nowrap transition-all duration-300 ease-in-out z-20 transform-gpu", // Added z-20 and transform-gpu
-            // Mobile Text Position
-            "left-6",
-            isActive 
-              ? "bottom-6 translate-y-0" 
-              : "bottom-1/2 translate-y-1/2", // Inactive Mobile: Centered using bottom
-            
-            // Desktop Text Position overrides
-            "md:left-1/2 md:-translate-x-1/2 md:translate-y-0", 
-            // Reset "bottom" from mobile if needed? 
-            // Wait, desktop uses `md:bottom-24` and `md:bottom-6`.
-            // md sets its own bottom, so that's fine.
-            // But we need to ensure md unsets translate-y-1/2 from mobile inactive state.
-            isActive 
-              ? "md:bottom-6 md:rotate-0 md:opacity-100" 
-              : "md:bottom-24 md:w-auto md:rotate-90 md:opacity-80"
-          )}
-        >
-          {item.title}
-        </span>
+        {/* Caption Text Wrapper - Mobile Flex, Desktop Absolute */}
+        <div className={cn(
+            "absolute inset-0 z-20 transition-all duration-300 pointer-events-none",
+            "flex flex-col md:block", // Flex on mobile, Block on desktop to allow absolute overrides
+            isActive ? "justify-end pb-6" : "justify-center"
+        )}>
+          <span
+            className={cn(
+              "text-white text-lg font-semibold whitespace-nowrap transition-all duration-300 ease-in-out pl-6 transform-gpu",
+              // Desktop Text Position overrides (Absolute relative to parent container, not this wrapper if possible? 
+              // Wait, if wrapper is relative/absolute, children absolute are relative to wrapper. That works.)
+              
+              "md:absolute md:pl-0", // Reset mobile padding, use absolute positioning
+              "md:left-1/2 md:-translate-x-1/2 md:translate-y-0", 
+              isActive 
+                ? "md:bottom-6 md:rotate-0 md:opacity-100" 
+                : "md:bottom-24 md:w-auto md:rotate-90 md:opacity-80"
+            )}
+          >
+            {item.title}
+          </span>
+        </div>
       </div>
   );
 };

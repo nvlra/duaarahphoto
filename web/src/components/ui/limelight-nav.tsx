@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useRef, useLayoutEffect, cloneElement } from 'react';
+import React, { useState, cloneElement } from 'react';
 
 // --- Internal Types and Defaults ---
 
@@ -13,6 +13,7 @@ export type NavItem = {
   icon: React.ReactElement;
   label?: string;
   onClick?: () => void;
+  showLabel?: boolean;
 };
 
 const defaultNavItems: NavItem[] = [
@@ -44,25 +45,7 @@ export const LimelightNav = ({
   iconClassName,
 }: LimelightNavProps) => {
   const [activeIndex, setActiveIndex] = useState(defaultActiveIndex);
-  const [isReady, setIsReady] = useState(false);
-  const navItemRefs = useRef<(HTMLAnchorElement | null)[]>([]);
-  const limelightRef = useRef<HTMLDivElement | null>(null);
-
-  useLayoutEffect(() => {
-    if (items.length === 0) return;
-
-    const limelight = limelightRef.current;
-    const activeItem = navItemRefs.current[activeIndex];
-    
-    if (limelight && activeItem) {
-      const newLeft = activeItem.offsetLeft + activeItem.offsetWidth / 2 - limelight.offsetWidth / 2;
-      limelight.style.left = `${newLeft}px`;
-
-      if (!isReady) {
-        setTimeout(() => setIsReady(true), 50);
-      }
-    }
-  }, [activeIndex, isReady, items]);
+  // Removed limelight refs and effects
 
   if (items.length === 0) {
     return null; 
@@ -75,35 +58,30 @@ export const LimelightNav = ({
   };
 
   return (
-    <nav className={`relative inline-flex items-center h-16 rounded-lg bg-card text-foreground border px-2 overflow-hidden ${className}`}>
-      {items.map(({ id, icon, label, onClick }, index) => {
+    <nav className={`relative inline-flex items-center h-16 rounded-full bg-card text-foreground border px-2 overflow-hidden ${className}`}>
+      {items.map(({ id, icon, label, onClick, showLabel }, index) => {
         const Icon = icon as React.ReactElement<{ className?: string }>;
+        const isActive = activeIndex === index;
         return (
           <a
             key={id}
-            ref={el => { navItemRefs.current[index] = el; }}
-            className={`relative z-20 flex h-full cursor-pointer items-center justify-center p-5 ${iconContainerClassName}`}
+            className={`relative z-20 flex h-full cursor-pointer items-center justify-center ${showLabel ? 'px-4 w-auto gap-2' : 'p-5'} ${iconContainerClassName}`}
             onClick={() => handleItemClick(index, onClick)}
             aria-label={label}
           >
             {cloneElement(Icon, {
-              className: `w-6 h-6 transition-opacity duration-100 ease-in-out ${
-                activeIndex === index ? 'opacity-100' : 'opacity-40'
+              className: `w-6 h-6 transition-all duration-300 ease-in-out ${
+                isActive ? 'opacity-100 scale-110 text-black dark:text-white' : 'opacity-50 scale-95 text-neutral-500'
               } ${Icon.props.className || ''} ${iconClassName || ''}`,
             })}
+            {showLabel && (
+                <span className={`text-sm font-medium whitespace-nowrap transition-opacity duration-300 ${isActive ? 'opacity-100 text-black dark:text-white' : 'opacity-50 text-neutral-500'}`}>
+                    {label}
+                </span>
+            )}
           </a>
         );
       })}
-
-      <div 
-        ref={limelightRef}
-        className={`absolute top-0 z-10 w-11 h-[5px] rounded-full bg-primary shadow-[0_50px_15px_var(--primary)] ${
-          isReady ? 'transition-[left] duration-400 ease-in-out' : ''
-        } ${limelightClassName}`}
-        style={{ left: '-999px' }}
-      >
-        <div className="absolute left-[-30%] top-[5px] w-[160%] h-14 [clip-path:polygon(5%_100%,25%_0,75%_0,95%_100%)] bg-linear-to-b from-primary/30 to-transparent pointer-events-none" />
-      </div>
     </nav>
   );
 };

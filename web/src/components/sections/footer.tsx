@@ -5,7 +5,7 @@ import React from "react";
 
 export function Footer() {
   return (
-    <footer className="bg-background text-foreground py-12 relative z-10 border-t border-border/50">
+    <footer className="bg-background text-foreground pt-12 pb-32 md:py-12 relative z-10 border-t border-border/50">
       <div className="container mx-auto px-4 flex flex-col md:flex-row items-center justify-between gap-6">
         <div className="text-center md:text-left">
           <h3 className="font-playfair text-xl font-bold">ENVIEL</h3>

@@ -47,10 +47,10 @@ export const AnimatedTestimonials = ({
   };
 
   return (
-    <div className="mx-auto max-w-sm px-4 py-20 font-sans antialiased md:max-w-4xl md:px-8 lg:px-12">
-      <div className="relative grid grid-cols-1 gap-20 md:grid-cols-2">
+    <div className="mx-auto max-w-sm px-4 md:py-20 font-sans antialiased md:max-w-4xl md:px-8 lg:px-12">
+      <div className="relative grid grid-cols-1 gap-6 md:gap-20 md:grid-cols-2">
         <div>
-          <div className="relative h-80 w-full">
+          <div className="relative h-48 md:h-80 w-full">
             <AnimatePresence>
               {testimonials.map((testimonial, index) => (
                 <motion.div
@@ -116,13 +116,13 @@ export const AnimatedTestimonials = ({
               ease: "easeInOut",
             }}
           >
-            <h3 className="text-2xl font-bold font-playfair text-foreground">
+            <h3 className="text-2xl font-bold font-playfair text-foreground text-center md:text-left">
               {testimonials[active].name}
             </h3>
-            <p className="text-sm text-muted-foreground">
+            <p className="text-sm text-muted-foreground text-center md:text-left">
               {testimonials[active].designation}
             </p>
-            <motion.p className="mt-8 text-lg text-muted-foreground font-poppins">
+            <motion.p className="mt-8 text-lg text-muted-foreground font-poppins text-center md:text-left">
               {testimonials[active].quote.split(" ").map((word, index) => (
                 <motion.span
                   key={index}
@@ -148,7 +148,7 @@ export const AnimatedTestimonials = ({
               ))}
             </motion.p>
           </motion.div>
-          <div className="flex gap-4 pt-12 md:pt-0">
+          <div className="flex gap-4 pt-6 md:pt-0 justify-center md:justify-start">
             <button
               onClick={handlePrev}
               className="group/button flex h-7 w-7 items-center justify-center rounded-full bg-secondary hover:bg-secondary/80 transition-colors"

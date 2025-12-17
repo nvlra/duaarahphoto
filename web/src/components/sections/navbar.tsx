@@ -11,6 +11,7 @@ import { UserIcon } from "@/components/ui/user-icon";
 import { GalleryVerticalEndIcon } from "@/components/ui/gallery-vertical-end-icon";
 import { FileStackIcon } from "@/components/ui/file-stack-icon";
 import { HomeIcon } from "@/components/ui/home-icon";
+import { CircleChevronLeftIcon } from "@/components/ui/circle-chevron-left-icon";
 
 const navLinks = [
   { name: "About", href: "/#about" },
@@ -45,7 +46,7 @@ export function Navbar() {
     }
   };
 
-  const dockItems: NavItem[] = [
+  const standardDockItems: NavItem[] = [
     { 
         id: 'home', 
         icon: <HomeIcon />, 
@@ -72,6 +73,21 @@ export function Navbar() {
     },
   ];
 
+  const backDockItem: NavItem[] = [
+    {
+        id: 'back',
+        icon: <CircleChevronLeftIcon className="w-8 h-8" />,
+        label: isProjectPage ? 'Back to Portfolio' : 'Back to Home',
+        onClick: () => router.push(isProjectPage ? '/portfolio' : '/'),
+        showLabel: true
+    }
+  ];
+
+  // Logic: Show Standard Dock usually.
+  // BUT if on Portfolio or Project page, REPLACE logic:
+  // User said: "di bagian dock itu saja icon2nya ganti jadi tombol back berarti itu hide icon icon yang ada"
+  const dockItems = (isPortfolioPage || isProjectPage) ? backDockItem : standardDockItems;
+
   return (
     <>
     <nav
@@ -80,7 +96,7 @@ export function Navbar() {
         "bg-white/90 backdrop-blur-md border border-neutral-200 shadow-lg rounded-full dark:bg-neutral-900/90 dark:border-neutral-800 dark:shadow-[0_4px_30px_rgba(255,255,255,0.1)]"
       )}
     >
-      <div className="w-full px-4 md:px-8 h-16 flex items-center justify-center md:justify-between text-center md:text-left">
+      <div className="relative w-full px-4 md:px-8 h-16 flex items-center justify-center md:justify-between text-center md:text-left">
         {/* Logo */}
         <Link href="/" className="text-lg md:text-xl font-bold font-playfair tracking-tight text-neutral-900 uppercase dark:text-white">
           ENVIEL PHOTO
@@ -133,7 +149,10 @@ export function Navbar() {
     <div className="md:hidden fixed bottom-6 left-1/2 -translate-x-1/2 z-50 w-[95%]">
         <LimelightNav 
             items={dockItems} 
-            className="w-full bg-white/90 backdrop-blur-md border-neutral-200 dark:bg-neutral-900/90 dark:border-neutral-800 shadow-2xl rounded-2xl justify-between px-4"
+            className={cn(
+                "w-full bg-white/90 backdrop-blur-md border-neutral-200 dark:bg-neutral-900/90 dark:border-neutral-800 shadow-2xl rounded-full px-4",
+                (isPortfolioPage || isProjectPage) ? "justify-center" : "justify-between" // Center if single item, spread if regular
+            )}
             iconClassName="text-neutral-600 dark:text-neutral-400"
         />
     </div>
