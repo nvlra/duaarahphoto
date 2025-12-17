@@ -82,10 +82,12 @@ const AccordionItem: React.FC<AccordionItemProps> = ({
           sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
           priority
         />
-        {/* Dark overlay */}
+        {/* Dark overlay for contrast */}
         <div className={cn(
-            "absolute inset-0 bg-black/40 transition-colors duration-500 hover:bg-black/20",
-            isActive ? "bg-black/0" : "bg-black/50" // Darker on inactive for text contrast
+            "absolute inset-0 transition-all duration-500",
+            isActive 
+              ? "bg-gradient-to-t from-black/90 from-10% via-black/30 via-30% to-transparent" // Gradient from bottom for text
+              : "bg-black/50" // Dark uniform overlay for inactive
         )}></div>
 
         {/* Caption Text */}

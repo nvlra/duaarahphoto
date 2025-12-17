@@ -49,21 +49,27 @@ export function About() {
             style={{ y: yText, opacity: opacityText }}
             viewport={{ once: false, margin: "-100px" }}
             transition={{ duration: 1, ease: "easeOut", delay: 0.2 }}
-            className="w-full md:w-1/2 space-y-6 md:absolute md:right-0 md:top-0 md:mt-10 text-center md:text-left"
+            className="w-full md:w-1/2 space-y-6 mt-16 md:absolute md:right-0 md:top-0 md:mt-10 text-center md:text-left"
           >
-            <h2 className="font-playfair text-3xl md:text-5xl font-bold leading-tight tracking-tight">
+            <h2 className="font-playfair text-2xl md:text-5xl font-bold leading-tight tracking-tight">
               Cinematic. Timeless.<br />
               <span className="italic font-light text-muted-foreground">
                 Authentically Yours.
               </span>
             </h2>
-            <div className="space-y-6 text-muted-foreground leading-relaxed text-justify md:text-left">
-                <p className="text-lg font-light">
-                  Enviel Photography stands at the intersection of fine art and documentary storytelling. We are not just photographers; we are visual narrators dedicated to capturing the raw, unscripted beauty of your connection.
-                </p>
-                <p className="text-lg font-light">
-                  Our philosophy is simple: authentic moments resonate loudest. We step back to let your love unfold naturally, ensuring every image we craft is a true reflection of who you are—elegant, emotive, and eternally yours.
-                </p>
+            <div className="space-y-6 text-muted-foreground leading-relaxed text-center md:text-left text-sm md:text-base">
+              <p>
+                Enviel Photography stands at the intersection of fine art and
+                documentary storytelling. We are not just photographers; we are
+                visual narrators dedicated to capturing the raw, unscripted beauty
+                of your connection.
+              </p>
+              <p className="hidden md:block">
+                Our philosophy is simple: authentic moments resonate loudest. We
+                step back to let your love unfold naturally, ensuring every image
+                we craft is a true reflection of who you are—elegant, emotive, and
+                eternally yours.
+              </p>
             </div>
           </motion.div>
         </div>

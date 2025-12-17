@@ -18,7 +18,7 @@ export function Featured() {
   const scaleAccordion = useTransform(scrollYProgress, [0, 1], [0.8, 1]);
 
   return (
-    <section ref={containerRef} className="py-32 md:py-40 bg-background">
+    <section ref={containerRef} className="py-20 md:py-40 bg-background">
       <div id="featured" className="mx-auto max-w-7xl px-4 scroll-mt-32">
         <div className="flex flex-col lg:flex-row items-start gap-12 lg:gap-20">
           
