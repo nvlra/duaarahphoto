@@ -67,7 +67,7 @@ export function Navbar() {
       clearTimeout(idleTimer);
       idleTimer = setTimeout(() => {
         setIsIdle(true);
-      }, 1000); 
+      }, 5000); 
     };
 
     const handleScroll = () => {
@@ -88,18 +88,17 @@ export function Navbar() {
     };
 
     window.addEventListener('scroll', handleScroll, { passive: true });
-    window.addEventListener('touchstart', resetIdle);
-    window.addEventListener('click', resetIdle);
-    window.addEventListener('mousemove', resetIdle);
+    // User requested only scroll should activate (expand), touch should not.
+    // window.addEventListener('touchstart', resetIdle);
+    // window.addEventListener('click', resetIdle);
+    // window.addEventListener('mousemove', resetIdle);
 
     resetIdle(); // Start timer
 
     return () => {
         window.removeEventListener('scroll', handleScroll);
-        window.removeEventListener('touchstart', resetIdle);
-        window.removeEventListener('click', resetIdle);
-        window.removeEventListener('mousemove', resetIdle);
         clearTimeout(idleTimer);
+        clearTimeout(timer);
     };
   }, []);
 
