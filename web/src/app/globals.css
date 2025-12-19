@@ -150,6 +150,11 @@
     overflow-x: hidden;
   }
 }
+
+/* Force transparent backgrounds in dark mode for rich text content */
+.dark #about * {
+  background-color: transparent !important;
+}
 /* Enable smooth scrolling */
 html {
   scroll-behavior: smooth;

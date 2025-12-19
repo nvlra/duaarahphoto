@@ -40,7 +40,7 @@ export function About({ data }: AboutProps) {
   `;
 
   return (
-    <section id="about" ref={containerRef} className="py-32 md:py-40 bg-secondary/30">
+    <section id="about" ref={containerRef} className="py-32 md:py-40 bg-secondary/30 dark:bg-transparent">
       <div className="mx-auto max-w-7xl px-4">
         <div className="flex flex-col md:flex-row items-start gap-12 md:gap-20 relative">
           {/* Image Side - Animated Width (Wrapped for Stability) */}
@@ -68,11 +68,11 @@ export function About({ data }: AboutProps) {
             className="w-full md:w-1/2 space-y-6 mt-16 md:absolute md:right-0 md:top-0 md:mt-10 text-center md:text-left"
           >
             <div 
-                className="font-playfair text-2xl md:text-5xl font-bold leading-tight tracking-tight prose dark:prose-invert max-w-none [&_span]:text-muted-foreground"
+                className="font-playfair text-2xl md:text-5xl font-bold leading-tight tracking-tight max-w-none [&_span]:text-muted-foreground"
                 dangerouslySetInnerHTML={{ __html: data?.title || defaultTitle }}
             />
             <div 
-                className="space-y-6 text-muted-foreground leading-relaxed text-center md:text-left text-sm md:text-base prose dark:prose-invert max-w-none"
+                className="space-y-6 text-muted-foreground leading-relaxed text-center md:text-left text-sm md:text-base max-w-none"
                 dangerouslySetInnerHTML={{ __html: data?.content || defaultContent }}
             />
           </motion.div>

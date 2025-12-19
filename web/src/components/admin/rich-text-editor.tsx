@@ -216,10 +216,27 @@ export function RichTextEditor({ value, onChange, className }: RichTextEditorPro
                 onInput={handleInput}
                 onMouseUp={saveSelection}
                 onKeyUp={saveSelection}
-                onBlur={saveSelection} // Persist last selection even if blurred
+                onBlur={saveSelection}
+                onPaste={(e) => {
+                    e.preventDefault();
+                    const html = e.clipboardData.getData('text/html');
+                    const text = e.clipboardData.getData('text/plain');
+                    
+                    if (html) {
+                        // Strip background-color styles from pasted HTML
+                        const cleanHtml = html
+                            .replace(/background(-color)?:\s*[^;]+;?/gi, '')
+                            .replace(/style=""/gi, '');
+                        document.execCommand('insertHTML', false, cleanHtml);
+                    } else {
+                        document.execCommand('insertText', false, text);
+                    }
+                    handleInput();
+                }}
                 className={cn(
                     "p-3 min-h-[80px] outline-none text-lg font-medium max-h-[300px] overflow-y-auto bg-background text-neutral-900 dark:text-white",
-                    "placeholder:text-muted-foreground"
+                    "placeholder:text-muted-foreground",
+                    "[&_*]:!bg-transparent" // Force no background on all child elements
                 )}
                 spellCheck={false}
             />

@@ -38,7 +38,7 @@ export default function AdminLayout({
                 </div>
 
                 <div className="md:hidden">
-                   <AdminProfileDropdown showLabel={true} />
+                   <AdminProfileDropdown showLabel={false} />
                 </div>
                 <div className="hidden md:block">
                    <AdminProfileDropdown showLabel={true} />

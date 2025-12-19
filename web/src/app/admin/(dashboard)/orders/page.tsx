@@ -762,7 +762,7 @@ export default function OrdersPage() {
                 </div>
 
 
-                <div className="md:col-span-2 bg-slate-50 dark:bg-slate-900/50 p-3 rounded-lg border dark:border-slate-800 flex items-center justify-between">
+                <div className="md:col-span-2 py-3 border-t border-dashed border-border/50 flex items-center justify-between">
                      <span className="text-xs text-muted-foreground uppercase font-medium">Status Pembayaran:</span>
                      {(() => {
                         const total = parseInt(newOrderAmount.replace(/[^0-9]/g, "")) || 0
@@ -998,8 +998,8 @@ function CardTable({ orders, expandedId, editingOrder, onRowClick, setEditingOrd
             </Table>
         </div>
 
-        {/* Server Pagination Controls */}
-        <div className="flex items-center justify-between px-2 pt-4">
+        {/* Server Pagination Controls - Desktop Only */}
+        <div className="hidden md:flex items-center justify-between px-2 pt-4">
             <div className="text-sm text-muted-foreground">
                 Menampilkan {orders.length} dari {totalItems} pesanan
             </div>
@@ -1120,7 +1120,7 @@ function CardTable({ orders, expandedId, editingOrder, onRowClick, setEditingOrd
 
         <div className="md:hidden rounded-lg border bg-card text-card-foreground shadow-sm p-4 mt-4">
              <div className="flex items-center justify-between">
-                 <span className="font-semibold text-sm">Total Estimasi (Semua)</span>
+                 <span className="font-semibold text-sm">Total Estimasi (Halaman Ini)</span>
                  <span className="font-bold text-base">{formattedTotal}</span>
              </div>
         </div>
@@ -1140,20 +1140,11 @@ function CardTable({ orders, expandedId, editingOrder, onRowClick, setEditingOrd
                   />
                 </PaginationItem>
                 
-                {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
-                  <PaginationItem key={page}>
-                    <PaginationLink 
-                      href="#" 
-                      isActive={currentPage === page}
-                      onClick={(e) => {
-                         e.preventDefault()
-                         onPageChange(page)
-                      }}
-                    >
-                      {page}
-                    </PaginationLink>
-                  </PaginationItem>
-                ))}
+                <PaginationItem>
+                    <span className="flex items-center px-4 text-sm font-medium">
+                        {currentPage} / {totalPages || 1}
+                    </span>
+                </PaginationItem>
 
                 <PaginationItem>
                   <PaginationNext 
@@ -1394,6 +1385,22 @@ function OrderEditForm({
                         onChange={(e) => setEditingOrder({ ...editingOrder, paid_amount: parseInt(e.target.value) || 0 })}
                     />
                 </div>
+
+            </div>
+
+            <div className={`col-span-2 md:col-span-3 py-3 flex items-center justify-between border-t border-dashed border-border/50`}>
+                 <span className="text-xs font-bold tracking-wide opacity-80">STATUS PEMBAYARAN:</span>
+                 {(() => {
+                    const total = parseInt(editingOrder.amount.replace(/[^0-9]/g, "")) || 0
+                    const paid = editingOrder.paid_amount || 0
+                    if (paid >= total && total > 0) {
+                        return <Badge className="bg-green-600 hover:bg-green-700">SUDAH LUNAS</Badge>
+                    } else if (paid > 0) {
+                        return <Badge className="bg-yellow-600 hover:bg-yellow-700">BELUM LUNAS</Badge>
+                    } else {
+                        return <Badge variant="destructive">BELUM BAYAR</Badge>
+                    }
+                 })()}
             </div>
             
             <div className={`col-span-2 md:col-span-3 flex justify-between items-center bg-muted/20 ${isMobile ? 'p-2' : 'p-3'} rounded-lg border border-dashed`}>
