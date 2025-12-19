@@ -128,11 +128,17 @@ export default function OrdersPage() {
   const [teamMembers, setTeamMembers] = useState<TeamMemberSimple[]>([])
   const [packages, setPackages] = useState<{id: string, name: string, price: number, category_id?: string}[]>([])
   const [categories, setCategories] = useState<{id: string, name: string}[]>([])
-  const [searchQuery, setSearchQuery] = useState("")
+  const [searchQuery, setSearchQuery] = useState("") 
   const [statusFilter, setStatusFilter] = useState("all")
+  
+  // Pagination State
+  const [page, setPage] = useState(1)
+  const [totalCount, setTotalCount] = useState(0)
+  const ITEMS_PER_PAGE = 10
+
   const [dateFilter] = useState<Date | undefined>(undefined)
   const [sortBy, setSortBy] = useState<'created_at' | 'event_date'>('event_date')
-  const [, setIsLoading] = useState(true)
+  const [isLoading, setIsLoading] = useState(true)
 
   const [expandedId, setExpandedId] = useState<string | null>(null)
   
@@ -198,9 +204,13 @@ export default function OrdersPage() {
       if (teamData) setTeamMembers(teamData)
   }, [])
 
-  const fetchOrders = useCallback(async () => {
+  const fetchOrders = useCallback(async (pageIndex = 1, search = searchQuery, status = statusFilter) => {
       setIsLoading(true)
-      const { data, error } = await supabase
+      
+      const from = (pageIndex - 1) * ITEMS_PER_PAGE
+      const to = from + ITEMS_PER_PAGE - 1
+
+      let query = supabase
         .from('orders')
         .select(`
             *,
@@ -208,8 +218,23 @@ export default function OrdersPage() {
                 id, role, fee, member_id,
                 team_members (name)
             )
-        `)
-        .order(sortBy, { ascending: sortBy === 'event_date' })
+        `, { count: 'exact' })
+        
+      // Apply Search
+      if (search) {
+          query = query.or(`client_name.ilike.%${search}%,id.ilike.%${search}%,location.ilike.%${search}%`)
+      }
+
+      // Apply Status Filter
+      if (status !== 'all') {
+          query = query.eq('status', status)
+      }
+
+      // Apply Sort
+      query = query.order(sortBy, { ascending: sortBy === 'event_date' })
+                   .range(from, to)
+
+      const { data, error, count } = await query
 
       if (error) {
           console.error(error)
@@ -245,9 +270,25 @@ export default function OrdersPage() {
               created_at: d.created_at
           }))
           setOrders(mappedOrders)
+          setTotalCount(count || 0)
       }
       setIsLoading(false)
-  }, [packages, categories, toast, sortBy])
+  }, [packages, categories, toast, sortBy, searchQuery, statusFilter])
+
+  // Debounce Search & Filter Effect
+  useEffect(() => {
+      const timer = setTimeout(() => {
+          setPage(1) // Reset to page 1 on filter change
+          fetchOrders(1, searchQuery, statusFilter)
+      }, 500)
+      return () => clearTimeout(timer)
+  }, [searchQuery, statusFilter, sortBy, fetchOrders])
+  
+  // Page Change Effect
+  const handlePageChange = (newPage: number) => {
+      setPage(newPage)
+      fetchOrders(newPage, searchQuery, statusFilter)
+  }
 
   useEffect(() => {
     // eslint-disable-next-line
@@ -255,24 +296,14 @@ export default function OrdersPage() {
   }, [fetchInitData])
 
   useEffect(() => {
-    fetchOrders()
-  }, [fetchOrders])
+    // eslint-disable-next-line
+    fetchInitData()
+  }, [fetchInitData])
+  
+  // Note: fetchOrders is now called by the debounce effect above, so explicit useEffect is removed.
 
-  const filteredOrders = orders.filter((order) => {
-    const matchesSearch = 
-      order.id.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      order.client.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      (order.location && order.location.toLowerCase().includes(searchQuery.toLowerCase()));
-      
-    const matchesStatus = statusFilter === 'all' || order.status === statusFilter;
-    
-    let matchesDate = true;
-    if (dateFilter) {
-       matchesDate = order.date === format(dateFilter, "yyyy-MM-dd")
-    }
-
-    return matchesSearch && matchesStatus && matchesDate;
-  });
+  // Client-side filtering removed. We now use server-side.
+  const filteredOrders = orders; // For compatibility with CardTable prop, but CardTable will now receive everything.
 
   const handleRowClick = (order: Order) => {
     if (expandedId === order.id) {
@@ -458,37 +489,44 @@ export default function OrdersPage() {
             onOpenChange={setIsExportOpen}
             title="Export Data Pesanan"
             description="Download laporan pesanan dalam format CSV."
-            onExport={(range) => {
+            onExport={async (range) => {
                 try {
-                    let dataToExport = filteredOrders
-                    let dateFilterDesc = "Semua Data"
+                    // Fetch ALL data from server for export (ignoring pagination)
+                    let query = supabase.from('orders').select('*')
                     
+                    if (searchQuery) {
+                       query = query.or(`client_name.ilike.%${searchQuery}%,id.ilike.%${searchQuery}%,location.ilike.%${searchQuery}%`)
+                    }
+                    if (statusFilter !== 'all') {
+                       query = query.eq('status', statusFilter)
+                    }
                     if (range.type === 'range' && range.from && range.to) {
-                         // Filter by event date by default
-                        dataToExport = filteredOrders.filter(o => {
-                            const d = new Date(o.date) // o.date is usually YYYY-MM-DD
-                            return d >= range.from! && d <= range.to!
-                        })
-                        dateFilterDesc = `${format(range.from, 'dd MMM')} - ${format(range.to, 'dd MMM yyyy')}`
+                        const fromStr = format(range.from, 'yyyy-MM-dd')
+                        const toStr = format(range.to, 'yyyy-MM-dd')
+                        query = query.gte('event_date', fromStr).lte('event_date', toStr)
                     }
 
-                    if (dataToExport.length === 0) {
-                        toast.error("Gagal Export", "Tidak ada pesanan pada rentang tanggal tersebut.")
+                    const { data: exportData, error } = await query
+
+                    if (error || !exportData || exportData.length === 0) {
+                        toast.error("Gagal Export", "Tidak ada data atau terjadi kesalahan.")
                         return
                     }
 
                     const headers = ["ID", "Klien", "Kontak", "Tanggal", "Lokasi", "Paket", "Status", "Total", "Dibayar"]
-                    const rows = dataToExport.map(o => [
+                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                    const rows = exportData.map((o: any) => [
                         o.id,
-                        `"${o.client.replace(/"/g, '""')}"`,
-                        `"${(o.contact || "").replace(/"/g, '""')}"`,
-                        o.date,
+                        `"${o.client_name.replace(/"/g, '""')}"`,
+                        `"${(o.contact_info || "").replace(/"/g, '""')}"`,
+                        o.event_date,
                         `"${(o.location || "").replace(/"/g, '""')}"`,
-                        `"${o.package.replace(/"/g, '""')}"`,
+                        `"${(o.package_name || "").replace(/"/g, '""')}"`,
                         o.status,
-                        parseInt(o.amount.replace(/[^0-9]/g, "")).toString(),
+                        (o.total_amount || 0).toString(),
                         (o.paid_amount || 0).toString()
                     ])
+                    
                     const csvContent = [headers.join(","), ...rows.map(row => row.join(","))].join("\n")
                     const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" })
                     const url = URL.createObjectURL(blob)
@@ -499,10 +537,10 @@ export default function OrdersPage() {
                     link.click()
                     document.body.removeChild(link)
                     
-                    toast.success("Berhasil Export", `${dataToExport.length} pesanan (${dateFilterDesc}) berhasil diunduh.`)
+                    toast.success("Berhasil Export", `${exportData.length} pesanan berhasil diunduh.`)
                 } catch (err) {
                     console.error(err)
-                    toast.error("Gagal Export", "Terjadi kesalahan saat membuat file CSV.")
+                    toast.error("Gagal Export", "Terjadi kesalahan.")
                 }
             }}
       />
@@ -516,7 +554,7 @@ export default function OrdersPage() {
         </TabsList>
         <TabsContent value="active" className="mt-4 data-[state=active]:animate-in data-[state=active]:fade-in-0 data-[state=active]:slide-in-from-left-4 data-[state=active]:duration-500 ease-in-out">
           <CardTable 
-             orders={filteredOrders.filter(o => o.status !== 'completed' && o.status !== 'cancelled')} 
+             orders={orders} 
              expandedId={expandedId}
              editingOrder={editingOrder}
              onRowClick={handleRowClick}
@@ -528,11 +566,17 @@ export default function OrdersPage() {
              categories={categories}
              editingCategory={editingCategory}
              setEditingCategory={setEditingCategory}
+             // Server Side Props
+             currentPage={page}
+             totalPages={Math.ceil(totalCount / ITEMS_PER_PAGE)}
+             totalItems={totalCount}
+             onPageChange={handlePageChange}
+             isLoading={isLoading}
           />
         </TabsContent>
         <TabsContent value="completed" className="mt-4 data-[state=active]:animate-in data-[state=active]:fade-in-0 data-[state=active]:slide-in-from-left-4 data-[state=active]:duration-500 ease-in-out">
           <CardTable 
-             orders={filteredOrders.filter(o => o.status === 'completed')} 
+             orders={orders} 
              expandedId={expandedId}
              editingOrder={editingOrder}
              onRowClick={handleRowClick}
@@ -544,11 +588,16 @@ export default function OrdersPage() {
              categories={categories}
              editingCategory={editingCategory}
              setEditingCategory={setEditingCategory}
+             currentPage={page}
+             totalPages={Math.ceil(totalCount / ITEMS_PER_PAGE)}
+             totalItems={totalCount}
+             onPageChange={handlePageChange}
+             isLoading={isLoading}
           />
         </TabsContent>
         <TabsContent value="all" className="mt-4 data-[state=active]:animate-in data-[state=active]:fade-in-0 data-[state=active]:slide-in-from-left-4 data-[state=active]:duration-500 ease-in-out">
           <CardTable 
-             orders={filteredOrders} 
+             orders={orders} 
              expandedId={expandedId}
              editingOrder={editingOrder}
              onRowClick={handleRowClick}
@@ -560,6 +609,11 @@ export default function OrdersPage() {
              categories={categories}
              editingCategory={editingCategory}
              setEditingCategory={setEditingCategory}
+             currentPage={page}
+             totalPages={Math.ceil(totalCount / ITEMS_PER_PAGE)}
+             totalItems={totalCount}
+             onPageChange={handlePageChange}
+             isLoading={isLoading}
           />
         </TabsContent>
       </Tabs>
@@ -748,20 +802,18 @@ interface CardTableProps {
     categories: {id: string, name: string}[]
     editingCategory: string
     setEditingCategory: (c: string) => void
+    // Server Pagination Props
+    currentPage: number
+    totalPages: number
+    totalItems: number
+    onPageChange: (page: number) => void
+    isLoading: boolean
 }
 
 
-function CardTable({ orders, expandedId, editingOrder, onRowClick, setEditingOrder, onSave, onDelete, teamMembers, packages, categories, editingCategory, setEditingCategory }: CardTableProps) {
-  const [currentPage, setCurrentPage] = useState(1)
-  const ITEMS_PER_PAGE = 10
-  
-  const totalPages = Math.ceil(orders.length / ITEMS_PER_PAGE)
-  if (currentPage > totalPages && totalPages > 0) {
-     setCurrentPage(totalPages)
-  }
-
-  const startIndex = (currentPage - 1) * ITEMS_PER_PAGE
-  const currentOrders = orders.slice(startIndex, startIndex + ITEMS_PER_PAGE)
+function CardTable({ orders, expandedId, editingOrder, onRowClick, setEditingOrder, onSave, onDelete, teamMembers, packages, categories, editingCategory, setEditingCategory, currentPage, totalPages, totalItems, onPageChange, isLoading }: CardTableProps) {
+  // Client side slice removed
+  const currentOrders = orders; // Orders passed are already for current page
 
   const totalAmount = orders.reduce((sum, order) => {
     const value = parseInt(order.amount.replace(/[^0-9]/g, ""))
@@ -936,7 +988,7 @@ function CardTable({ orders, expandedId, editingOrder, onRowClick, setEditingOrd
                 <TableFooter>
                 <TableRow>
                     <TableCell colSpan={8} className="text-right font-semibold">
-                    Total Estimasi (Semua)
+                    Total Estimasi (Halaman Ini)
                     </TableCell>
                     <TableCell className="text-right font-bold text-foreground">{formattedTotal}</TableCell>
                     <TableCell></TableCell>
@@ -944,6 +996,37 @@ function CardTable({ orders, expandedId, editingOrder, onRowClick, setEditingOrd
                 </TableFooter>
             )}
             </Table>
+        </div>
+
+        {/* Server Pagination Controls */}
+        <div className="flex items-center justify-between px-2 pt-4">
+            <div className="text-sm text-muted-foreground">
+                Menampilkan {orders.length} dari {totalItems} pesanan
+            </div>
+            
+             <Pagination>
+                <PaginationContent>
+                    <PaginationItem>
+                    <PaginationPrevious 
+                        onClick={() => currentPage > 1 && onPageChange(currentPage - 1)}
+                        className={currentPage <= 1 ? "pointer-events-none opacity-50" : "cursor-pointer"}
+                    />
+                    </PaginationItem>
+                    
+                    <PaginationItem>
+                        <span className="flex items-center px-4 text-sm font-medium">
+                            Halaman {currentPage} dari {totalPages || 1}
+                        </span>
+                    </PaginationItem>
+
+                    <PaginationItem>
+                    <PaginationNext 
+                        onClick={() => currentPage < totalPages && onPageChange(currentPage + 1)}
+                        className={currentPage >= totalPages ? "pointer-events-none opacity-50" : "cursor-pointer"}
+                    />
+                    </PaginationItem>
+                </PaginationContent>
+            </Pagination>
         </div>
 
 
@@ -1051,7 +1134,7 @@ function CardTable({ orders, expandedId, editingOrder, onRowClick, setEditingOrd
                      href="#" 
                      onClick={(e) => {
                         e.preventDefault()
-                        if (currentPage > 1) setCurrentPage(currentPage - 1)
+                        if (currentPage > 1) onPageChange(currentPage - 1)
                      }}
                      className={currentPage === 1 ? "pointer-events-none opacity-50" : "cursor-pointer"}
                   />
@@ -1064,7 +1147,7 @@ function CardTable({ orders, expandedId, editingOrder, onRowClick, setEditingOrd
                       isActive={currentPage === page}
                       onClick={(e) => {
                          e.preventDefault()
-                         setCurrentPage(page)
+                         onPageChange(page)
                       }}
                     >
                       {page}
@@ -1077,7 +1160,7 @@ function CardTable({ orders, expandedId, editingOrder, onRowClick, setEditingOrd
                      href="#" 
                      onClick={(e) => {
                         e.preventDefault()
-                        if (currentPage < totalPages) setCurrentPage(currentPage + 1)
+                        if (currentPage < totalPages) onPageChange(currentPage + 1)
                      }}
                      className={currentPage === totalPages || totalPages === 0 ? "pointer-events-none opacity-50" : "cursor-pointer"}
                   />
@@ -1085,7 +1168,7 @@ function CardTable({ orders, expandedId, editingOrder, onRowClick, setEditingOrd
               </PaginationContent>
             </Pagination>
             <div className="text-center text-xs text-muted-foreground mt-2">
-                Menampilkan {startIndex + 1} - {Math.min(startIndex + ITEMS_PER_PAGE, orders.length)} dari {orders.length} pesanan
+                Menampilkan {orders.length} dari {totalItems} pesanan
             </div>
         </div>
       </div>
