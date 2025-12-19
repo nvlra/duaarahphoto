@@ -173,10 +173,12 @@ export function Navbar() {
       <div className="relative w-full px-4 md:px-8 h-12 md:h-16 flex items-center justify-center md:justify-between text-center md:text-left transition-all duration-500">
         {/* Logo */}
         <Link href="/" className={cn(
-            "text-lg md:text-2xl font-bold font-poppins tracking-tight text-neutral-900 dark:text-white transition-all duration-500 whitespace-nowrap",
-            isIdle ? "scale-100" : "scale-100" // Reset scale, as we are changing text length instead
+            "text-lg md:text-2xl font-bold font-poppins tracking-tight text-neutral-900 dark:text-white transition-all duration-500 whitespace-nowrap"
         )}>
-          {isIdle ? "Enviel" : "Enviel Project"}
+          {/* Mobile: Show "Enviel" when idle, "Enviel Project" when active */}
+          <span className="md:hidden">{isIdle ? "Enviel" : "Enviel Project"}</span>
+          {/* Desktop: Always show full name */}
+          <span className="hidden md:inline">Enviel Project</span>
         </Link>
         
         {/* Desktop Menu */}

@@ -1,6 +1,6 @@
 "use client";
 
-import React, { use } from "react";
+import React, { use, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
@@ -8,8 +8,8 @@ import { notFound } from "next/navigation";
 import { motion } from "framer-motion";
 import { Navbar } from "@/components/sections/navbar";
 import { Footer } from "@/components/sections/footer";
-// import { EntranceTransition } from "@/components/ui/entrance-transition";
 import { FloatingThemeToggle } from "@/components/ui/floating-theme-toggle";
+import { Lightbox } from "@/components/ui/lightbox";
 import { portfolioData } from "@/data/portfolio";
 import { ScrollBasedVelocity } from "@/components/ui/scroll-based-velocity";
 
@@ -19,6 +19,7 @@ interface Props {
 
 export default function ProjectPage({ params }: Props) {
   const { slug } = use(params);
+  const [selectedImageIndex, setSelectedImageIndex] = useState<number | null>(null);
 
   // Find Project
   let project = null;
@@ -37,7 +38,6 @@ export default function ProjectPage({ params }: Props) {
   return (
     <>
       <Navbar />
-      {/* EntranceTransition removed */}
       <main className="min-h-screen bg-neutral-100 dark:bg-neutral-900 font-sans selection:bg-primary/20">
         <div className="bg-background rounded-b-[3rem] shadow-[0_40px_100px_-20px_rgba(0,0,0,0.2)] dark:shadow-[0_40px_100px_-20px_rgba(255,255,255,0.1)] relative z-20 pb-24 overflow-hidden min-h-screen">
 
@@ -89,15 +89,22 @@ export default function ProjectPage({ params }: Props) {
                     whileInView={{ opacity: 1, y: 0 }}
                     viewport={{ once: true, margin: "-50px" }}
                     transition={{ duration: 0.5, delay: i * 0.1 }}
-                    className="relative rounded-xl overflow-hidden group mb-8 break-inside-avoid"
+                    className="relative rounded-xl overflow-hidden group mb-8 break-inside-avoid cursor-pointer"
+                    onClick={() => setSelectedImageIndex(i)}
                   >
                      <Image
                         src={img}
                         alt={`${project.name} ${i}`}
                         width={800}
-                        height={1000} // Aspect ratio will be handled by auto height
+                        height={1000}
                         className="w-full h-auto object-cover transition-transform duration-700 group-hover:scale-105"
                      />
+                     {/* Hover Overlay */}
+                     <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors duration-300 flex items-center justify-center">
+                       <span className="text-white opacity-0 group-hover:opacity-100 transition-opacity duration-300 text-sm font-medium tracking-wider">
+                         Click to view
+                       </span>
+                     </div>
                   </motion.div>
                 ))}
              </div>
@@ -119,7 +126,16 @@ export default function ProjectPage({ params }: Props) {
            <Footer />
         </div>
       </main>
-      {/* EntranceTransition removed */}
+      
+      {/* Lightbox */}
+      <Lightbox
+        images={project.images}
+        selectedIndex={selectedImageIndex}
+        onClose={() => setSelectedImageIndex(null)}
+        onNavigate={(index) => setSelectedImageIndex(index)}
+        projectName={project.name}
+      />
+      
       <FloatingThemeToggle />
     </>
   );
