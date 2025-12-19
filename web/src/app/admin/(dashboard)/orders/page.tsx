@@ -21,7 +21,7 @@ import {
 } from "lucide-react"
 
 import { DataExportDialog } from "@/components/admin/data-export-dialog"
-import InvoicePrintButton from "@/components/admin/orders/InvoicePrintButton"
+// import InvoicePrintButton from "@/components/admin/orders/InvoicePrintButton"
 
 import { format } from "date-fns"
 import { cn } from "@/lib/utils"
@@ -1479,7 +1479,7 @@ function OrderEditForm({
                 </Button>
 
                 <div className={`flex gap-2 ${isMobile ? 'w-full flex-col' : ''}`}>
-                    <InvoicePrintButton orderData={editingOrder} />
+                    {/* Invoice Button Removed */}
                     
                     <Button size="sm" onClick={onSave} className={isMobile ? 'w-full' : ''}>
                         <Save className="mr-2 h-4 w-4" /> Simpan Perubahan

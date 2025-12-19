@@ -11,7 +11,22 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { useToast } from "@/components/ui/ios-toast"
 import { supabase } from "@/lib/supabaseClient"
 import { compressImage } from "@/lib/utils"
-import { BusinessSettings } from "@/types/invoice"
+// import { BusinessSettings } from "@/types/invoice"
+
+interface BusinessSettings {
+  brand_name: string
+  brand_logo_url: string
+  brand_color: string
+  bank_name: string
+  bank_number: string
+  bank_holder: string
+  address: string
+  footer_note: string
+  header_layout: 'vertical' | 'horizontal'
+  brand_font_family: string
+  brand_custom_font_url: string
+  user_id?: string
+}
 
 export default function SettingsPage() {
   const toast = useToast()
