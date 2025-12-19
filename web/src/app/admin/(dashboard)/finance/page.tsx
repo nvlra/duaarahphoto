@@ -69,6 +69,20 @@ import {
 
 import { supabase } from "@/lib/supabaseClient"
 import { useCallback, useEffect } from "react"
+import { useMediaQuery } from "@/hooks/use-media-query"
+
+function formatCompactCurrency(value: number): string {
+  if (value >= 1_000_000_000) {
+    return `Rp${(value / 1_000_000_000).toFixed(1).replace('.0', '')}M`
+  }
+  if (value >= 1_000_000) {
+    return `Rp${(value / 1_000_000).toFixed(1).replace('.0', '')}Jt`
+  }
+  if (value >= 1_000) {
+    return `Rp${(value / 1_000).toFixed(0)}rb`
+  }
+  return `Rp${value}`
+}
 
 interface Expense {
   id: string
@@ -97,6 +111,7 @@ interface ExpenseDB {
 
 export default function FinancePage() {
   const toast = useToast()
+  const isMobile = useMediaQuery("(max-width: 768px)")
   const [isCategoryManageOpen, setIsCategoryManageOpen] = useState(false)
   const [isExportOpen, setIsExportOpen] = useState(false)
   
@@ -377,7 +392,7 @@ export default function FinancePage() {
           </CardHeader>
           <CardContent className="p-4 pt-0">
             <div className="text-lg md:text-2xl font-bold truncate">
-               {new Intl.NumberFormat("id-ID", { style: "currency", currency: "IDR", maximumFractionDigits: 0 }).format(metrics.revenue)}
+               {isMobile ? formatCompactCurrency(metrics.revenue) : new Intl.NumberFormat("id-ID", { style: "currency", currency: "IDR", maximumFractionDigits: 0 }).format(metrics.revenue)}
             </div>
             <p className="text-[10px] text-muted-foreground">6 Bulan Terakhir</p>
           </CardContent>
@@ -390,7 +405,7 @@ export default function FinancePage() {
           </CardHeader>
           <CardContent className="p-4 pt-0">
             <div className="text-lg md:text-2xl font-bold truncate">
-               {new Intl.NumberFormat("id-ID", { style: "currency", currency: "IDR", maximumFractionDigits: 0 }).format(metrics.teamExpenses)}
+               {isMobile ? formatCompactCurrency(metrics.teamExpenses) : new Intl.NumberFormat("id-ID", { style: "currency", currency: "IDR", maximumFractionDigits: 0 }).format(metrics.teamExpenses)}
             </div>
             <p className="text-[10px] text-muted-foreground">Fee & Talent</p>
           </CardContent>
@@ -403,7 +418,7 @@ export default function FinancePage() {
           </CardHeader>
           <CardContent className="p-4 pt-0">
             <div className="text-lg md:text-2xl font-bold truncate">
-               {new Intl.NumberFormat("id-ID", { style: "currency", currency: "IDR", maximumFractionDigits: 0 }).format(metrics.opsExpenses)}
+               {isMobile ? formatCompactCurrency(metrics.opsExpenses) : new Intl.NumberFormat("id-ID", { style: "currency", currency: "IDR", maximumFractionDigits: 0 }).format(metrics.opsExpenses)}
             </div>
             <p className="text-[10px] text-muted-foreground">Sewa, Alat, Marketing</p>
           </CardContent>
@@ -416,7 +431,7 @@ export default function FinancePage() {
           </CardHeader>
           <CardContent className="p-4 pt-0">
             <div className="text-xl md:text-3xl font-bold text-green-600 dark:text-green-400 truncate">
-                {new Intl.NumberFormat("id-ID", { style: "currency", currency: "IDR", maximumFractionDigits: 0 }).format(metrics.netProfit)}
+                {isMobile ? formatCompactCurrency(metrics.netProfit) : new Intl.NumberFormat("id-ID", { style: "currency", currency: "IDR", maximumFractionDigits: 0 }).format(metrics.netProfit)}
             </div>
             <p className="text-[10px] text-green-600/80 font-medium">
                {metrics.revenue > 0 ? (metrics.netProfit / metrics.revenue * 100).toFixed(1) : 0}% Margin

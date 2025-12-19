@@ -11,11 +11,26 @@ import { Area, AreaChart, ResponsiveContainer, XAxis, YAxis, Tooltip, CartesianG
 import { supabase } from "@/lib/supabaseClient"
 import { startOfMonth, subMonths, format, parseISO, isSameMonth } from "date-fns"
 import { id as idLocale } from "date-fns/locale"
+import { useMediaQuery } from "@/hooks/use-media-query"
+
+function formatCompactCurrency(value: number): string {
+  if (value >= 1_000_000_000) {
+    return `Rp${(value / 1_000_000_000).toFixed(1).replace('.0', '')}M`
+  }
+  if (value >= 1_000_000) {
+    return `Rp${(value / 1_000_000).toFixed(1).replace('.0', '')}Jt`
+  }
+  if (value >= 1_000) {
+    return `Rp${(value / 1_000).toFixed(0)}rb`
+  }
+  return `Rp${value}`
+}
 
 
 export default function AdminDashboard() {
   const [date, setDate] = useState<Date | undefined>(new Date())
   const toast = useToast()
+  const isMobile = useMediaQuery("(max-width: 768px)")
   
   interface ChartData {
      month: string;
@@ -140,7 +155,7 @@ export default function AdminDashboard() {
                   <div className="flex flex-col sm:flex-row justify-between items-start sm:items-end gap-1">
                      <div className="space-y-1">
                         <div className="text-lg sm:text-3xl font-bold">
-                            {new Intl.NumberFormat("id-ID", { style: "currency", currency: "IDR", maximumFractionDigits: 0 }).format(stats.revenue)}
+                            {isMobile ? formatCompactCurrency(stats.revenue) : new Intl.NumberFormat("id-ID", { style: "currency", currency: "IDR", maximumFractionDigits: 0 }).format(stats.revenue)}
                         </div>
                         <div className="flex items-center text-[10px] sm:text-xs text-muted-foreground whitespace-nowrap">
                            <span className={`font-medium mr-1 sm:mr-2 ${stats.revenueGrowth >= 0 ? 'text-green-600' : 'text-red-600'}`}>

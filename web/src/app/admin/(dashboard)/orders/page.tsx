@@ -209,7 +209,7 @@ export default function OrdersPage() {
                 team_members (name)
             )
         `)
-        .order(sortBy, { ascending: false })
+        .order(sortBy, { ascending: sortBy === 'event_date' })
 
       if (error) {
           console.error(error)
