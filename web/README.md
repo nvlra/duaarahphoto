@@ -131,7 +131,25 @@ If you are updating the application or deploying a new version that requires dat
 
 ## Project Structure
 
-- `/src/app/(public)`: Public facing pages (Landing Page & Portfolio). Uses independent Theme Provider.
-- `/src/app/admin`: Admin dashboard pages (protected). Uses isolated `admin-theme` Provider.
-- `/src/components/ui`: Reusable UI components (buttons, inputs, etc.).
-- `/src/lib`: Utility functions and Supabase client.
+```bash
+src/
+├── app/
+│   ├── (public)/          # Public Facing Pages
+│   │   ├── portfolio/     # Portfolio routes
+│   │   ├── layout.tsx     # Public Theme Provider (landing-theme)
+│   │   └── page.tsx       # Main Landing Page
+│   │
+│   ├── admin/             # Admin Dashboard (Protected)
+│   │   ├── (dashboard)/   # Dashboard Pages (Orders, Finance, etc.)
+│   │   └── layout.tsx     # Admin Theme Provider (admin-theme)
+│   │
+│   ├── layout.tsx         # Root Application Layout
+│   └── globals.css        # Global Styles
+│
+├── components/
+│   ├── admin/             # Admin-specific components (Charts, Editors)
+│   ├── sections/          # Landing Page Sections (Hero, About, etc.)
+│   └── ui/                # Reusable Shadcn UI Components
+│
+└── lib/                   # Utilities & Supabase Client
+```
