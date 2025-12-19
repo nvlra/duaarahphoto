@@ -510,10 +510,6 @@ export default function FinancePage() {
                             </div>
                         </div>
                      </div>
-                     
-                     <div className="p-4 bg-muted/20 rounded-lg text-xs text-muted-foreground w-full mt-4">
-                         💡 <strong>Insight:</strong> {metrics.teamExpenses > metrics.opsExpenses ? "Pengeluaran terbesar adalah untuk Fee Tim." : "Pengeluaran terbesar adalah Operasional."}
-                     </div>
                  </div>
             </CardContent>
         </Card>
