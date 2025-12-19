@@ -73,13 +73,15 @@ export function CreativePricing({
           </div>
         )}
         <div className="relative inline-block">
-          <h2 className="text-3xl md:text-5xl font-bold font-playfair text-foreground tracking-tight">
-            {title}
-          </h2>
+          <h2 
+            className="text-3xl md:text-5xl font-bold font-playfair text-foreground tracking-tight"
+            dangerouslySetInnerHTML={{ __html: title }}
+          />
         </div>
-        <p className="font-sans text-base md:text-lg text-muted-foreground max-w-2xl mx-auto font-light">
-          {description}
-        </p>
+        <div 
+            className="font-sans text-base md:text-lg text-muted-foreground max-w-2xl mx-auto font-light"
+            dangerouslySetInnerHTML={{ __html: description }}
+        />
       </div>
 
       <div 
@@ -92,7 +94,7 @@ export function CreativePricing({
           <div
             key={tier.name}
             className={cn(
-              "relative group flex flex-col h-full w-full md:w-auto md:min-w-0 flex-shrink-0 snap-center px-4 md:px-0",
+              "relative group flex flex-col h-full w-full md:w-auto md:min-w-0 shrink-0 snap-center px-4 md:px-0",
               "transition-all duration-500 hover:-translate-y-2",
               index === 1 ? "md:-mt-8 md:mb-8 z-10" : "" // Elevate middle card
             )}

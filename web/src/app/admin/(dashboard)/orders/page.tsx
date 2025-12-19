@@ -8,6 +8,7 @@ import {
   Filter, 
   MapPin,
   Loader2,
+  Download,
   Calendar as CalendarIcon,
   Trash2,
   Camera,
@@ -19,6 +20,7 @@ import {
   XCircle
 } from "lucide-react"
 
+import { DataExportDialog } from "@/components/admin/data-export-dialog"
 import InvoicePrintButton from "@/components/admin/orders/InvoicePrintButton"
 
 import { format } from "date-fns"
@@ -129,6 +131,7 @@ export default function OrdersPage() {
   const [searchQuery, setSearchQuery] = useState("")
   const [statusFilter, setStatusFilter] = useState("all")
   const [dateFilter] = useState<Date | undefined>(undefined)
+  const [sortBy, setSortBy] = useState<'created_at' | 'event_date'>('event_date')
   const [, setIsLoading] = useState(true)
 
   const [expandedId, setExpandedId] = useState<string | null>(null)
@@ -146,6 +149,7 @@ export default function OrdersPage() {
   const [newOrderDp, setNewOrderDp] = useState("")
 
   const [editingOrder, setEditingOrder] = useState<Order | null>(null)
+  const [isExportOpen, setIsExportOpen] = useState(false)
   const [editingCategory, setEditingCategory] = useState<string>("all")
 
 
@@ -205,7 +209,7 @@ export default function OrdersPage() {
                 team_members (name)
             )
         `)
-        .order('created_at', { ascending: false })
+        .order(sortBy, { ascending: false })
 
       if (error) {
           console.error(error)
@@ -243,7 +247,7 @@ export default function OrdersPage() {
           setOrders(mappedOrders)
       }
       setIsLoading(false)
-  }, [packages, categories, toast])
+  }, [packages, categories, toast, sortBy])
 
   useEffect(() => {
     // eslint-disable-next-line
@@ -433,35 +437,86 @@ export default function OrdersPage() {
             <DropdownMenuItem onClick={() => setStatusFilter('completed')}>
               Hanya Selesai {statusFilter === 'completed' && '✓'}
             </DropdownMenuItem>
+            
+            <DropdownMenuSeparator />
+            <DropdownMenuLabel>Urutkan (Sort)</DropdownMenuLabel>
+            <DropdownMenuItem onClick={() => setSortBy('event_date')}>
+              Tanggal Acara {sortBy === 'event_date' && '✓'}
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={() => setSortBy('created_at')}>
+              Tanggal Booking (Terbaru) {sortBy === 'created_at' && '✓'}
+            </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
+
+      <Button variant="secondary" className="gap-2" onClick={() => setIsExportOpen(true)}>
+        <Download className="h-4 w-4" />
+        CSV
+      </Button>
+      <DataExportDialog 
+            isOpen={isExportOpen}
+            onOpenChange={setIsExportOpen}
+            title="Export Data Pesanan"
+            description="Download laporan pesanan dalam format CSV."
+            onExport={(range) => {
+                try {
+                    let dataToExport = filteredOrders
+                    let dateFilterDesc = "Semua Data"
+                    
+                    if (range.type === 'range' && range.from && range.to) {
+                         // Filter by event date by default
+                        dataToExport = filteredOrders.filter(o => {
+                            const d = new Date(o.date) // o.date is usually YYYY-MM-DD
+                            return d >= range.from! && d <= range.to!
+                        })
+                        dateFilterDesc = `${format(range.from, 'dd MMM')} - ${format(range.to, 'dd MMM yyyy')}`
+                    }
+
+                    if (dataToExport.length === 0) {
+                        toast.error("Gagal Export", "Tidak ada pesanan pada rentang tanggal tersebut.")
+                        return
+                    }
+
+                    const headers = ["ID", "Klien", "Kontak", "Tanggal", "Lokasi", "Paket", "Status", "Total", "Dibayar"]
+                    const rows = dataToExport.map(o => [
+                        o.id,
+                        `"${o.client.replace(/"/g, '""')}"`,
+                        `"${(o.contact || "").replace(/"/g, '""')}"`,
+                        o.date,
+                        `"${(o.location || "").replace(/"/g, '""')}"`,
+                        `"${o.package.replace(/"/g, '""')}"`,
+                        o.status,
+                        parseInt(o.amount.replace(/[^0-9]/g, "")).toString(),
+                        (o.paid_amount || 0).toString()
+                    ])
+                    const csvContent = [headers.join(","), ...rows.map(row => row.join(","))].join("\n")
+                    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" })
+                    const url = URL.createObjectURL(blob)
+                    const link = document.createElement("a")
+                    link.setAttribute("href", url)
+                    link.setAttribute("download", `orders_export_${range.type === 'range' ? 'custom' : 'all'}_${format(new Date(), "yyyy-MM-dd")}.csv`)
+                    document.body.appendChild(link)
+                    link.click()
+                    document.body.removeChild(link)
+                    
+                    toast.success("Berhasil Export", `${dataToExport.length} pesanan (${dateFilterDesc}) berhasil diunduh.`)
+                } catch (err) {
+                    console.error(err)
+                    toast.error("Gagal Export", "Terjadi kesalahan saat membuat file CSV.")
+                }
+            }}
+      />
       </div>
 
-      <Tabs defaultValue="all" className="w-full">
+      <Tabs defaultValue="active" className="w-full">
         <TabsList className="w-full justify-start overflow-x-auto">
-          <TabsTrigger value="all">Semua Pesanan</TabsTrigger>
           <TabsTrigger value="active">Aktif</TabsTrigger>
           <TabsTrigger value="completed">Selesai</TabsTrigger>
+          <TabsTrigger value="all">Semua Pesanan</TabsTrigger>
         </TabsList>
-        <TabsContent value="all" className="mt-4 data-[state=active]:animate-in data-[state=active]:fade-in-0 data-[state=active]:slide-in-from-left-4 data-[state=active]:duration-500 ease-in-out">
-          <CardTable 
-             orders={filteredOrders} 
-             expandedId={expandedId}
-             editingOrder={editingOrder}
-             onRowClick={handleRowClick}
-             setEditingOrder={setEditingOrder as (order: Order) => void}
-             onSave={handleSaveEdit}
-             onDelete={handleDelete}
-             teamMembers={teamMembers}
-             packages={packages}
-             categories={categories}
-             editingCategory={editingCategory}
-             setEditingCategory={setEditingCategory}
-          />
-        </TabsContent>
         <TabsContent value="active" className="mt-4 data-[state=active]:animate-in data-[state=active]:fade-in-0 data-[state=active]:slide-in-from-left-4 data-[state=active]:duration-500 ease-in-out">
           <CardTable 
-             orders={filteredOrders.filter(o => o.status !== 'completed')} 
+             orders={filteredOrders.filter(o => o.status !== 'completed' && o.status !== 'cancelled')} 
              expandedId={expandedId}
              editingOrder={editingOrder}
              onRowClick={handleRowClick}
@@ -478,6 +533,22 @@ export default function OrdersPage() {
         <TabsContent value="completed" className="mt-4 data-[state=active]:animate-in data-[state=active]:fade-in-0 data-[state=active]:slide-in-from-left-4 data-[state=active]:duration-500 ease-in-out">
           <CardTable 
              orders={filteredOrders.filter(o => o.status === 'completed')} 
+             expandedId={expandedId}
+             editingOrder={editingOrder}
+             onRowClick={handleRowClick}
+             setEditingOrder={setEditingOrder as (order: Order) => void}
+             onSave={handleSaveEdit}
+             onDelete={handleDelete}
+             teamMembers={teamMembers}
+             packages={packages}
+             categories={categories}
+             editingCategory={editingCategory}
+             setEditingCategory={setEditingCategory}
+          />
+        </TabsContent>
+        <TabsContent value="all" className="mt-4 data-[state=active]:animate-in data-[state=active]:fade-in-0 data-[state=active]:slide-in-from-left-4 data-[state=active]:duration-500 ease-in-out">
+          <CardTable 
+             orders={filteredOrders} 
              expandedId={expandedId}
              editingOrder={editingOrder}
              onRowClick={handleRowClick}
@@ -682,7 +753,7 @@ interface CardTableProps {
 
 function CardTable({ orders, expandedId, editingOrder, onRowClick, setEditingOrder, onSave, onDelete, teamMembers, packages, categories, editingCategory, setEditingCategory }: CardTableProps) {
   const [currentPage, setCurrentPage] = useState(1)
-  const ITEMS_PER_PAGE = 5
+  const ITEMS_PER_PAGE = 10
   
   const totalPages = Math.ceil(orders.length / ITEMS_PER_PAGE)
   if (currentPage > totalPages && totalPages > 0) {
@@ -747,7 +818,12 @@ function CardTable({ orders, expandedId, editingOrder, onRowClick, setEditingOrd
                         )}
                         onClick={() => onRowClick(order)}
                     >
-                        <TableCell className="font-medium text-muted-foreground text-xs">{order.id}</TableCell>
+                        <TableCell className="font-medium text-muted-foreground text-xs">
+                          {order.id}
+                          <div className="text-[10px] text-muted-foreground/60 font-normal mt-0.5" title="Tanggal Booking Disini">
+                             {order.created_at ? format(new Date(order.created_at), "dd/MM/yy") : "-"}
+                          </div>
+                        </TableCell>
                         <TableCell className="font-medium truncate max-w-[180px]" title={order.client}>{order.client}</TableCell>
                         <TableCell className="text-muted-foreground text-xs truncate max-w-[120px]" title={order.contact || ""}>
                             {order.contact ? (
@@ -790,8 +866,8 @@ function CardTable({ orders, expandedId, editingOrder, onRowClick, setEditingOrd
                         </TableCell>
                         <TableCell className="truncate max-w-[160px]" title={order.package}>{order.package}</TableCell>
                         <TableCell className="text-center">
-                        <Badge variant="secondary" className={`${statusConfig[order.status]?.color || "bg-gray-100 text-gray-800"} rounded-full px-2 py-1 text-xs font-semibold border-0 inline-flex items-center justify-center`}>
-                            <StatusIcon className="mr-1 h-3 w-3" />
+                        <Badge variant="secondary" className={`${statusConfig[order.status]?.color || "bg-gray-100 text-gray-800"} rounded-full px-2.5 py-0.5 text-xs font-medium border-0 inline-flex items-center justify-center min-w-[80px]`}>
+                            <StatusIcon className="mr-1.5 h-3.5 w-3.5" />
                             {statusConfig[order.status]?.label || order.status}
                         </Badge>
                         </TableCell>
@@ -800,11 +876,11 @@ function CardTable({ orders, expandedId, editingOrder, onRowClick, setEditingOrd
                             const total = parseInt(order.amount.replace(/[^0-9]/g, "")) || 0
                             const paid = order.paid_amount || 0
                             if (paid >= total && total > 0) {
-                                return <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200 dark:bg-green-900/20 dark:text-green-400 dark:border-green-800 inline-flex items-center justify-center">Sudah Lunas</Badge>
+                                return <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200 dark:bg-green-900/20 dark:text-green-400 dark:border-green-800 inline-flex items-center justify-center rounded-full px-2.5 py-0.5 text-xs font-medium min-w-[90px]">Sudah Lunas</Badge>
                             } else if (paid > 0) {
-                                return <Badge variant="outline" className="bg-yellow-50 text-yellow-700 border-yellow-200 dark:bg-yellow-900/20 dark:text-yellow-400 dark:border-yellow-800 inline-flex items-center justify-center">Belum Lunas</Badge>
+                                return <Badge variant="outline" className="bg-yellow-50 text-yellow-700 border-yellow-200 dark:bg-yellow-900/20 dark:text-yellow-400 dark:border-yellow-800 inline-flex items-center justify-center rounded-full px-2.5 py-0.5 text-xs font-medium min-w-[90px]">Belum Lunas</Badge>
                             } else {
-                                return <Badge variant="outline" className="bg-red-50 text-red-700 border-red-200 dark:bg-red-900/20 dark:text-red-400 dark:border-red-800 inline-flex items-center justify-center">Belum Bayar</Badge>
+                                return <Badge variant="outline" className="bg-red-50 text-red-700 border-red-200 dark:bg-red-900/20 dark:text-red-400 dark:border-red-800 inline-flex items-center justify-center rounded-full px-2.5 py-0.5 text-xs font-medium min-w-[90px]">Belum Bayar</Badge>
                             }
                         })()}
                         </TableCell>

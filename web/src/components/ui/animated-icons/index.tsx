@@ -33,4 +33,14 @@ export const PackageIcon = (props: AnimatedIconProps) => (
     <GenericAnimatedIcon icon={Package} animationType="rotate" {...props} />
 )
 
-export { HomeIcon, SettingsIcon, UsersIcon, HandCoinsIcon }
+import { Calendar } from "lucide-react"
+
+export const CalendarIcon = (props: AnimatedIconProps) => (
+    <GenericAnimatedIcon icon={Calendar} animationType="scale" {...props} />
+)
+
+import { SquarePenIcon } from "./square-pen"
+
+import { CalendarCheckIcon } from "./calendar-check"
+
+export { HomeIcon, SettingsIcon, UsersIcon, HandCoinsIcon, SquarePenIcon, CalendarCheckIcon }

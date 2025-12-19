@@ -1,6 +1,6 @@
 "use client"
 
-import React from "react"
+import React, { useEffect, useState } from "react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { Menu } from "lucide-react"
@@ -17,6 +17,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { motion } from "framer-motion"
 
 import { cn } from "@/lib/utils"
+import { supabase } from "@/lib/supabaseClient"
 
 interface SidebarMenuItemProps {
   item: AdminMenuItem;
@@ -65,19 +66,48 @@ const SidebarMenuItem = ({ item, isActive }: SidebarMenuItemProps) => {
 
 export function Sidebar({ className }: React.HTMLAttributes<HTMLDivElement>) {
   const pathname = usePathname()
+  const [brand, setBrand] = useState<{ name: string; logo: string }>({
+    name: "Enviel Admin",
+    logo: "" 
+  })
+
+  useEffect(() => {
+    const fetchBrand = async () => {
+        const { data: { user } } = await supabase.auth.getUser()
+        if (user) {
+            const { data } = await supabase
+                .from('invoice_settings')
+                .select('brand_name, brand_logo_url')
+                .eq('user_id', user.id)
+                .single()
+            
+            if (data) {
+                setBrand({
+                    name: data.brand_name || "Enviel Admin",
+                    logo: data.brand_logo_url || ""
+                })
+            }
+        }
+    }
+    fetchBrand()
+  }, [])
 
   return (
     <div className={cn("pb-12 h-full bg-background border-r", className)}>
       <div className="space-y-6 py-6 px-4">
         {/* Brand Title with Logo */}
         <div className="flex items-center gap-3 px-2 mb-6">
-            <Avatar className="h-10 w-10 rounded-lg">
-               <AvatarImage src="https://github.com/shadcn.png" alt="Enviel" />
-               <AvatarFallback className="rounded-lg">DP</AvatarFallback>
+            <Avatar className="h-10 w-10 rounded-lg border bg-muted/20">
+               {brand.logo ? (
+                   <AvatarImage src={brand.logo} alt={brand.name} className="object-cover" />
+               ) : (
+                   <AvatarImage src="https://github.com/shadcn.png" alt="Enviel" />
+               )}
+               <AvatarFallback className="rounded-lg">{brand.name.substring(0, 2).toUpperCase()}</AvatarFallback>
             </Avatar>
-            <div>
-               <h1 className="text-lg font-bold tracking-tight text-foreground leading-none">
-                  Enviel Admin
+            <div className="overflow-hidden">
+               <h1 className="text-lg font-bold tracking-tight text-foreground leading-none truncate">
+                  {brand.name}
                </h1>
                <p className="text-sm text-muted-foreground mt-1 font-medium">Admin Dashboard</p>
             </div>

@@ -2,6 +2,7 @@
 
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { Calendar } from "@/components/ui/calendar"
+import { ChartTooltip } from "@/components/admin/charts/ChartTooltip"
 import { DollarSign, ShoppingBag, Users, TrendingUp, MapPin } from "lucide-react"
 import { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
@@ -226,9 +227,7 @@ export default function AdminDashboard() {
                   <XAxis dataKey="month" fontSize={12} tickLine={false} axisLine={false} />
                   <YAxis fontSize={12} tickLine={false} axisLine={false} tickFormatter={(value) => `${value}`} />
                   <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#E5E7EB" />
-                  <Tooltip 
-                     contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}
-                  />
+                  <Tooltip content={<ChartTooltip />} />
                   <Area type="monotone" dataKey="clients" stroke="#3b82f6" fillOpacity={1} fill="url(#colorClients)" />
                 </AreaChart>
               </ResponsiveContainer>

@@ -105,7 +105,7 @@ export const InvoiceTemplate = React.forwardRef<HTMLDivElement, InvoiceProps>(
             <div className="space-y-1">
               <p className="font-mono text-slate-600 font-medium text-lg">#{order.invoice_number}</p>
               <p className="text-sm text-slate-500">
-                Issued: {format(new Date(order.created_at), 'dd MMMM yyyy', { locale: id })}
+                Tanggal Pesan: {format(new Date(order.created_at), 'dd MMMM yyyy', { locale: id })}
               </p>
             </div>
 

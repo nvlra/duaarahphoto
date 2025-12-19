@@ -54,7 +54,7 @@ export default function AdminLayout({
         </div>
       </div>
 
-      <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-100 md:hidden">
+      <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-40 md:hidden">
          <InteractiveMenu />
       </div>
     </div>

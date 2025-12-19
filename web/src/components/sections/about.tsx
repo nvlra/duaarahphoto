@@ -4,7 +4,15 @@ import React, { useRef } from "react";
 import Image from "next/image";
 import { motion, useScroll, useTransform, useSpring } from "framer-motion";
 
-export function About() {
+interface AboutProps {
+  data?: {
+    title?: string;
+    content?: string;
+    imageUrl?: string;
+  };
+}
+
+export function About({ data }: AboutProps) {
   const containerRef = useRef(null);
   const { scrollYProgress } = useScroll({
     target: containerRef,
@@ -23,6 +31,14 @@ export function About() {
   const yImage = useTransform(smoothProgress, [0, 1], [0, 50]);
   const yText = useTransform(smoothProgress, [0, 1], [0, -50]);
 
+  const defaultImage = "https://images.unsplash.com/photo-1492691527719-9d1e07e534b4?q=80&w=2000&auto=format&fit=crop";
+  const defaultTitle = `Cinematic. Timeless.<br /><span class="italic font-light text-muted-foreground">Authentically Yours.</span>`;
+  const defaultContent = `
+    <p>Enviel Photography stands at the intersection of fine art and documentary storytelling. We are not just photographers; we are visual narrators dedicated to capturing the raw, unscripted beauty of your connection.</p>
+    <br/>
+    <p>Our philosophy is simple: authentic moments resonate loudest. We step back to let your love unfold naturally, ensuring every image we craft is a true reflection of who you are—elegant, emotive, and eternally yours.</p>
+  `;
+
   return (
     <section id="about" ref={containerRef} className="py-32 md:py-40 bg-secondary/30">
       <div className="mx-auto max-w-7xl px-4">
@@ -36,8 +52,8 @@ export function About() {
               className="absolute left-1/2 -translate-x-1/2 top-0 h-full overflow-hidden rounded-xl z-20 shadow-2xl border border-white/10 md:left-0 md:translate-x-0"
             >
               <Image
-                src="https://images.unsplash.com/photo-1492691527719-9d1e07e534b4?q=80&w=2000&auto=format&fit=crop"
-                alt="Photographer"
+                src={data?.imageUrl || defaultImage}
+                alt="About Enviel"
                 fill
                 className="object-cover"
               />
@@ -51,26 +67,14 @@ export function About() {
             transition={{ duration: 1, ease: "easeOut", delay: 0.2 }}
             className="w-full md:w-1/2 space-y-6 mt-16 md:absolute md:right-0 md:top-0 md:mt-10 text-center md:text-left"
           >
-            <h2 className="font-playfair text-2xl md:text-5xl font-bold leading-tight tracking-tight">
-              Cinematic. Timeless.<br />
-              <span className="italic font-light text-muted-foreground">
-                Authentically Yours.
-              </span>
-            </h2>
-            <div className="space-y-6 text-muted-foreground leading-relaxed text-center md:text-left text-sm md:text-base">
-              <p>
-                Enviel Photography stands at the intersection of fine art and
-                documentary storytelling. We are not just photographers; we are
-                visual narrators dedicated to capturing the raw, unscripted beauty
-                of your connection.
-              </p>
-              <p className="hidden md:block">
-                Our philosophy is simple: authentic moments resonate loudest. We
-                step back to let your love unfold naturally, ensuring every image
-                we craft is a true reflection of who you are—elegant, emotive, and
-                eternally yours.
-              </p>
-            </div>
+            <div 
+                className="font-playfair text-2xl md:text-5xl font-bold leading-tight tracking-tight prose dark:prose-invert max-w-none [&_span]:text-muted-foreground"
+                dangerouslySetInnerHTML={{ __html: data?.title || defaultTitle }}
+            />
+            <div 
+                className="space-y-6 text-muted-foreground leading-relaxed text-center md:text-left text-sm md:text-base prose dark:prose-invert max-w-none"
+                dangerouslySetInnerHTML={{ __html: data?.content || defaultContent }}
+            />
           </motion.div>
         </div>
       </div>

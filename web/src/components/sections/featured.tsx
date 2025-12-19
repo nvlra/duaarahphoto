@@ -1,13 +1,25 @@
 "use client";
 
 import React, { useRef } from "react";
-import { InteractiveImageAccordion } from "@/components/ui/interactive-image-accordion";
+import { InteractiveImageAccordion, AccordionItemData } from "@/components/ui/interactive-image-accordion";
 import { RippleButton } from "@/components/ui/ripple-button";
 import { motion, useScroll, useTransform } from "framer-motion";
 import Link from "next/link";
 import { useMediaQuery } from "@/hooks/use-media-query";
 
-export function Featured() {
+interface FeaturedProps {
+  data?: {
+    intro?: {
+      title?: string;
+      description?: string;
+      ctaText?: string;
+      ctaLink?: string;
+    };
+    items?: AccordionItemData[];
+  };
+}
+
+export function Featured({ data }: FeaturedProps) {
   const containerRef = useRef(null);
   const isDesktop = useMediaQuery("(min-width: 768px)");
   const { scrollYProgress } = useScroll({
@@ -18,6 +30,11 @@ export function Featured() {
   const yText = useTransform(scrollYProgress, [0, 1], [0, 0]); // Disabled parallax
   const yAccordion = useTransform(scrollYProgress, [0, 1], [0, 0]); // Disabled parallax to keep alignment fixed
   const scaleAccordion = useTransform(scrollYProgress, [0, 1], [0.8, 1]);
+
+  const defaultTitle = `Capturing Soul <br /> In Every Frame`;
+  const defaultDesc = `We don't just take pictures; we craft visual legacies. From intimate elopements to grand celebrations, we ensure every moment is immortalized with elegance and emotion.`;
+  const defaultCtaText = "View Portfolio";
+  const defaultCtaLink = "/portfolio";
 
   return (
     <section ref={containerRef} className="py-20 md:py-40 bg-background">
@@ -34,19 +51,20 @@ export function Featured() {
             className="w-full lg:w-1/3 text-center lg:text-left space-y-8 lg: mt-4"
           >
             <div>
-              <h2 className="font-playfair text-3xl md:text-5xl font-bold leading-tight tracking-tight mb-6">
-                Capturing Soul <br />
-                In Every Frame
-              </h2>
-              <p className="text-lg text-muted-foreground font-light leading-relaxed">
-                We don&apos;t just take pictures; we craft visual legacies. From intimate elopements to grand celebrations, we ensure every moment is immortalized with elegance and emotion.
-              </p>
+              <div 
+                className="font-playfair text-3xl md:text-5xl font-bold leading-tight tracking-tight mb-6"
+                dangerouslySetInnerHTML={{ __html: data?.intro?.title || defaultTitle }}
+              />
+              <div 
+                className="text-lg text-muted-foreground font-light leading-relaxed prose dark:prose-invert max-w-none"
+                dangerouslySetInnerHTML={{ __html: data?.intro?.description || defaultDesc }}
+              />
             </div>
             
             <div className="flex justify-center lg:justify-start">
-              <Link href="/portfolio">
+              <Link href={data?.intro?.ctaLink || defaultCtaLink}>
                 <RippleButton className="rounded-lg px-8 py-3 text-lg shadow-lg hover:shadow-xl transition-all duration-300">
-                  View Portfolio
+                  {data?.intro?.ctaText || defaultCtaText}
                 </RippleButton>
               </Link>
             </div>
@@ -62,7 +80,7 @@ export function Featured() {
             className="w-full lg:w-2/3"
           >
              <div className="flex items-center justify-center lg:justify-end">
-                <InteractiveImageAccordion />
+                <InteractiveImageAccordion items={data?.items} />
              </div>
           </motion.div>
         </div>

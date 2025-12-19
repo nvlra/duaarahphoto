@@ -42,11 +42,7 @@ export function AdminProfileDropdown({ showLabel = false }: { showLabel?: boolea
         <DropdownMenuContent align="end" className="z-100">
            <DropdownMenuLabel>Akun Saya</DropdownMenuLabel>
            <DropdownMenuSeparator />
-           <DropdownMenuItem asChild>
-              <Link href="/admin/profile" className="cursor-pointer">
-                 <User className="mr-2 h-4 w-4" /> Profil
-              </Link>
-           </DropdownMenuItem>
+
            <DropdownMenuItem asChild>
               <Link href="/admin/settings" className="cursor-pointer">
                  <Settings className="mr-2 h-4 w-4" /> Pengaturan

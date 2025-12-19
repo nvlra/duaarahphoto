@@ -5,13 +5,14 @@ import Image from "next/image";
 import { cn } from "@/lib/utils";
 
 // --- Data for the image accordion ---
-interface AccordionItemData {
+// --- Data for the image accordion ---
+export interface AccordionItemData {
   id: number;
   title: string;
   imageUrl: string;
 }
 
-const accordionItems: AccordionItemData[] = [
+const defaultAccordionItems: AccordionItemData[] = [
   {
     id: 1,
     title: "Wedding",
@@ -117,12 +118,17 @@ const AccordionItem: React.FC<AccordionItemProps> = ({
 };
 
 // --- Main Component ---
-export function InteractiveImageAccordion() {
+interface InteractiveImageAccordionProps {
+    items?: AccordionItemData[];
+}
+
+export function InteractiveImageAccordion({ items }: InteractiveImageAccordionProps) {
   const [activeIndex, setActiveIndex] = useState<number>(0); // Default to first item
+  const displayItems = items || defaultAccordionItems;
 
   return (
     <div className="flex flex-col md:flex-row items-center justify-center gap-2 md:gap-4 w-full">
-      {accordionItems.map((item, index) => (
+      {displayItems.map((item, index) => (
         <AccordionItem
           key={item.id}
           item={item}

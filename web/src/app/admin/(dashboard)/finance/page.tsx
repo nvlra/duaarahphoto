@@ -15,6 +15,8 @@ import {
   Wallet,
   Pencil
 } from "lucide-react"
+import { ChartTooltip } from "@/components/admin/charts/ChartTooltip"
+import { DataExportDialog } from "@/components/admin/data-export-dialog"
 import { ConfirmModal } from "@/components/ui/confirm-modal"
 import { useToast } from "@/components/ui/ios-toast"
 import { 
@@ -75,6 +77,7 @@ interface Expense {
   category: string
   category_id?: string
   date: string
+  rawDate: string
   type: string
 }
 
@@ -95,6 +98,7 @@ interface ExpenseDB {
 export default function FinancePage() {
   const toast = useToast()
   const [isCategoryManageOpen, setIsCategoryManageOpen] = useState(false)
+  const [isExportOpen, setIsExportOpen] = useState(false)
   
   const [confirmOpen, setConfirmOpen] = useState(false)
   const [confirmAction, setConfirmAction] = useState<() => Promise<void> | void>(() => {})
@@ -292,9 +296,57 @@ export default function FinancePage() {
             </DialogContent>
           </Dialog>
 
-          <Button variant="outline" size="sm" className="h-8 text-xs sm:h-9 sm:text-sm">
+          <Button variant="outline" size="sm" className="h-8 text-xs sm:h-9 sm:text-sm" onClick={() => setIsExportOpen(true)}>
             <Download className="mr-2 h-3 w-3 sm:h-4 sm:w-4" /> CSV
           </Button>
+
+          <DataExportDialog 
+            isOpen={isExportOpen}
+            onOpenChange={setIsExportOpen}
+            title="Export Data Keuangan"
+            description="Download laporan pengeluaran dalam format CSV."
+            onExport={(range) => {
+                try {
+                    let dataToExport = expenses
+                    let dateFilterDesc = "Semua Data"
+                    
+                    if (range.type === 'range' && range.from && range.to) {
+                        dataToExport = expenses.filter(e => {
+                            const d = new Date(e.rawDate)
+                            return d >= range.from! && d <= range.to!
+                        })
+                        dateFilterDesc = `${format(range.from, 'dd MMM')} - ${format(range.to, 'dd MMM yyyy')}`
+                    }
+
+                    if (dataToExport.length === 0) {
+                        toast.error("Gagal Export", "Tidak ada data transaksi pada rentang tanggal tersebut.")
+                        return
+                    }
+
+                    const headers = ["Deskripsi", "Kategori", "Tanggal", "Jumlah"]
+                    const rows = dataToExport.map(e => [
+                        `"${e.description.replace(/"/g, '""')}"`,
+                        `"${e.category}"`,
+                        e.date,
+                        e.amount
+                    ])
+                    const csvContent = [headers.join(","), ...rows.map(row => row.join(","))].join("\n")
+                    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" })
+                    const url = URL.createObjectURL(blob)
+                    const link = document.createElement("a")
+                    link.setAttribute("href", url)
+                    link.setAttribute("download", `finance_export_${range.type === 'range' ? 'custom' : 'all'}_${format(new Date(), "yyyy-MM-dd")}.csv`)
+                    document.body.appendChild(link)
+                    link.click()
+                    document.body.removeChild(link)
+                    
+                    toast.success("Berhasil Export", `${dataToExport.length} transaksi (${dateFilterDesc}) berhasil diunduh.`)
+                } catch (err) {
+                    console.error(err)
+                    toast.error("Gagal Export", "Terjadi kesalahan saat membuat file CSV.")
+                }
+            }}
+          />
           
           <Button 
             size="sm" 
@@ -402,8 +454,11 @@ export default function FinancePage() {
                             />
                             <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#E5E7EB" />
                             <Tooltip 
-                                formatter={(value: number) => new Intl.NumberFormat("id-ID", { style: "currency", currency: "IDR", maximumSignificantDigits: 3 }).format(value)}
-                                contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}
+                                content={
+                                    <ChartTooltip 
+                                        formatter={(value: number) => new Intl.NumberFormat("id-ID", { style: "currency", currency: "IDR", maximumSignificantDigits: 3 }).format(value)}
+                                    />
+                                }
                             />
                             <Area type="monotone" dataKey="revenue" name="Omset" stroke="#3b82f6" strokeWidth={2} fillOpacity={1} fill="url(#colorRevenue)" />
                             <Area type="monotone" dataKey="profit" name="Profit Bersih" stroke="#22c55e" strokeWidth={2} fillOpacity={1} fill="url(#colorProfit)" />
@@ -451,12 +506,11 @@ export default function FinancePage() {
 
       <div className="grid gap-4 grid-cols-1">
         <Card className="col-span-1">
-           <CardHeader className="flex flex-row items-center justify-between">
+          <CardHeader className="flex flex-row items-center justify-between">
             <div className="space-y-1">
                <CardTitle>Riwayat Transaksi</CardTitle>
                <CardDescription>Gabungan pengeluaran tim dan operasional.</CardDescription>
             </div>
-            <FileSpreadsheet className="text-muted-foreground h-5 w-5" />
           </CardHeader>
           <CardContent>
             <Table>

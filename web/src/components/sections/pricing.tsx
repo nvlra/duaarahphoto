@@ -48,7 +48,33 @@ const packages: PricingTier[] = [
   },
 ];
 
-export function Pricing() {
+interface PricingSectionProps {
+  data?: {
+    intro?: {
+      title?: string;
+      description?: string;
+    };
+    tiers?: {
+      name: string;
+      description: string;
+      price?: string;
+      features: string[];
+      popular: boolean;
+      icon: string;
+    }[];
+  };
+}
+
+const getIcon = (name: string) => {
+    switch(name) {
+        case "Camera": return <Camera className="w-6 h-6" />;
+        case "Aperture": return <Aperture className="w-6 h-6" />;
+        case "Film": return <Film className="w-6 h-6" />;
+        default: return <Camera className="w-6 h-6" />;
+    }
+};
+
+export function Pricing({ data }: PricingSectionProps) {
   const containerRef = useRef(null);
   const { scrollYProgress } = useScroll({
     target: containerRef,
@@ -62,6 +88,21 @@ export function Pricing() {
   // Parallax: Content moves slightly slower than scroll to create depth
   const y = useTransform(smoothProgress, [0, 1], [0, 80]);
 
+  // Transform data to component format
+  const tiers: PricingTier[] = (data?.tiers && data.tiers.length > 0) 
+    ? data.tiers.map(t => ({
+        name: t.name,
+        icon: getIcon(t.icon),
+        description: t.description,
+        features: t.features,
+        popular: t.popular
+    }))
+    : packages; // Fallback to default if no data
+
+  // Use dynamic title/desc or defaults
+  const title = data?.intro?.title || "Services";
+  const desc = data?.intro?.description || "We believe in transparency and providing value that lasts a lifetime. Choose a collection or customize your own.";
+
   return (
     <section id="services" ref={containerRef} className="bg-background pt-4 pb-16 md:pt-16 md:pb-32 relative overflow-hidden scroll-mt-32">
         {/* Decorative background elements can be added here if needed */}
@@ -73,9 +114,9 @@ export function Pricing() {
         transition={{ duration: 1, ease: "easeOut" }}
       >
         <CreativePricing 
-          title="Services" 
-          description="We believe in transparency and providing value that lasts a lifetime. Choose a collection or customize your own."
-          tiers={packages} 
+          title={title} 
+          description={desc}
+          tiers={tiers} 
         />
       </motion.div>
     </section>

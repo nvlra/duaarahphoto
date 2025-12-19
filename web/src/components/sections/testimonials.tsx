@@ -4,22 +4,20 @@ import React, { useRef } from "react";
 import { AnimatedTestimonials } from "@/components/ui/animated-testimonials";
 import { motion, useScroll, useTransform, useSpring } from "framer-motion";
 
-export function Testimonials() {
-  const containerRef = useRef(null);
-  const { scrollYProgress } = useScroll({
-    target: containerRef,
-    offset: ["start end", "end start"],
-  });
+interface TestimonialsProps {
+  data?: {
+    title?: string;
+    description?: string;
+    items?: {
+      quote: string;
+      name: string;
+      designation: string;
+      src: string;
+    }[];
+  };
+}
 
-  // Smooth spring config for buttery transitions
-  const springConfig = { stiffness: 100, damping: 30, restDelta: 0.001 };
-  const smoothProgress = useSpring(scrollYProgress, springConfig);
-
-  // Parallax effects
-  const yTitle = useTransform(smoothProgress, [0, 1], [0, -30]);
-  const yContent = useTransform(smoothProgress, [0, 1], [0, 50]);
-
-  const testimonials = [
+const defaultTestimonials = [
     {
       quote:
         "The most magical day of our lives was captured perfectly. The team made us feel so comfortable, and the photos are just breathtaking.",
@@ -62,7 +60,26 @@ export function Testimonials() {
     designation: "Wedding in New York",
     src: "https://images.unsplash.com/photo-1583939003579-730e3918a45a?q=80&w=1974&auto=format&fit=crop",
   },
-  ];
+];
+
+export function Testimonials({ data }: TestimonialsProps) {
+  const containerRef = useRef(null);
+  const { scrollYProgress } = useScroll({
+    target: containerRef,
+    offset: ["start end", "end start"],
+  });
+
+  // Smooth spring config for buttery transitions
+  const springConfig = { stiffness: 100, damping: 30, restDelta: 0.001 };
+  const smoothProgress = useSpring(scrollYProgress, springConfig);
+
+  // Parallax effects
+  const yTitle = useTransform(smoothProgress, [0, 1], [0, -30]);
+  const yContent = useTransform(smoothProgress, [0, 1], [0, 50]);
+
+  const testimonials = (data?.items && data.items.length > 0) ? data.items : defaultTestimonials;
+  const title = data?.title || "Testimoni";
+  const desc = data?.description || "Kind words from the beautiful souls we've had the privilege to capture.";
 
   return (
     <section id="stories" ref={containerRef} className="bg-background pt-2 pb-24 md:pt-16 md:pb-32 rounded-b-[3rem] shadow-[0_40px_100px_-20px_rgba(0,0,0,0.2)] dark:shadow-[0_40px_100px_-20px_rgba(255,255,255,0.1)] relative z-20 overflow-hidden scroll-mt-32">
@@ -75,12 +92,14 @@ export function Testimonials() {
           transition={{ duration: 1, ease: "easeOut" }}
           className="text-center mb-12"
         >
-          <h2 className="font-playfair text-3xl md:text-5xl font-bold tracking-tight mb-4">
-            Testimoni
-          </h2>
-          <p className="text-muted-foreground max-w-2xl mx-auto">
-            Kind words from the beautiful souls we&apos;ve had the privilege to capture.
-          </p>
+          <h2 
+            className="font-playfair text-3xl md:text-5xl font-bold tracking-tight mb-4"
+            dangerouslySetInnerHTML={{ __html: title }}
+          />
+          <div 
+            className="text-muted-foreground max-w-2xl mx-auto"
+            dangerouslySetInnerHTML={{ __html: desc }}
+          />
         </motion.div>
         
         <motion.div style={{ y: yContent }}>
