@@ -6,270 +6,279 @@
 
 -- Enable extensions
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
+CREATE EXTENSION IF NOT EXISTS "pgcrypto";
 
 -- ================================================
--- 1. ORDERS (Pesanan Klien)
+-- 0. DROPS (Clean Slate)
 -- ================================================
-CREATE TABLE IF NOT EXISTS public.orders (
-  id TEXT PRIMARY KEY,
-  client_name TEXT NOT NULL,
-  contact_info TEXT,
-  event_date DATE NOT NULL,
-  location TEXT,
-  maps_url TEXT,
-  package_name TEXT,
-  status TEXT NOT NULL DEFAULT 'pending',
-  payment_status TEXT NOT NULL DEFAULT 'unpaid',
-  total_amount NUMERIC NOT NULL DEFAULT 0,
-  paid_amount NUMERIC DEFAULT 0,
-  created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
-  updated_at TIMESTAMPTZ DEFAULT now()
+DROP TABLE IF EXISTS public.order_allocations CASCADE;
+DROP TABLE IF EXISTS public.invoices CASCADE;
+DROP TABLE IF EXISTS public.expenses CASCADE;
+DROP TABLE IF EXISTS public.orders CASCADE;
+DROP TABLE IF EXISTS public.packages CASCADE;
+DROP TABLE IF EXISTS public.gallery_items CASCADE;
+DROP TABLE IF EXISTS public.team_members CASCADE;
+DROP TABLE IF EXISTS public.clients CASCADE;
+DROP TABLE IF EXISTS public.expense_categories CASCADE;
+DROP TABLE IF EXISTS public.gallery_categories CASCADE;
+DROP TABLE IF EXISTS public.invoice_settings CASCADE;
+DROP TABLE IF EXISTS public.package_categories CASCADE;
+DROP TABLE IF EXISTS public.page_sections CASCADE;
+DROP TABLE IF EXISTS public.projects CASCADE;
+DROP TABLE IF EXISTS public.site_settings CASCADE;
+
+DROP TYPE IF EXISTS public.invoice_status CASCADE;
+DROP TYPE IF EXISTS public.order_status CASCADE;
+DROP TYPE IF EXISTS public.member_status CASCADE;
+DROP TYPE IF EXISTS public.gallery_item_type CASCADE;
+
+-- ================================================
+-- 1. ENUMS
+-- ================================================
+CREATE TYPE public.invoice_status AS ENUM ('draft', 'sent', 'paid', 'overdue', 'cancelled');
+CREATE TYPE public.order_status AS ENUM ('pending', 'booked', 'confirmed', 'on_process', 'completed', 'cancelled');
+CREATE TYPE public.member_status AS ENUM ('active', 'inactive');
+CREATE TYPE public.gallery_item_type AS ENUM ('image', 'video');
+
+-- ================================================
+-- 2. TABLES
+-- ================================================
+
+CREATE TABLE public.clients (
+  id uuid NOT NULL DEFAULT uuid_generate_v4(),
+  name text NOT NULL,
+  email text,
+  phone text,
+  address text,
+  notes text,
+  created_at timestamp with time zone DEFAULT now(),
+  CONSTRAINT clients_pkey PRIMARY KEY (id)
+);
+
+CREATE TABLE public.expense_categories (
+  id uuid NOT NULL DEFAULT uuid_generate_v4(),
+  name text NOT NULL UNIQUE,
+  CONSTRAINT expense_categories_pkey PRIMARY KEY (id)
+);
+
+CREATE TABLE public.package_categories (
+  id uuid NOT NULL DEFAULT uuid_generate_v4(),
+  name text NOT NULL,
+  description text,
+  created_at timestamp with time zone DEFAULT now(),
+  CONSTRAINT package_categories_pkey PRIMARY KEY (id)
+);
+
+CREATE TABLE public.packages (
+  id uuid NOT NULL DEFAULT uuid_generate_v4(),
+  category_id uuid,
+  name text NOT NULL,
+  price numeric DEFAULT 0,
+  description text,
+  features jsonb,
+  created_at timestamp with time zone DEFAULT now(),
+  CONSTRAINT packages_pkey PRIMARY KEY (id),
+  CONSTRAINT packages_category_id_fkey FOREIGN KEY (category_id) REFERENCES public.package_categories(id)
+);
+
+CREATE TABLE public.orders (
+  id text NOT NULL,
+  client_id uuid,
+  client_name text NOT NULL,
+  contact_info text,
+  event_date date NOT NULL,
+  location text,
+  maps_url text,
+  package_id uuid,
+  package_name text,
+  status public.order_status DEFAULT 'pending'::public.order_status,
+  total_amount numeric DEFAULT 0,
+  notes text,
+  created_at timestamp with time zone DEFAULT now(),
+  updated_at timestamp with time zone DEFAULT now(),
+  payment_status text DEFAULT 'unpaid'::text,
+  paid_amount numeric DEFAULT 0,
+  CONSTRAINT orders_pkey PRIMARY KEY (id),
+  CONSTRAINT orders_client_id_fkey FOREIGN KEY (client_id) REFERENCES public.clients(id),
+  CONSTRAINT orders_package_id_fkey FOREIGN KEY (package_id) REFERENCES public.packages(id)
+);
+
+CREATE TABLE public.expenses (
+  id uuid NOT NULL DEFAULT uuid_generate_v4(),
+  description text NOT NULL,
+  amount numeric NOT NULL,
+  category_id uuid,
+  date date DEFAULT CURRENT_DATE,
+  type text DEFAULT 'expense'::text,
+  related_order_id text,
+  created_at timestamp with time zone DEFAULT now(),
+  CONSTRAINT expenses_pkey PRIMARY KEY (id),
+  CONSTRAINT expenses_category_id_fkey FOREIGN KEY (category_id) REFERENCES public.expense_categories(id),
+  CONSTRAINT expenses_related_order_id_fkey FOREIGN KEY (related_order_id) REFERENCES public.orders(id)
+);
+
+CREATE TABLE public.gallery_categories (
+  id uuid NOT NULL DEFAULT uuid_generate_v4(),
+  name text NOT NULL UNIQUE,
+  created_at timestamp with time zone DEFAULT now(),
+  CONSTRAINT gallery_categories_pkey PRIMARY KEY (id)
+);
+
+CREATE TABLE public.gallery_items (
+  id uuid NOT NULL DEFAULT uuid_generate_v4(),
+  type public.gallery_item_type NOT NULL,
+  url text NOT NULL,
+  category_id uuid,
+  section text DEFAULT 'category'::text,
+  display_date date DEFAULT CURRENT_DATE,
+  created_at timestamp with time zone DEFAULT now(),
+  CONSTRAINT gallery_items_pkey PRIMARY KEY (id),
+  CONSTRAINT gallery_items_category_id_fkey FOREIGN KEY (category_id) REFERENCES public.gallery_categories(id)
+);
+
+CREATE TABLE public.invoice_settings (
+  user_id uuid NOT NULL DEFAULT gen_random_uuid(),
+  brand_name text,
+  brand_color text,
+  bank_name text,
+  bank_number text,
+  bank_holder text,
+  address text,
+  footer_note text,
+  created_at timestamp with time zone NOT NULL DEFAULT now(),
+  brand_logo_url text,
+  header_layout text DEFAULT 'vertical'::text,
+  brand_font_family text DEFAULT 'Inter'::text,
+  brand_custom_font_url text,
+  CONSTRAINT invoice_settings_pkey PRIMARY KEY (user_id)
+);
+
+CREATE TABLE public.invoices (
+  id text NOT NULL,
+  order_id text,
+  client_name text NOT NULL,
+  issue_date date DEFAULT CURRENT_DATE,
+  due_date date,
+  amount numeric NOT NULL,
+  status public.invoice_status DEFAULT 'draft'::public.invoice_status,
+  items jsonb,
+  created_at timestamp with time zone DEFAULT now(),
+  CONSTRAINT invoices_pkey PRIMARY KEY (id),
+  CONSTRAINT invoices_order_id_fkey FOREIGN KEY (order_id) REFERENCES public.orders(id)
+);
+
+CREATE TABLE public.team_members (
+  id uuid NOT NULL DEFAULT uuid_generate_v4(),
+  name text NOT NULL,
+  role text NOT NULL,
+  email text,
+  phone text,
+  status public.member_status DEFAULT 'active'::public.member_status,
+  joined_date date DEFAULT CURRENT_DATE,
+  created_at timestamp with time zone DEFAULT now(),
+  CONSTRAINT team_members_pkey PRIMARY KEY (id)
+);
+
+CREATE TABLE public.order_allocations (
+  id uuid NOT NULL DEFAULT uuid_generate_v4(),
+  order_id text,
+  member_id uuid,
+  role text,
+  fee numeric DEFAULT 0,
+  created_at timestamp with time zone DEFAULT now(),
+  CONSTRAINT order_allocations_pkey PRIMARY KEY (id),
+  CONSTRAINT order_allocations_order_id_fkey FOREIGN KEY (order_id) REFERENCES public.orders(id),
+  CONSTRAINT order_allocations_member_id_fkey FOREIGN KEY (member_id) REFERENCES public.team_members(id)
+);
+
+CREATE TABLE public.page_sections (
+  key text NOT NULL,
+  content jsonb NOT NULL DEFAULT '{}'::jsonb,
+  updated_at timestamp with time zone NOT NULL DEFAULT timezone('utc'::text, now()),
+  CONSTRAINT page_sections_pkey PRIMARY KEY (key)
+);
+
+CREATE TABLE public.projects (
+  id bigint GENERATED ALWAYS AS IDENTITY NOT NULL,
+  created_at timestamp with time zone NOT NULL DEFAULT timezone('utc'::text, now()),
+  title text NOT NULL,
+  slug text NOT NULL UNIQUE,
+  category text,
+  date text,
+  location text,
+  description text,
+  cover_image text,
+  gallery_images text[] DEFAULT '{}'::text[],
+  CONSTRAINT projects_pkey PRIMARY KEY (id)
+);
+
+CREATE TABLE public.site_settings (
+  id integer NOT NULL DEFAULT 1 CHECK (id = 1),
+  about_headline text,
+  about_bio text,
+  about_vision text,
+  contact_email text,
+  contact_phone text,
+  contact_address text,
+  social_instagram text,
+  seo_title text,
+  seo_description text,
+  updated_at timestamp with time zone DEFAULT now(),
+  CONSTRAINT site_settings_pkey PRIMARY KEY (id)
 );
 
 -- ================================================
--- 2. TEAM MEMBERS (Tim)
+-- 3. RLS (Row Level Security)
 -- ================================================
-CREATE TABLE IF NOT EXISTS public.team_members (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  name TEXT NOT NULL,
-  role TEXT NOT NULL,
-  email TEXT,
-  phone TEXT,
-  status TEXT NOT NULL DEFAULT 'active',
-  joined_date DATE DEFAULT CURRENT_DATE,
-  created_at TIMESTAMPTZ NOT NULL DEFAULT now()
-);
-
--- ================================================
--- 3. ORDER ALLOCATIONS (Penugasan Tim)
--- ================================================
-CREATE TABLE IF NOT EXISTS public.order_allocations (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  order_id TEXT REFERENCES public.orders(id) ON DELETE CASCADE,
-  member_id UUID REFERENCES public.team_members(id) ON DELETE SET NULL,
-  role TEXT NOT NULL,
-  fee NUMERIC NOT NULL DEFAULT 0,
-  created_at TIMESTAMPTZ NOT NULL DEFAULT now()
-);
-
--- ================================================
--- 4. EXPENSE CATEGORIES (Kategori Pengeluaran)
--- ================================================
-CREATE TABLE IF NOT EXISTS public.expense_categories (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  name TEXT NOT NULL UNIQUE,
-  created_at TIMESTAMPTZ NOT NULL DEFAULT now()
-);
-
--- ================================================
--- 5. EXPENSES (Pengeluaran)
--- ================================================
-CREATE TABLE IF NOT EXISTS public.expenses (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  category_id UUID REFERENCES public.expense_categories(id) ON DELETE SET NULL,
-  description TEXT NOT NULL,
-  amount NUMERIC NOT NULL DEFAULT 0,
-  date DATE NOT NULL DEFAULT CURRENT_DATE,
-  created_at TIMESTAMPTZ NOT NULL DEFAULT now()
-);
-
--- ================================================
--- 6. CLIENTS (untuk Analytics)
--- ================================================
-CREATE TABLE IF NOT EXISTS public.clients (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  name TEXT NOT NULL,
-  created_at TIMESTAMPTZ NOT NULL DEFAULT now()
-);
-
--- ================================================
--- 7. PACKAGE CATEGORIES
--- ================================================
-CREATE TABLE IF NOT EXISTS public.package_categories (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  name TEXT NOT NULL,
-  description TEXT,
-  created_at TIMESTAMPTZ NOT NULL DEFAULT now()
-);
-
--- ================================================
--- 8. PACKAGES (Paket Layanan)
--- ================================================
-CREATE TABLE IF NOT EXISTS public.packages (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  category_id UUID REFERENCES public.package_categories(id) ON DELETE CASCADE,
-  name TEXT NOT NULL,
-  price NUMERIC NOT NULL DEFAULT 0,
-  description TEXT,
-  features TEXT[],
-  created_at TIMESTAMPTZ NOT NULL DEFAULT now()
-);
-
--- ================================================
--- 9. PAGE SECTIONS (CMS Landing Page)
--- ================================================
-CREATE TABLE IF NOT EXISTS public.page_sections (
-  id TEXT PRIMARY KEY,
-  section_type TEXT NOT NULL,
-  content JSONB NOT NULL DEFAULT '{}',
-  created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
-  updated_at TIMESTAMPTZ DEFAULT now()
-);
-
--- ================================================
--- 10. PROJECTS (Portfolio)
--- ================================================
-CREATE TABLE IF NOT EXISTS public.projects (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  title TEXT NOT NULL,
-  slug TEXT NOT NULL UNIQUE,
-  category TEXT,
-  cover_image TEXT,
-  images TEXT[],
-  description TEXT,
-  featured BOOLEAN DEFAULT false,
-  created_at TIMESTAMPTZ NOT NULL DEFAULT now()
-);
-
--- ================================================
--- 11. GALLERY CATEGORIES
--- ================================================
-CREATE TABLE IF NOT EXISTS public.gallery_categories (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  name TEXT NOT NULL,
-  created_at TIMESTAMPTZ NOT NULL DEFAULT now()
-);
-
--- ================================================
--- 12. GALLERY ITEMS
--- ================================================
-CREATE TABLE IF NOT EXISTS public.gallery_items (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  category_id UUID REFERENCES public.gallery_categories(id) ON DELETE CASCADE,
-  url TEXT NOT NULL,
-  caption TEXT,
-  created_at TIMESTAMPTZ NOT NULL DEFAULT now()
-);
-
--- ================================================
--- 13. SITE SETTINGS
--- ================================================
-CREATE TABLE IF NOT EXISTS public.site_settings (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  about_headline TEXT,
-  about_bio TEXT,
-  about_vision TEXT,
-  contact_email TEXT,
-  contact_phone TEXT,
-  contact_address TEXT,
-  social_instagram TEXT,
-  created_at TIMESTAMPTZ NOT NULL DEFAULT now()
-);
-
--- ================================================
--- 14. INVOICE SETTINGS
--- ================================================
-CREATE TABLE IF NOT EXISTS public.invoice_settings (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  brand_name TEXT,
-  brand_color TEXT,
-  brand_logo_url TEXT,
-  bank_name TEXT,
-  bank_number TEXT,
-  bank_holder TEXT,
-  address TEXT,
-  footer_note TEXT,
-  created_at TIMESTAMPTZ NOT NULL DEFAULT now()
-);
-
--- ================================================
--- ROW LEVEL SECURITY (RLS)
--- ================================================
-
--- Enable RLS on all tables
-ALTER TABLE public.orders ENABLE ROW LEVEL SECURITY;
-ALTER TABLE public.order_allocations ENABLE ROW LEVEL SECURITY;
-ALTER TABLE public.team_members ENABLE ROW LEVEL SECURITY;
-ALTER TABLE public.expenses ENABLE ROW LEVEL SECURITY;
-ALTER TABLE public.expense_categories ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.clients ENABLE ROW LEVEL SECURITY;
-ALTER TABLE public.packages ENABLE ROW LEVEL SECURITY;
-ALTER TABLE public.package_categories ENABLE ROW LEVEL SECURITY;
-ALTER TABLE public.page_sections ENABLE ROW LEVEL SECURITY;
-ALTER TABLE public.projects ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.expense_categories ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.expenses ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.gallery_categories ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.gallery_items ENABLE ROW LEVEL SECURITY;
-ALTER TABLE public.site_settings ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.invoice_settings ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.invoices ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.order_allocations ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.orders ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.package_categories ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.packages ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.page_sections ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.projects ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.site_settings ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.team_members ENABLE ROW LEVEL SECURITY;
 
--- Force RLS
-ALTER TABLE public.orders FORCE ROW LEVEL SECURITY;
-ALTER TABLE public.order_allocations FORCE ROW LEVEL SECURITY;
-ALTER TABLE public.team_members FORCE ROW LEVEL SECURITY;
-ALTER TABLE public.expenses FORCE ROW LEVEL SECURITY;
-ALTER TABLE public.expense_categories FORCE ROW LEVEL SECURITY;
-ALTER TABLE public.clients FORCE ROW LEVEL SECURITY;
-ALTER TABLE public.packages FORCE ROW LEVEL SECURITY;
-ALTER TABLE public.package_categories FORCE ROW LEVEL SECURITY;
-ALTER TABLE public.page_sections FORCE ROW LEVEL SECURITY;
-ALTER TABLE public.projects FORCE ROW LEVEL SECURITY;
-ALTER TABLE public.gallery_categories FORCE ROW LEVEL SECURITY;
-ALTER TABLE public.gallery_items FORCE ROW LEVEL SECURITY;
-ALTER TABLE public.site_settings FORCE ROW LEVEL SECURITY;
-ALTER TABLE public.invoice_settings FORCE ROW LEVEL SECURITY;
+-- Default Policies (Authenticated users usually have full access in this simplified schema, adjust as needed)
+-- For public facing tables, allow SELECT to anon
+CREATE POLICY "Public read access" ON public.packages FOR SELECT TO anon, authenticated USING (true);
+CREATE POLICY "Public read access" ON public.package_categories FOR SELECT TO anon, authenticated USING (true);
+CREATE POLICY "Public read access" ON public.gallery_categories FOR SELECT TO anon, authenticated USING (true);
+CREATE POLICY "Public read access" ON public.gallery_items FOR SELECT TO anon, authenticated USING (true);
+CREATE POLICY "Public read access" ON public.page_sections FOR SELECT TO anon, authenticated USING (true);
+CREATE POLICY "Public read access" ON public.projects FOR SELECT TO anon, authenticated USING (true);
+CREATE POLICY "Public read access" ON public.site_settings FOR SELECT TO anon, authenticated USING (true);
+CREATE POLICY "Public read access" ON public.invoice_settings FOR SELECT TO anon, authenticated USING (true);
 
--- ================================================
--- POLICIES - Private Tables (Admin Only)
--- ================================================
-CREATE POLICY "orders_policy" ON public.orders FOR ALL TO authenticated USING (true) WITH CHECK (true);
-CREATE POLICY "allocations_policy" ON public.order_allocations FOR ALL TO authenticated USING (true) WITH CHECK (true);
-CREATE POLICY "team_policy" ON public.team_members FOR ALL TO authenticated USING (true) WITH CHECK (true);
-CREATE POLICY "expenses_policy" ON public.expenses FOR ALL TO authenticated USING (true) WITH CHECK (true);
-CREATE POLICY "expense_cat_policy" ON public.expense_categories FOR ALL TO authenticated USING (true) WITH CHECK (true);
-CREATE POLICY "clients_policy" ON public.clients FOR ALL TO authenticated USING (true) WITH CHECK (true);
-CREATE POLICY "site_settings_policy" ON public.site_settings FOR ALL TO authenticated USING (true) WITH CHECK (true);
-CREATE POLICY "invoice_settings_policy" ON public.invoice_settings FOR ALL TO authenticated USING (true) WITH CHECK (true);
-CREATE POLICY "gallery_cat_policy" ON public.gallery_categories FOR ALL TO authenticated USING (true) WITH CHECK (true);
-CREATE POLICY "gallery_items_policy" ON public.gallery_items FOR ALL TO authenticated USING (true) WITH CHECK (true);
-
--- ================================================
--- POLICIES - Public Tables (Landing Page)
--- ================================================
--- Packages
-CREATE POLICY "packages_read" ON public.packages FOR SELECT TO anon, authenticated USING (true);
-CREATE POLICY "packages_write" ON public.packages FOR INSERT TO authenticated WITH CHECK (true);
-CREATE POLICY "packages_update" ON public.packages FOR UPDATE TO authenticated USING (true) WITH CHECK (true);
-CREATE POLICY "packages_delete" ON public.packages FOR DELETE TO authenticated USING (true);
-
--- Package Categories
-CREATE POLICY "pkg_cat_read" ON public.package_categories FOR SELECT TO anon, authenticated USING (true);
-CREATE POLICY "pkg_cat_write" ON public.package_categories FOR INSERT TO authenticated WITH CHECK (true);
-CREATE POLICY "pkg_cat_update" ON public.package_categories FOR UPDATE TO authenticated USING (true) WITH CHECK (true);
-CREATE POLICY "pkg_cat_delete" ON public.package_categories FOR DELETE TO authenticated USING (true);
-
--- Page Sections
-CREATE POLICY "sections_read" ON public.page_sections FOR SELECT TO anon, authenticated USING (true);
-CREATE POLICY "sections_write" ON public.page_sections FOR INSERT TO authenticated WITH CHECK (true);
-CREATE POLICY "sections_update" ON public.page_sections FOR UPDATE TO authenticated USING (true) WITH CHECK (true);
-CREATE POLICY "sections_delete" ON public.page_sections FOR DELETE TO authenticated USING (true);
-
--- Projects
-CREATE POLICY "projects_read" ON public.projects FOR SELECT TO anon, authenticated USING (true);
-CREATE POLICY "projects_write" ON public.projects FOR INSERT TO authenticated WITH CHECK (true);
-CREATE POLICY "projects_update" ON public.projects FOR UPDATE TO authenticated USING (true) WITH CHECK (true);
-CREATE POLICY "projects_delete" ON public.projects FOR DELETE TO authenticated USING (true);
+-- Admin write access (simplified: authenticated users can write everything)
+CREATE POLICY "Admin full access" ON public.clients FOR ALL TO authenticated USING (true) WITH CHECK (true);
+CREATE POLICY "Admin full access" ON public.expense_categories FOR ALL TO authenticated USING (true) WITH CHECK (true);
+CREATE POLICY "Admin full access" ON public.expenses FOR ALL TO authenticated USING (true) WITH CHECK (true);
+CREATE POLICY "Admin full access" ON public.gallery_categories FOR ALL TO authenticated USING (true) WITH CHECK (true);
+CREATE POLICY "Admin full access" ON public.gallery_items FOR ALL TO authenticated USING (true) WITH CHECK (true);
+CREATE POLICY "Admin full access" ON public.invoice_settings FOR ALL TO authenticated USING (true) WITH CHECK (true);
+CREATE POLICY "Admin full access" ON public.invoices FOR ALL TO authenticated USING (true) WITH CHECK (true);
+CREATE POLICY "Admin full access" ON public.order_allocations FOR ALL TO authenticated USING (true) WITH CHECK (true);
+CREATE POLICY "Admin full access" ON public.orders FOR ALL TO authenticated USING (true) WITH CHECK (true);
+CREATE POLICY "Admin full access" ON public.package_categories FOR ALL TO authenticated USING (true) WITH CHECK (true);
+CREATE POLICY "Admin full access" ON public.packages FOR ALL TO authenticated USING (true) WITH CHECK (true);
+CREATE POLICY "Admin full access" ON public.page_sections FOR ALL TO authenticated USING (true) WITH CHECK (true);
+CREATE POLICY "Admin full access" ON public.projects FOR ALL TO authenticated USING (true) WITH CHECK (true);
+CREATE POLICY "Admin full access" ON public.site_settings FOR ALL TO authenticated USING (true) WITH CHECK (true);
+CREATE POLICY "Admin full access" ON public.team_members FOR ALL TO authenticated USING (true) WITH CHECK (true);
 
 -- ================================================
--- SEED DATA - Expense Categories
+-- 4. SEED DATA (Optional)
 -- ================================================
 INSERT INTO public.expense_categories (name) VALUES
-('Operasional'),
-('Transportasi'),
-('Konsumsi'),
-('Gaji Tim'),
-('Peralatan')
+('Operasional'), ('Transportasi'), ('Konsumsi'), ('Gaji Tim'), ('Peralatan')
 ON CONFLICT (name) DO NOTHING;
 
--- ================================================
--- DONE! Database siap digunakan
--- ================================================
+INSERT INTO public.site_settings (id) VALUES (1) ON CONFLICT (id) DO NOTHING;
