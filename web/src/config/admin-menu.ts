@@ -17,7 +17,7 @@ export interface AdminMenuItem {
   label: string;
   href: string;
   icon: React.ComponentType<{ className?: string; size?: number | string } & React.HTMLAttributes<HTMLElement> & React.RefAttributes<AnimatedIconHandle>>;
-  showOnMobile?: boolean; // Control visibility on mobile
+  showOnMobile?: boolean;
 }
 
 export const ADMIN_MENU_ITEMS: AdminMenuItem[] = [

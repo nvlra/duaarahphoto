@@ -20,7 +20,8 @@ npm install
 
 1. Buat project di [supabase.com](https://supabase.com)
 2. Buka **SQL Editor** → Paste & Run `schema.sql`
-3. Buka **Authentication** → **Users** → Add User (untuk admin login)
+3. Setup Storage (Bucket & Policies) → Paste & Run `storage_setup.sql`
+4. Buka **Authentication** → **Users** → Add User (untuk admin login)
 
 ### 3. Setup Environment
 
@@ -82,6 +83,7 @@ npm run dev
 
 - 📦 **Orders** - Kelola pesanan & status pembayaran
 - 💰 **Finance** - Revenue, expenses, profit tracking
+- 🧾 **Invoicing** - Print invoice PDF, kustomisasi brand & logo
 - 👥 **Team** - Kelola tim & alokasi per proyek
 - 📸 **Gallery** - Kelola portfolio
 - 🎨 **CMS** - Edit konten landing page
@@ -94,15 +96,7 @@ npm run dev
 ```
 web/
 ├── src/
-│   ├── app/
-│   │   ├── (public)/       # Landing Page
-│   │   └── admin/          # Dashboard (protected)
-│   ├── components/
-│   │   ├── admin/          # Dashboard components
-│   │   ├── sections/       # Landing sections
-│   │   └── ui/             # Shadcn UI
-│   └── lib/                # Supabase client
-│
+├── storage_setup.sql       # Storage policies setup
 ├── schema.sql              # Database schema
 ├── dummy_data.sql          # Sample data
 └── .env.example            # Environment template
@@ -121,19 +115,20 @@ web/
 
 ## 📦 Database Tables
 
-| Table              | Deskripsi               |
-| ------------------ | ----------------------- |
-| orders             | Pesanan klien           |
-| order_allocations  | Penugasan tim per order |
-| team_members       | Data tim                |
-| expenses           | Pengeluaran             |
-| expense_categories | Kategori expense        |
-| packages           | Paket layanan           |
-| package_categories | Kategori paket          |
-| page_sections      | CMS landing page        |
-| projects           | Portfolio               |
-| clients            | Data klien              |
-| site_settings      | Pengaturan website      |
+| Table              | Deskripsi                |
+| ------------------ | ------------------------ |
+| orders             | Pesanan klien            |
+| invoice_settings   | Pengaturan brand invoice |
+| order_allocations  | Penugasan tim per order  |
+| team_members       | Data tim                 |
+| expenses           | Pengeluaran              |
+| expense_categories | Kategori expense         |
+| packages           | Paket layanan            |
+| package_categories | Kategori paket           |
+| page_sections      | CMS landing page         |
+| projects           | Portfolio                |
+| clients            | Data klien               |
+| site_settings      | Pengaturan website       |
 
 ---
 

@@ -1,16 +1,6 @@
--- ================================================
--- ENVIEL PHOTOGRAPHY - DATABASE SCHEMA
--- Supabase PostgreSQL | Version 3.0
--- Jalankan di SQL Editor untuk fresh install
--- ================================================
-
--- Enable extensions
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 CREATE EXTENSION IF NOT EXISTS "pgcrypto";
 
--- ================================================
--- 0. DROPS (Clean Slate)
--- ================================================
 DROP TABLE IF EXISTS public.order_allocations CASCADE;
 DROP TABLE IF EXISTS public.invoices CASCADE;
 DROP TABLE IF EXISTS public.expenses CASCADE;
@@ -32,17 +22,10 @@ DROP TYPE IF EXISTS public.order_status CASCADE;
 DROP TYPE IF EXISTS public.member_status CASCADE;
 DROP TYPE IF EXISTS public.gallery_item_type CASCADE;
 
--- ================================================
--- 1. ENUMS
--- ================================================
 CREATE TYPE public.invoice_status AS ENUM ('draft', 'sent', 'paid', 'overdue', 'cancelled');
 CREATE TYPE public.order_status AS ENUM ('pending', 'booked', 'confirmed', 'on_process', 'completed', 'cancelled');
 CREATE TYPE public.member_status AS ENUM ('active', 'inactive');
 CREATE TYPE public.gallery_item_type AS ENUM ('image', 'video');
-
--- ================================================
--- 2. TABLES
--- ================================================
 
 CREATE TABLE public.clients (
   id uuid NOT NULL DEFAULT uuid_generate_v4(),

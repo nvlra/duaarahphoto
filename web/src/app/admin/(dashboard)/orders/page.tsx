@@ -21,11 +21,10 @@ import {
 } from "lucide-react";
 
 import { DataExportDialog } from "@/components/admin/data-export-dialog";
-// import InvoicePrintButton from "@/components/admin/orders/InvoicePrintButton"
+import InvoicePrintButton from "@/components/admin/orders/InvoicePrintButton";
 
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
-// Import shared team data
 import { supabase } from "@/lib/supabaseClient";
 
 import { Button } from "@/components/ui/button";
@@ -199,7 +198,7 @@ export default function OrdersPage() {
     { id: string; name: string; price: number; category_id?: string }[]
   >([]);
   const [categories, setCategories] = useState<{ id: string; name: string }[]>(
-    []
+    [],
   );
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState("active");
@@ -211,7 +210,7 @@ export default function OrdersPage() {
 
   const [dateFilter] = useState<Date | undefined>(undefined);
   const [sortBy, setSortBy] = useState<"created_at" | "event_date">(
-    "event_date"
+    "event_date",
   );
   const [isLoading, setIsLoading] = useState(true);
 
@@ -224,7 +223,7 @@ export default function OrdersPage() {
   const [deleteId, setDeleteId] = useState<string | null>(null);
   const [, setIsEditDialogOpen] = useState(false);
   const [newBookingDate, setNewBookingDate] = useState<Date | undefined>(
-    undefined
+    undefined,
   );
   const [newBookingCategory, setNewBookingCategory] = useState<string>("all");
 
@@ -234,6 +233,29 @@ export default function OrdersPage() {
   const [editingOrder, setEditingOrder] = useState<Order | null>(null);
   const [isExportOpen, setIsExportOpen] = useState(false);
   const [editingCategory, setEditingCategory] = useState<string>("all");
+
+  // Date Filters
+  const [selectedMonth, setSelectedMonth] = useState<string>("all");
+  const [selectedYear, setSelectedYear] = useState<string>("all");
+
+  const months = [
+    { value: "1", label: "Januari" },
+    { value: "2", label: "Februari" },
+    { value: "3", label: "Maret" },
+    { value: "4", label: "April" },
+    { value: "5", label: "Mei" },
+    { value: "6", label: "Juni" },
+    { value: "7", label: "Juli" },
+    { value: "8", label: "Agustus" },
+    { value: "9", label: "September" },
+    { value: "10", label: "Oktober" },
+    { value: "11", label: "November" },
+    { value: "12", label: "Desember" },
+  ];
+
+  const years = Array.from({ length: 5 }, (_, i) =>
+    (new Date().getFullYear() - 2 + i).toString(),
+  );
 
   const handleCreateOrder = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -256,7 +278,7 @@ export default function OrdersPage() {
         0,
       paid_amount:
         parseInt(
-          (formData.get("dp_amount") as string).replace(/[^0-9]/g, "")
+          (formData.get("dp_amount") as string).replace(/[^0-9]/g, ""),
         ) || 0,
       status: "confirmed",
       created_at: new Date().toISOString(),
@@ -270,7 +292,7 @@ export default function OrdersPage() {
     } else {
       toast.error(
         "Failed Notification",
-        "Gagal membuat booking: " + error.message
+        "Gagal membuat booking: " + error.message,
       );
       console.error(error);
     }
@@ -298,7 +320,13 @@ export default function OrdersPage() {
   }, []);
 
   const fetchOrders = useCallback(
-    async (pageIndex = 1, search = searchQuery, status = statusFilter) => {
+    async (
+      pageIndex = 1,
+      search = searchQuery,
+      status = statusFilter,
+      month = selectedMonth,
+      year = selectedYear,
+    ) => {
       setIsLoading(true);
 
       const from = (pageIndex - 1) * ITEMS_PER_PAGE;
@@ -312,13 +340,13 @@ export default function OrdersPage() {
                 team_members (name)
             )
         `,
-        { count: "exact" }
+        { count: "exact" },
       );
 
       // Apply Search
       if (search) {
         query = query.or(
-          `client_name.ilike.%${search}%,id.ilike.%${search}%,location.ilike.%${search}%`
+          `client_name.ilike.%${search}%,id.ilike.%${search}%,location.ilike.%${search}%`,
         );
       }
 
@@ -329,6 +357,28 @@ export default function OrdersPage() {
       } else if (status !== "all") {
         // Specific status filter (completed, booked, etc.)
         query = query.eq("status", status);
+      }
+
+      // Apply Month/Year Filter
+      if (year !== "all") {
+        let startDate: Date, endDate: Date;
+        const y = parseInt(year);
+
+        if (month !== "all") {
+          // Specific Month
+          const m = parseInt(month);
+          startDate = new Date(y, m - 1, 1);
+          // End date is last day of month
+          endDate = new Date(y, m, 0);
+        } else {
+          // Whole Year
+          startDate = new Date(y, 0, 1);
+          endDate = new Date(y, 11, 31);
+        }
+
+        query = query
+          .gte("event_date", format(startDate, "yyyy-MM-dd"))
+          .lte("event_date", format(endDate, "yyyy-MM-dd"));
       }
 
       // Apply Sort
@@ -351,7 +401,7 @@ export default function OrdersPage() {
             const foundPkg = packages.find((p) => p.name === pkgName);
             if (foundPkg && foundPkg.category_id) {
               const foundCat = categories.find(
-                (c) => c.id === foundPkg.category_id
+                (c) => c.id === foundPkg.category_id,
               );
               if (foundCat) return `${foundCat.name} - ${pkgName}`;
             }
@@ -382,22 +432,44 @@ export default function OrdersPage() {
       }
       setIsLoading(false);
     },
-    [packages, categories, toast, sortBy, searchQuery, statusFilter]
+    [
+      packages,
+      categories,
+      toast,
+      sortBy,
+      searchQuery,
+      statusFilter,
+      selectedMonth,
+      selectedYear,
+    ],
   );
 
   // Debounce Search & Filter Effect
   useEffect(() => {
     const timer = setTimeout(() => {
       setPage(1); // Reset to page 1 on filter change
-      fetchOrders(1, searchQuery, statusFilter);
+      fetchOrders(1, searchQuery, statusFilter, selectedMonth, selectedYear);
     }, 500);
     return () => clearTimeout(timer);
-  }, [searchQuery, statusFilter, sortBy, fetchOrders]);
+  }, [
+    searchQuery,
+    statusFilter,
+    sortBy,
+    fetchOrders,
+    selectedMonth,
+    selectedYear,
+  ]);
 
   // Page Change Effect
   const handlePageChange = (newPage: number) => {
     setPage(newPage);
-    fetchOrders(newPage, searchQuery, statusFilter);
+    fetchOrders(
+      newPage,
+      searchQuery,
+      statusFilter,
+      selectedMonth,
+      selectedYear,
+    );
   };
 
   useEffect(() => {
@@ -451,7 +523,7 @@ export default function OrdersPage() {
 
     if (isNewBookingOpen) {
       const newId = `ORD-${new Date().getFullYear()}-${Math.floor(
-        Math.random() * 10000
+        Math.random() * 10000,
       )}`;
 
       const { error } = await supabase.from("orders").insert({
@@ -574,6 +646,37 @@ export default function OrdersPage() {
             onChange={(e) => setSearchQuery(e.target.value)}
           />
         </div>
+
+        <div className="flex items-center gap-2">
+          <Select value={selectedMonth} onValueChange={setSelectedMonth}>
+            <SelectTrigger className="w-[110px] md:w-[130px]">
+              <SelectValue placeholder="Bulan" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">Semua Bulan</SelectItem>
+              {months.map((m) => (
+                <SelectItem key={m.value} value={m.value}>
+                  {m.label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+
+          <Select value={selectedYear} onValueChange={setSelectedYear}>
+            <SelectTrigger className="w-[90px] md:w-[100px]">
+              <SelectValue placeholder="Tahun" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">Semua Thn</SelectItem>
+              {years.map((y) => (
+                <SelectItem key={y} value={y}>
+                  {y}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button variant="outline" className="gap-2">
@@ -584,7 +687,7 @@ export default function OrdersPage() {
           <DropdownMenuContent align="end">
             <DropdownMenuLabel>Urutkan (Sort)</DropdownMenuLabel>
             <DropdownMenuSeparator />
-            <DropdownMenuItem 
+            <DropdownMenuItem
               onClick={() => setSortBy("event_date")}
               className="flex items-center justify-between"
             >
@@ -593,7 +696,7 @@ export default function OrdersPage() {
                 <span className="h-2 w-2 rounded-full bg-emerald-500 shadow-[0_0_6px_rgba(16,185,129,0.6)]" />
               )}
             </DropdownMenuItem>
-            <DropdownMenuItem 
+            <DropdownMenuItem
               onClick={() => setSortBy("created_at")}
               className="flex items-center justify-between"
             >
@@ -620,23 +723,31 @@ export default function OrdersPage() {
           description="Download laporan pesanan dalam format CSV."
           onExport={async (range) => {
             try {
-              // Fetch ALL data from server for export (ignoring pagination)
+              // Fetch ALL data from server for export
               let query = supabase.from("orders").select("*");
 
-              if (searchQuery) {
-                query = query.or(
-                  `client_name.ilike.%${searchQuery}%,id.ilike.%${searchQuery}%,location.ilike.%${searchQuery}%`
-                );
-              }
-              if (statusFilter !== "all") {
-                query = query.eq("status", statusFilter);
-              }
-              if (range.type === "range" && range.from && range.to) {
-                const fromStr = format(range.from, "yyyy-MM-dd");
-                const toStr = format(range.to, "yyyy-MM-dd");
-                query = query
-                  .gte("event_date", fromStr)
-                  .lte("event_date", toStr);
+              // Only apply filters if user selected "Rentang Tanggal"
+              if (range.type === "range") {
+                if (searchQuery) {
+                  query = query.or(
+                    `client_name.ilike.%${searchQuery}%,id.ilike.%${searchQuery}%,location.ilike.%${searchQuery}%`,
+                  );
+                }
+
+                // Optional: Still respect status filter ONLY if date range is used?
+                // Or as requested: "Semua data langsung", implying truly everything.
+                // Let's implement truly everything for 'All Data' option.
+
+                if (range.from && range.to) {
+                  const fromStr = format(range.from, "yyyy-MM-dd");
+                  const toStr = format(range.to, "yyyy-MM-dd");
+                  query = query
+                    .gte("event_date", fromStr)
+                    .lte("event_date", toStr);
+                }
+              } else {
+                // Option "Semua Data": Export TRULY EVERYTHING in database
+                // No filters applied.
               }
 
               const { data: exportData, error } = await query;
@@ -644,7 +755,7 @@ export default function OrdersPage() {
               if (error || !exportData || exportData.length === 0) {
                 toast.error(
                   "Gagal Export",
-                  "Tidak ada data atau terjadi kesalahan."
+                  "Tidak ada data atau terjadi kesalahan.",
                 );
                 return;
               }
@@ -687,7 +798,7 @@ export default function OrdersPage() {
                 "download",
                 `orders_export_${
                   range.type === "range" ? "custom" : "all"
-                }_${format(new Date(), "yyyy-MM-dd")}.csv`
+                }_${format(new Date(), "yyyy-MM-dd")}.csv`,
               );
               document.body.appendChild(link);
               link.click();
@@ -695,7 +806,7 @@ export default function OrdersPage() {
 
               toast.success(
                 "Berhasil Export",
-                `${exportData.length} pesanan berhasil diunduh.`
+                `${exportData.length} pesanan berhasil diunduh.`,
               );
             } catch (err) {
               console.error(err);
@@ -843,7 +954,7 @@ export default function OrdersPage() {
                       variant="outline"
                       className={cn(
                         "w-full h-9 md:h-10 justify-start text-left font-normal",
-                        !newBookingDate && "text-muted-foreground"
+                        !newBookingDate && "text-muted-foreground",
                       )}
                     >
                       <CalendarIcon className="mr-2 h-4 w-4" />
@@ -891,7 +1002,7 @@ export default function OrdersPage() {
                     {packages.filter(
                       (p) =>
                         newBookingCategory === "all" ||
-                        p.category_id === newBookingCategory
+                        p.category_id === newBookingCategory,
                     ).length === 0 ? (
                       <SelectItem value="no-package" disabled>
                         Tidak ada paket di kategori ini
@@ -901,11 +1012,11 @@ export default function OrdersPage() {
                         .filter(
                           (p) =>
                             newBookingCategory === "all" ||
-                            p.category_id === newBookingCategory
+                            p.category_id === newBookingCategory,
                         )
                         .map((pkg) => {
                           const cat = categories.find(
-                            (c) => c.id === pkg.category_id
+                            (c) => c.id === pkg.category_id,
                           );
                           const pkgValue = cat
                             ? `${cat.name} - ${pkg.name}`
@@ -946,7 +1057,11 @@ export default function OrdersPage() {
                   required
                   className="h-9 md:h-10"
                   value={newOrderAmount}
-                  onChange={(e) => setNewOrderAmount(e.target.value)}
+                  onChange={(e) => {
+                    const raw = e.target.value.replace(/\D/g, "");
+                    const formatted = raw.replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+                    setNewOrderAmount(formatted ? `Rp ${formatted}` : "");
+                  }}
                 />
               </div>
               <div className="space-y-1 md:space-y-2">
@@ -978,7 +1093,11 @@ export default function OrdersPage() {
                   placeholder="Rp 0"
                   className="h-9 md:h-10"
                   value={newOrderDp}
-                  onChange={(e) => setNewOrderDp(e.target.value)}
+                  onChange={(e) => {
+                    const raw = e.target.value.replace(/\D/g, "");
+                    const formatted = raw.replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+                    setNewOrderDp(formatted ? `Rp ${formatted}` : "");
+                  }}
                 />
               </div>
 
@@ -1112,7 +1231,9 @@ function CardTable({
                 <TableHead className="w-[120px] text-center">
                   Pembayaran
                 </TableHead>
-                <TableHead className="text-right w-[140px]">Total</TableHead>
+                <TableHead className="text-right w-[140px] pr-4">
+                  Total
+                </TableHead>
                 <TableHead className="w-[40px]"></TableHead>
               </TableRow>
             </TableHeader>
@@ -1136,7 +1257,7 @@ function CardTable({
                           "transition-colors cursor-pointer",
                           isExpanded
                             ? "bg-muted/50 border-b-0"
-                            : "hover:bg-muted/40"
+                            : "hover:bg-muted/40",
                         )}
                         onClick={() => onRowClick(order)}
                       >
@@ -1269,7 +1390,7 @@ function CardTable({
                             }
                           })()}
                         </TableCell>
-                        <TableCell className="text-right font-medium">
+                        <TableCell className="text-right font-medium pr-4">
                           {order.amount}
                         </TableCell>
                         <TableCell>
@@ -1343,11 +1464,11 @@ function CardTable({
 
         {/* Server Pagination Controls - Desktop Only */}
         <div className="hidden md:flex items-center justify-between px-2 pt-4">
-          <div className="text-sm text-muted-foreground">
+          <div className="text-sm text-muted-foreground whitespace-nowrap">
             Menampilkan {orders.length} dari {totalItems} pesanan
           </div>
 
-          <Pagination>
+          <Pagination className="w-auto mx-0">
             <PaginationContent>
               <PaginationItem>
                 <PaginationPrevious
@@ -1517,7 +1638,7 @@ function CardTable({
           </div>
         </div>
 
-        <div className="py-4">
+        <div className="md:hidden py-4">
           <Pagination>
             <PaginationContent>
               <PaginationItem>
@@ -1692,13 +1813,13 @@ function OrderEditForm({
               className={cn(
                 "w-full pl-2 text-left font-normal",
                 !editingOrder.date && "text-muted-foreground",
-                inputClass
+                inputClass,
               )}
             >
               {editingOrder.date ? (
                 format(
                   new Date(editingOrder.date),
-                  isMobile ? "dd/MM/yy" : "PPP"
+                  isMobile ? "dd/MM/yy" : "PPP",
                 )
               ) : (
                 <span>Pilih</span>
@@ -1760,7 +1881,7 @@ function OrderEditForm({
           <SelectContent>
             {packages.filter(
               (p) =>
-                editingCategory === "all" || p.category_id === editingCategory
+                editingCategory === "all" || p.category_id === editingCategory,
             ).length === 0 ? (
               <SelectItem value="no-package" disabled>
                 Tidak ada paket
@@ -1770,14 +1891,14 @@ function OrderEditForm({
                 .filter(
                   (p) =>
                     editingCategory === "all" ||
-                    p.category_id === editingCategory
+                    p.category_id === editingCategory,
                 )
                 .map((pkg) => {
                   const cat = categories.find((c) => c.id === pkg.category_id);
                   const pkgValue = cat ? `${cat.name} - ${pkg.name}` : pkg.name;
                   return (
                     <SelectItem key={pkg.id} value={pkgValue}>
-                      {pkgValue}
+                      {pkgValue} - {pkg.price.toLocaleString("id-ID")}
                     </SelectItem>
                   );
                 })
@@ -1811,9 +1932,14 @@ function OrderEditForm({
         <Input
           className={inputClass}
           value={editingOrder.amount}
-          onChange={(e) =>
-            setEditingOrder({ ...editingOrder, amount: e.target.value })
-          }
+          onChange={(e) => {
+            const raw = e.target.value.replace(/\D/g, "");
+            const formatted = raw.replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+            setEditingOrder({
+              ...editingOrder,
+              amount: formatted ? `Rp ${formatted}` : "",
+            });
+          }}
         />
       </div>
 
@@ -1851,15 +1977,19 @@ function OrderEditForm({
           </span>
           <Input
             className={`${inputClass} pl-8`}
-            type="number"
-            min="0"
-            value={editingOrder.paid_amount || 0}
-            onChange={(e) =>
+            type="text"
+            value={
+              editingOrder.paid_amount
+                ? editingOrder.paid_amount.toLocaleString("id-ID")
+                : ""
+            }
+            onChange={(e) => {
+              const val = parseInt(e.target.value.replace(/\D/g, "")) || 0;
               setEditingOrder({
                 ...editingOrder,
-                paid_amount: parseInt(e.target.value) || 0,
-              })
-            }
+                paid_amount: val,
+              });
+            }}
           />
         </div>
       </div>
@@ -1876,18 +2006,31 @@ function OrderEditForm({
           const paid = editingOrder.paid_amount || 0;
           if (paid >= total && total > 0) {
             return (
-              <Badge className="bg-green-600 hover:bg-green-700">
+              <Badge
+                variant="outline"
+                className="bg-green-50 text-green-700 border-green-200 dark:bg-green-900/20 dark:text-green-400 dark:border-green-800"
+              >
                 SUDAH LUNAS
               </Badge>
             );
           } else if (paid > 0) {
             return (
-              <Badge className="bg-yellow-600 hover:bg-yellow-700">
+              <Badge
+                variant="outline"
+                className="bg-yellow-50 text-yellow-700 border-yellow-200 dark:bg-yellow-900/20 dark:text-yellow-400 dark:border-yellow-800"
+              >
                 BELUM LUNAS
               </Badge>
             );
           } else {
-            return <Badge variant="destructive">BELUM BAYAR</Badge>;
+            return (
+              <Badge
+                variant="outline"
+                className="bg-red-50 text-red-700 border-red-200 dark:bg-red-900/20 dark:text-red-400 dark:border-red-800"
+              >
+                BELUM BAYAR
+              </Badge>
+            );
           }
         })()}
       </div>
@@ -1974,9 +2117,17 @@ function OrderEditForm({
                     placeholder="1.000.000"
                     className="h-9"
                     value={newItem.fee}
-                    onChange={(e) =>
-                      setNewItem({ ...newItem, fee: e.target.value })
-                    }
+                    onChange={(e) => {
+                      const raw = e.target.value.replace(/\D/g, "");
+                      const formatted = raw.replace(
+                        /\B(?=(\d{3})+(?!\d))/g,
+                        ".",
+                      );
+                      setNewItem({
+                        ...newItem,
+                        fee: formatted ? `Rp ${formatted}` : "",
+                      });
+                    }}
                   />
                 </div>
                 <Button
@@ -2045,7 +2196,7 @@ function OrderEditForm({
                             setEditingOrder({
                               ...editingOrder,
                               allocations: editingOrder.allocations?.filter(
-                                (a) => a.id !== alloc.id
+                                (a) => a.id !== alloc.id,
                               ),
                             })
                           }
@@ -2068,7 +2219,7 @@ function OrderEditForm({
                     currency: "IDR",
                     minimumFractionDigits: 0,
                   }).format(
-                    parseInt(editingOrder.amount.replace(/[^0-9]/g, "") || "0")
+                    parseInt(editingOrder.amount.replace(/[^0-9]/g, "") || "0"),
                   )}
                 </span>
               </div>
@@ -2084,8 +2235,8 @@ function OrderEditForm({
                     (editingOrder.allocations || []).reduce(
                       (acc, curr) =>
                         acc + parseInt(curr.fee.replace(/[^0-9]/g, "") || "0"),
-                      0
-                    )
+                      0,
+                    ),
                   )}
                 </span>
               </div>
@@ -2098,14 +2249,14 @@ function OrderEditForm({
                     minimumFractionDigits: 0,
                   }).format(
                     parseInt(
-                      editingOrder.amount.replace(/[^0-9]/g, "") || "0"
+                      editingOrder.amount.replace(/[^0-9]/g, "") || "0",
                     ) -
                       (editingOrder.allocations || []).reduce(
                         (acc, curr) =>
                           acc +
                           parseInt(curr.fee.replace(/[^0-9]/g, "") || "0"),
-                        0
-                      )
+                        0,
+                      ),
                   )}
                 </span>
               </div>
@@ -2131,7 +2282,7 @@ function OrderEditForm({
         </Button>
 
         <div className={`flex gap-2 ${isMobile ? "w-full flex-col" : ""}`}>
-          {/* Invoice Button Removed */}
+          <InvoicePrintButton order={editingOrder} />
 
           <Button
             size="sm"
@@ -2165,12 +2316,12 @@ function LocationPicker({
     try {
       const res = await fetch(
         `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(
-          query
-        )}&limit=5`
+          query,
+        )}&limit=5`,
       );
       const data = await res.json();
       setSuggestions(
-        data.map((item: { display_name: string }) => item.display_name)
+        data.map((item: { display_name: string }) => item.display_name),
       );
       setOpen(true);
     } catch (error) {
