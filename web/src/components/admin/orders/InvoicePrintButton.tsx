@@ -127,7 +127,7 @@ export default function InvoicePrintButton({ order }: InvoicePrintButtonProps) {
                     .row { display: flex; justify-content: space-between; padding: 8px 0; font-size: 14px; }
                     .row.final { font-weight: 800; font-size: 18px; border-top: 2px solid #ddd; margin-top: 10px; padding-top: 15px; color: #111; }
                     
-                    /* STAMP STYLES - CENTERED */
+                    /* STAMP STYLES - CENTERED - Mobile & PDF Compatible */
                     .stamp-container { 
                         position: absolute; 
                         top: 50%; 
@@ -138,36 +138,36 @@ export default function InvoicePrintButton({ order }: InvoicePrintButtonProps) {
                         display: flex;
                         justify-content: center;
                         align-items: center;
+                        width: 100%;
                     }
                     .stamp {
                         color: #555;
-                        font-size: 6rem;
-                        font-weight: 700;
-                        border: 0.5rem solid #555;
+                        font-size: clamp(2.5rem, 8vw, 5rem);
+                        font-weight: 900;
+                        border: 0.4rem solid #555;
                         display: inline-block;
-                        padding: 1rem 3rem;
+                        padding: 0.8rem 2rem;
                         text-transform: uppercase;
-                        border-radius: 1rem;
+                        border-radius: 0.8rem;
                         font-family: 'Courier New', Courier, monospace;
-                        mask-image: url('https://s3-us-west-2.amazonaws.com/s.cdpn.io/8399/grunge.png');
-                        -webkit-mask-image: url('https://s3-us-west-2.amazonaws.com/s.cdpn.io/8399/grunge.png');
-                        mask-size: 944px 604px;
-                        -webkit-mask-size: 944px 604px;
-                        mix-blend-mode: multiply;
-                        opacity: 0.15; /* Transparent effect */
+                        letter-spacing: 0.1em;
+                        opacity: 0.25;
                         white-space: nowrap;
+                        background: transparent;
+                        -webkit-print-color-adjust: exact;
+                        print-color-adjust: exact;
                     }
 
                     .is-paid {
                         color: #0d9656;
                         border-color: #0d9656;
-                        opacity: 0.2;
+                        opacity: 0.3;
                     }
 
                     .is-unpaid {
                         color: #d11212;
                         border-color: #d11212;
-                        opacity: 0.15;
+                        opacity: 0.25;
                     }
                     
                     .footer { 
